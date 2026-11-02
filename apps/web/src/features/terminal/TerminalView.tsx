@@ -49,7 +49,8 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     if (!element) return;
     const term = new Terminal({
       fontSize: 13,
-      fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+      fontFamily:
+        'ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", "Noto Sans Mono", monospace',
       cursorBlink: true,
       scrollback: 3000,
       theme: TERMINAL_THEME,

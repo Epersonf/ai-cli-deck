@@ -6,7 +6,7 @@ const SKIPPED_ENV = new Set(['TMUX', 'TMUX_PANE']);
 
 /** Dedicated tmux server so deck sessions never mix with the user's own tmux. */
 export const TMUX_SOCKET = 'deck';
-const SOCKET_ARGS = ['-L', TMUX_SOCKET];
+const SOCKET_ARGS = ['-u', '-L', TMUX_SOCKET];
 
 /** Builds the argv that creates-or-attaches a tmux session running `spec`. */
 export function buildTmuxArgs(name: string, spec: LaunchSpec): string[] {

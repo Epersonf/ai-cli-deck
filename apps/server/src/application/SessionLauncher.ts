@@ -1,3 +1,4 @@
+import { utf8Locale } from './utf8Env';
 import { TMUX_PREFIX, type Session } from '@deck/shared';
 import { invalid } from '../domain/errors.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
@@ -48,6 +49,7 @@ export class SessionLauncher {
       cwd: session.cwd,
       env: {
         ...this.deps.baseEnv,
+        ...utf8Locale(this.deps.baseEnv),
         TERM: 'xterm-256color',
         COLORTERM: 'truecolor',
         ...parts.env,
@@ -70,7 +72,12 @@ export class SessionLauncher {
   }
 
   reattach(session: Session): PtyHandle {
-    const env = { ...this.deps.baseEnv, TERM: 'xterm-256color', COLORTERM: 'truecolor' };
+    const env = {
+      ...this.deps.baseEnv,
+      ...utf8Locale(this.deps.baseEnv),
+      TERM: 'xterm-256color',
+      COLORTERM: 'truecolor',
+    };
     const spec = { command: '', args: [], env, cwd: session.cwd };
     return this.deps.pty.spawn(this.deps.mux.attach(tmuxNameFor(session.id), spec), DEFAULT_SIZE);
   }

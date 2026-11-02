@@ -1,3 +1,4 @@
+import { Bell } from '../../shared/ui/Bell';
 import { useT } from '../../shared/i18n/store';
 import { useApprovals } from './approvalsStore';
 
@@ -8,12 +9,13 @@ export function ApprovalsBadge() {
   return (
     <button
       type="button"
-      className={`approvals-badge${count > 0 ? ' attention' : ''}`}
+      className={`approvals-bell${count > 0 ? ' attention' : ''}`}
       onClick={() => setOpen(true)}
       aria-label={t('approvals.aria', { count })}
       title={t('approvals.title')}
     >
-      ✋ {count}
+      <Bell />
+      {count > 0 && <span className="bell-count">{count > 99 ? '99+' : count}</span>}
     </button>
   );
 }

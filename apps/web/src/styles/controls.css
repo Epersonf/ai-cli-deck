@@ -124,7 +124,7 @@ label.check {
 }
 @media (prefers-reduced-motion: reduce) {
   .gear.spin,
-  .approvals-badge.attention {
+  .approvals-bell.attention {
     animation: none;
   }
 }

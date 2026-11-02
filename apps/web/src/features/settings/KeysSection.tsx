@@ -1,5 +1,5 @@
 import { useT } from '../../shared/i18n/store';
-import type { KeysMode } from '../terminal/keysPreference';
+import { KEYS_MODES, type KeysMode } from '../terminal/keysPreference';
 
 interface Props {
   mode: KeysMode;
@@ -10,30 +10,29 @@ interface Props {
 /** Explains the on-screen keys bar (Esc, Tab, Ctrl, arrows...) and lets the user force it. */
 export function KeysSection({ mode, touchScreen, onChange }: Props) {
   const t = useT();
-  const options = [
-    { mode: 'auto', label: t('keys.auto'), help: t('keys.autoHelp') },
-    { mode: 'on', label: t('keys.on'), help: t('keys.onHelp') },
-    { mode: 'off', label: t('keys.off'), help: t('keys.offHelp') },
-  ] as const;
+  const labels = { auto: t('keys.auto'), on: t('keys.on'), off: t('keys.off') } as const;
+  const helps = { auto: t('keys.autoHelp'), on: t('keys.onHelp'), off: t('keys.offHelp') } as const;
   const device = t(touchScreen ? 'keys.deviceTouch' : 'keys.deviceDesktop');
   return (
-    <fieldset className="setting">
-      <legend>{t('keys.title')}</legend>
+    <div className="setting">
+      <label>
+        {t('keys.title')}
+        <select
+          value={mode}
+          onChange={(e) => {
+            const next = KEYS_MODES.find((m) => m === e.target.value);
+            if (next) onChange(next);
+          }}
+        >
+          {KEYS_MODES.map((m) => (
+            <option key={m} value={m}>
+              {labels[m]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="hint">{helps[mode]}</p>
       <p className="hint">{t('keys.about', { device })}</p>
-      {options.map((option) => (
-        <label className="choice" key={option.mode}>
-          <input
-            type="radio"
-            name="keys-mode"
-            checked={mode === option.mode}
-            onChange={() => onChange(option.mode)}
-          />
-          <span>
-            <strong>{option.label}</strong>
-            <small>{option.help}</small>
-          </span>
-        </label>
-      ))}
-    </fieldset>
+    </div>
   );
 }

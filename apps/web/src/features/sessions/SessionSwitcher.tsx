@@ -15,8 +15,8 @@ export function SessionSwitcher({ onNew, onClose }: Props) {
   const close = useCloseSession();
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(event) => event.stopPropagation()}>
+    <div className="drawer-backdrop" onClick={onClose}>
+      <aside className="drawer" onClick={(event) => event.stopPropagation()}>
         <h2>{t('switcher.title')}</h2>
         {sessions.length === 0 && <p className="empty">{t('switcher.empty')}</p>}
         <ul className="session-list">
@@ -60,7 +60,7 @@ export function SessionSwitcher({ onNew, onClose }: Props) {
             {t('common.close')}
           </button>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }

@@ -54,7 +54,7 @@ describe('tmux and git helpers', () => {
       env: { A: '1', TMUX: 'x' },
       cwd: '/w',
     });
-    expect(args.slice(0, 2)).toEqual(['-L', 'deck']);
+    expect(args.slice(0, 3)).toEqual(['-u', '-L', 'deck']);
     const at = args.indexOf('new-session');
     expect(args.slice(at, at + 6)).toEqual(['new-session', '-A', '-s', 'deck-s1', '-c', '/w']);
     expect(args).toContain('A=1');
