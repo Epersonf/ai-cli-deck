@@ -25,25 +25,29 @@ Server to client:
 | `pong`             | -                         | answer to `ping`                                   |
 
 On connect the server sends `status`, then a replay (tmux `capture-pane`, or an in-memory ring
-buffer without tmux), then live output. The browser resets its terminal on every (re)connect.
+buffer without tmux), then live output. A session that ended while the server was down replays the
+last screen saved under `<state dir>/scrollback/<id>.bin`. The browser resets its terminal on every (re)connect.
 
 ## HTTP API (`/api`)
 
-| method   | path                                    | purpose                                                    |
-| -------- | --------------------------------------- | ---------------------------------------------------------- |
-| GET      | `/auth`                                 | `{required, canDisable, isDefault}` (public)               |
-| POST     | `/login`                                | `{password}` -> `{token}` (public, throttled)              |
-| PUT      | `/password`                             | `{current, next}`; `next: null` removes it (loopback only) |
-| GET      | `/config`, `/providers`                 | public config, available CLIs                              |
-| GET/POST | `/sessions`                             | list / create                                              |
-| DELETE   | `/sessions/:id`                         | stop and remove                                            |
-| PUT      | `/sessions/:id/preview`                 | set the preview URL (localhost only)                       |
-| GET      | `/sessions/:id/tree?path=&showIgnored=` | folder listing with `ignored` flags                        |
-| GET      | `/sessions/:id/file?path=`              | text content (512 KiB cap)                                 |
-| GET      | `/sessions/:id/raw?path=`               | file bytes with `Range` (media viewer)                     |
-| GET      | `/sessions/:id/git`                     | git status                                                 |
-| GET      | `/approvals?status=`                    | approval requests                                          |
-| POST     | `/approvals/:id/decision`               | `{decision: approve                                        | reject}` |
+| method   | path                                        | purpose                                                                    |
+| -------- | ------------------------------------------- | -------------------------------------------------------------------------- |
+| GET      | `/auth`                                     | `{required, canDisable, isDefault}` (public)                               |
+| POST     | `/login`                                    | `{password}` -> `{token}` (public, throttled)                              |
+| PUT      | `/password`                                 | `{current, next}`; `next: null` removes it (loopback only)                 |
+| GET      | `/config`, `/providers`                     | public config, available CLIs                                              |
+| GET/POST | `/sessions`                                 | list / create                                                              |
+| DELETE   | `/sessions/:id`                             | stop and remove                                                            |
+| PUT      | `/sessions/:id/preview`                     | set the preview URL (localhost only)                                       |
+| GET      | `/sessions/:id/tree?path=&hidden=&ignored=` | folder listing; `hidden` adds dotfiles, `ignored` adds git-ignored entries |
+| GET      | `/sessions/:id/file?path=`                  | text content (512 KiB cap)                                                 |
+| GET      | `/sessions/:id/raw?path=[&download=1]`      | file bytes with `Range` (media viewer); `download=1` sends an attachment   |
+| GET      | `/sessions/:id/zip?path=`                   | a folder as a streamed `.zip` (no `.git`, `node_modules`, symlinks)        |
+| POST     | `/sessions/:id/upload?dir=&name=`           | raw body saved into the folder (512 MiB cap, name sanitized)               |
+| POST     | `/sessions/:id/paste?ext=`                  | pasted image saved to a temp file; returns its path                        |
+| GET      | `/sessions/:id/git`                         | git status                                                                 |
+| GET      | `/approvals?status=`                        | approval requests                                                          |
+| POST     | `/approvals/:id/decision`                   | `{decision}` where decision is `approve` or `reject`                       |
 
 The token goes in the `x-deck-token` header (or `?token=` for WebSockets and media elements).
 

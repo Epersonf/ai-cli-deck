@@ -11,8 +11,12 @@ on any Linux box and desktop browser.
 ## Features
 
 - Terminal per session (tabs), survives closing the browser and restarting the server (tmux)
+- If the whole machine or Termux dies, the sessions come back as ended but still show their last
+  screen (saved to disk every few seconds); deleting a session deletes that file
 - Termux-style extra keys: ESC, TAB, sticky CTRL/ALT, HOME/END, PGUP/PGDN, arrows (hidden on desktop)
-- File explorer: text, images, audio, video, PDF; git-ignored files shown greyed out
+- File explorer: text, images, audio, video, PDF; upload (button, drag and drop, pasted images);
+  download a file or a whole folder as `.zip`; an options dialog toggles hidden files,
+  git-ignored files and file extensions
 - Per-session preview iframe (localhost only); click a `localhost:PORT` link in the terminal
 - `clideck` command and MCP tools so agents can talk back (preview, worktree request...)
 - Password login, changeable in the app; open without password while localhost-only
@@ -25,7 +29,7 @@ on any Linux box and desktop browser.
 ```bash
 apt update && apt install -y git tmux build-essential python3 nodejs npm
 node -v        # 20+ needed (22 recommended)
-git clone git@github.com:Epersonf/ai-cli-deck.git && cd ai-cli-deck
+git clone https://github.com/Epersonf/ai-cli-deck.git && cd ai-cli-deck
 npm install
 ```
 
@@ -92,7 +96,7 @@ battery while held: release it with `termux-wake-unlock`, or start the server wi
 stores or asks for API keys or logins: every CLI signs in by itself, inside its terminal.
 
 Environment overrides: `DECK_HOST`, `DECK_PORT`, `DECK_PASSWORD`, `DECK_CONFIG_DIR`, `DECK_STATE_DIR`,
-`DECK_STATIC_DIR`. `mcpArgs` may contain `{mcpUrl}` to point a CLI at the deck MCP server.
+`DECK_STATIC_DIR`, `DECK_TMUX_SOCKET` (tmux server name, default `deck`), `DECK_WAKE_LOCK=0`. `mcpArgs` may contain `{mcpUrl}` to point a CLI at the deck MCP server.
 
 ## Installing and signing in to CLIs
 
@@ -125,6 +129,9 @@ Claude sessions also get the MCP server automatically. See [docs/protocol.md](do
 
 ```bash
 npm run ci      # typecheck + lint + tests
+./dev.sh        # a second, isolated instance on :7843 (own config, state and tmux server)
 ```
+
+Use `dev.sh` from a git worktree to hack on the deck while you keep working inside the stable one.
 
 Docs: [architecture](docs/architecture.md), [protocol](docs/protocol.md), [security](docs/security.md).

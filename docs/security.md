@@ -34,6 +34,13 @@
 - The preview iframe accepts `http(s)` on `localhost`/`127.0.0.1`/`::1` only, never the deck's own
   origin, uses a restrictive `sandbox` and nothing is proxied.
 
+- Upload names are reduced to a base name without separators or control characters, never overwrite
+  an existing file, and go through `resolveInside`. The `.zip` export skips symlinks, `.git` and
+  `node_modules`, and downloads are served as attachments with `nosniff` and the sandbox CSP.
+- Saved terminal screens (`<state dir>/scrollback/*.bin`) may contain secrets printed in a terminal.
+  They are mode 0600, only written for ids that are plain tokens, and deleted with the session.
+  Deleting a profile also erases its CLI config folder (logins, history).
+
 ## Agents
 
 - Agents can only propose a worktree. `ApprovalService.decide` with `approve` is the single code

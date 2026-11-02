@@ -18,6 +18,14 @@
   Options (`status off`, `escape-time`) are set before `new-session -A`, which blocks until detach.
 - **Reattach without a provider.** After a server restart, live `deck-*` tmux sessions are
   re-attached with `tmux attach` (the provider is not needed again).
+- **Screens survive a dead machine.** `ScreenSaver` writes each live session's screen (tmux
+  `capture-pane`, or the ring buffer without tmux) to `<state dir>/scrollback/<id>.bin` every 5 s
+  when there was output. tmux dies with Termux, so on restart an ended session replays that file
+  instead of an empty buffer. Deleting a session deletes its file. It restores the screen, not the process.
+- **`SessionRegistry`** holds the runtimes (session, pty, replay buffer), publishes changes and
+  persists `sessions.json`; `SessionManager` only orchestrates.
+- **Second instance for self-hosting work.** `DECK_TMUX_SOCKET` gives an instance its own tmux server
+  and `dev.sh` its own port, config and state, so the deck can be edited from inside a session.
 - **Approvals poll, not push.** The badge polls every 3 s; per-session approval events also arrive
   on that session's socket.
 - **Media goes through `/raw`**, not through JSON, so the browser can stream and seek audio/video.
