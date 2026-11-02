@@ -4,8 +4,11 @@ import type { Runner } from './exec.js';
 
 const SKIPPED_ENV = new Set(['TMUX', 'TMUX_PANE']);
 
-/** Dedicated tmux server so deck sessions never mix with the user's own tmux. */
-export const TMUX_SOCKET = 'deck';
+/**
+ * Dedicated tmux server so deck sessions never mix with the user's own tmux.
+ * `DECK_TMUX_SOCKET` lets a second instance (e.g. a dev copy) use its own server.
+ */
+export const TMUX_SOCKET = process.env.DECK_TMUX_SOCKET || 'deck';
 const SOCKET_ARGS = ['-u', '-L', TMUX_SOCKET];
 
 /** Builds the argv that creates-or-attaches a tmux session running `spec`. */
