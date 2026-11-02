@@ -132,6 +132,7 @@ export const zh: Messages = {
   'approvals.reject': '拒绝',
   'approvals.detail': '{provider}，位于 {cwd} · 分支 deck/{id}',
   'terminal.reconnecting': '正在重新连接…',
+  'terminal.latencyTip': '网络往返 · 按键到屏幕回显',
   'terminal.exited': '进程已结束',
   'terminal.exitedCode': '进程已结束（退出码 {code}）',
   'layout.closePanel': '关闭面板',

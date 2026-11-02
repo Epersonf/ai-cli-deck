@@ -142,6 +142,7 @@ export const fr: Messages = {
   'approvals.reject': 'Refuser',
   'approvals.detail': '{provider} dans {cwd} · branche deck/{id}',
   'terminal.reconnecting': 'reconnexion…',
+  'terminal.latencyTip': 'Aller-retour réseau · écho touche vers écran',
   'terminal.exited': 'processus terminé',
   'terminal.exitedCode': 'processus terminé (code {code})',
   'layout.closePanel': 'Fermer le panneau',

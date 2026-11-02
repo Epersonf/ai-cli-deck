@@ -134,6 +134,7 @@ export const en = {
   'approvals.reject': 'Reject',
   'approvals.detail': '{provider} in {cwd} · branch deck/{id}',
   'terminal.reconnecting': 'reconnecting…',
+  'terminal.latencyTip': 'Network round trip · key-to-screen echo',
   'terminal.exited': 'process exited',
   'terminal.exitedCode': 'process exited (code {code})',
   'layout.closePanel': 'Close panel',

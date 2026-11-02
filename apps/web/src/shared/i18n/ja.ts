@@ -139,6 +139,7 @@ export const ja: Messages = {
   'approvals.reject': '却下',
   'approvals.detail': '{provider}（{cwd}）· ブランチ deck/{id}',
   'terminal.reconnecting': '再接続中…',
+  'terminal.latencyTip': 'ネットワーク往復 · キー入力から表示まで',
   'terminal.exited': 'プロセスが終了しました',
   'terminal.exitedCode': 'プロセスが終了しました（コード {code}）',
   'layout.closePanel': 'パネルを閉じる',

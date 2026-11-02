@@ -3,12 +3,13 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
-import { api } from '../../shared/api/endpoints';
 import { openTerminalSocket } from '../../shared/ws/terminalSocket';
 import { usePreview, previewable } from '../preview/previewStore';
 import { useT } from '../../shared/i18n/store';
 import { showSidePane } from '../layout/layoutStore';
 import { dispatchMessage } from './dispatch';
+import { attachImagePaste } from './pasteImage';
+import { createLatencyMeter, type Latency } from './latencyMeter';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { TERMINAL_THEME } from './theme';
 import type { ModifiersApi } from './useModifiers';
@@ -44,6 +45,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   const modsRef = useRef(mods);
   modsRef.current = mods;
   const [online, setOnline] = useState(false);
+  const [latency, setLatency] = useState<Latency>({ net: null, echo: null });
 
   useEffect(() => {
     const element = host.current;
@@ -63,6 +65,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     termRef.current = term;
     fitRef.current = fit;
 
+    const meter = createLatencyMeter();
     const socket = openTerminalSocket(sessionId, {
       onOpen: () => {
         setOnline(true);
@@ -70,42 +73,33 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
         socket.send({ type: 'resize', cols: term.cols, rows: term.rows });
       },
       onClose: () => setOnline(false),
-      onMessage: (message) =>
+      onMessage: (message) => {
+        if (message.type === 'pong') meter.pong();
+        if (message.type === 'output' && !message.replay) meter.output();
         dispatchMessage(sessionId, message, {
           write: (bytes) => term.write(bytes),
           reset: () => term.reset(),
           note: (text) => term.write(`\r\n\x1b[2m[${text}]\x1b[0m\r\n`),
-        }),
+        });
+      },
     });
     const send = (data: string): void => socket.send({ type: 'input', data });
     apiRef.current = {
       send,
       applicationCursor: () => term.modes.applicationCursorKeysMode,
     };
-    term.onData((data) =>
-      send(applyModifiersToText(data, data.length === 1 ? modsRef.current.take() : NO_MODS)),
-    );
+    const probe = window.setInterval(() => {
+      meter.ping();
+      socket.send({ type: 'ping' });
+      setLatency(meter.get());
+    }, 3000);
+    term.onData((data) => {
+      meter.key();
+      send(applyModifiersToText(data, data.length === 1 ? modsRef.current.take() : NO_MODS));
+    });
     term.onResize(({ cols, rows }) => socket.send({ type: 'resize', cols, rows }));
 
-    // A screenshot on the clipboard lives in the browser, not on this machine: upload it and
-    // type its path, which the agent CLIs read as an image attachment.
-    const onPaste = (event: ClipboardEvent): void => {
-      const image = [...(event.clipboardData?.files ?? [])].find((f) =>
-        f.type.startsWith('image/'),
-      );
-      if (!image) return;
-      event.preventDefault();
-      event.stopPropagation();
-      void api
-        .paste(sessionId, image)
-        .then(({ path }) => term.paste(`${path} `))
-        .catch((e: unknown) =>
-          term.write(
-            `\r\n\x1b[31m[paste failed: ${e instanceof Error ? e.message : 'error'}]\x1b[0m\r\n`,
-          ),
-        );
-    };
-    element.addEventListener('paste', onPaste, true);
+    const detachPaste = attachImagePaste(element, term, sessionId);
 
     let frame = 0;
     const observer = new ResizeObserver(() => {
@@ -115,7 +109,8 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     observer.observe(element);
 
     return () => {
-      element.removeEventListener('paste', onPaste, true);
+      detachPaste();
+      window.clearInterval(probe);
       observer.disconnect();
       cancelAnimationFrame(frame);
       socket.close();
@@ -133,6 +128,12 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   return (
     <div className="terminal-wrap">
       <div ref={host} className="terminal-host" />
+      {online && latency.net !== null && (
+        <div className="terminal-latency" title={t('terminal.latencyTip')}>
+          {`${Math.round(latency.net)} ms`}
+          {latency.echo !== null && ` · ${Math.round(latency.echo)} ms`}
+        </div>
+      )}
       {!online && <div className="terminal-offline">{t('terminal.reconnecting')}</div>}
     </div>
   );

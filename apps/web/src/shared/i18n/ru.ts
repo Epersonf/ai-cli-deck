@@ -137,6 +137,7 @@ export const ru: Messages = {
   'approvals.reject': 'Отклонить',
   'approvals.detail': '{provider} в {cwd} · ветка deck/{id}',
   'terminal.reconnecting': 'переподключение…',
+  'terminal.latencyTip': 'Сетевая задержка · от нажатия до экрана',
   'terminal.exited': 'процесс завершён',
   'terminal.exitedCode': 'процесс завершён (код {code})',
   'layout.closePanel': 'Закрыть панель',

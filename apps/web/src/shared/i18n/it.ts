@@ -136,6 +136,7 @@ export const it: Messages = {
   'approvals.reject': 'Rifiuta',
   'approvals.detail': '{provider} in {cwd} · branch deck/{id}',
   'terminal.reconnecting': 'riconnessione…',
+  'terminal.latencyTip': 'Andata e ritorno di rete · eco dal tasto allo schermo',
   'terminal.exited': 'processo terminato',
   'terminal.exitedCode': 'processo terminato (codice {code})',
   'layout.closePanel': 'Chiudi pannello',

@@ -139,6 +139,7 @@ export const es: Messages = {
   'approvals.reject': 'Rechazar',
   'approvals.detail': '{provider} en {cwd} · rama deck/{id}',
   'terminal.reconnecting': 'reconectando…',
+  'terminal.latencyTip': 'Ida y vuelta de red · eco de tecla a pantalla',
   'terminal.exited': 'proceso terminado',
   'terminal.exitedCode': 'proceso terminado (código {code})',
   'layout.closePanel': 'Cerrar panel',
