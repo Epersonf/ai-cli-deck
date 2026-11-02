@@ -1,13 +1,6 @@
 import { SETUP_SPECS } from '@deck/shared';
 import { describe, expect, it } from 'vitest';
-import type { ProviderSecrets } from '../../domain/provider.js';
 import { ProviderStatusResolver, findExecutable, type StatusDeps } from './status.js';
-
-const NO_SECRETS: ProviderSecrets = {
-  deepseekApiKey: null,
-  anthropicApiKey: null,
-  openaiApiKey: null,
-};
 
 function deps(
   files: string[],
@@ -39,40 +32,30 @@ describe('findExecutable', () => {
   });
 });
 
-const resolver = (d: StatusDeps, secrets = NO_SECRETS) =>
-  new ProviderStatusResolver(SETUP_SPECS, [{ id: 'aider', command: 'aider' }], () => secrets, d);
+const resolver = (d: StatusDeps) =>
+  new ProviderStatusResolver(SETUP_SPECS, [{ id: 'aider', command: 'aider' }], d);
 
 describe('ProviderStatusResolver', () => {
-  it('reports missing, unauthenticated and ready', async () => {
-    expect((await resolver(deps([])).resolve('claude')).status).toBe('missing');
-    const installed = deps(['/usr/bin/claude']);
-    expect(await resolver(installed).resolve('claude')).toMatchObject({
-      status: 'unauthenticated',
-      canSetup: true,
+  it('only reports whether the CLI is installed, never whether it is signed in', async () => {
+    expect(await resolver(deps([])).resolve('claude')).toEqual({
+      status: 'missing',
+      hint: 'claude is not installed',
+      canInstall: true,
     });
-    const signedIn = deps(['/usr/bin/claude', '/home/u/.claude/.credentials.json']);
-    expect((await resolver(signedIn).resolve('claude')).status).toBe('ready');
+    expect((await resolver(deps(['/usr/bin/claude'])).resolve('claude')).status).toBe('ready');
+    expect((await resolver(deps(['/usr/bin/codex'])).resolve('codex')).status).toBe('ready');
   });
 
-  it('counts a saved key or an environment key as signed in', async () => {
-    const d = deps(['/usr/bin/codex']);
-    expect((await resolver(d, { ...NO_SECRETS, openaiApiKey: 'k' }).resolve('codex')).status).toBe(
+  it('shares the claude binary with the DeepSeek provider', async () => {
+    expect((await resolver(deps(['/usr/bin/claude'])).resolve('claude-deepseek')).status).toBe(
       'ready',
     );
-    const withEnv = deps(['/usr/bin/codex'], { OPENAI_API_KEY: 'k' });
-    expect((await resolver(withEnv).resolve('codex')).status).toBe('ready');
-  });
-
-  it('needs a DeepSeek key even when claude is signed in', async () => {
-    const d = deps(['/usr/bin/claude', '/home/u/.claude/.credentials.json']);
-    expect((await resolver(d).resolve('claude-deepseek')).status).toBe('unauthenticated');
-    expect(
-      (await resolver(d, { ...NO_SECRETS, deepseekApiKey: 'k' }).resolve('claude-deepseek')).status,
-    ).toBe('ready');
+    expect((await resolver(deps([])).resolve('claude-deepseek')).status).toBe('missing');
   });
 
   it('checks configured commands and trusts shell/custom', async () => {
     expect((await resolver(deps([])).resolve('aider')).status).toBe('missing');
+    expect((await resolver(deps([])).resolve('aider')).canInstall).toBe(false);
     expect((await resolver(deps(['/usr/bin/aider'])).resolve('aider')).status).toBe('ready');
     expect((await resolver(deps([])).resolve('shell')).status).toBe('ready');
   });

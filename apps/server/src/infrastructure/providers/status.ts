@@ -2,11 +2,10 @@ import { access } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { posix, win32 } from 'node:path';
 import type { ProviderInfo, SetupSpec } from '@deck/shared';
-import type { ProviderSecrets } from '../../domain/provider.js';
 import { pathKey } from '../config/platform.js';
 
 type Env = Readonly<Record<string, string | undefined>>;
-export type ProviderStatusInfo = Pick<ProviderInfo, 'status' | 'hint' | 'canSetup'>;
+export type ProviderStatusInfo = Pick<ProviderInfo, 'status' | 'hint' | 'canInstall'>;
 
 export interface StatusDeps {
   env: Env;
@@ -39,26 +38,13 @@ export async function findExecutable(name: string, deps: StatusDeps): Promise<bo
   return false;
 }
 
-const READY: ProviderStatusInfo = { status: 'ready', hint: null, canSetup: false };
-const keyOf = (spec: SetupSpec, secrets: ProviderSecrets): string | null => {
-  switch (spec.apiKey?.name) {
-    case 'anthropic':
-      return secrets.anthropicApiKey;
-    case 'openai':
-      return secrets.openaiApiKey;
-    case 'deepseek':
-      return secrets.deepseekApiKey;
-    default:
-      return null;
-  }
-};
+const READY: ProviderStatusInfo = { status: 'ready', hint: null, canInstall: false };
 
-/** Tells the UI whether a provider's CLI is installed and (as far as we can tell) signed in. */
+/** Tells the UI whether a provider's CLI is installed. Sign-in is the CLI's own flow. */
 export class ProviderStatusResolver {
   constructor(
     private readonly specs: readonly SetupSpec[],
     private readonly configured: readonly { id: string; command: string }[],
-    private readonly secrets: () => ProviderSecrets,
     private readonly deps: StatusDeps,
   ) {}
 
@@ -67,31 +53,14 @@ export class ProviderStatusResolver {
     if (def) {
       return (await findExecutable(def.command, this.deps))
         ? READY
-        : { status: 'missing', hint: `"${def.command}" was not found in PATH`, canSetup: false };
+        : { status: 'missing', hint: `"${def.command}" was not found in PATH`, canInstall: false };
     }
     const spec = this.specs.find((s) => s.id === id);
-    return spec ? this.forSpec(spec) : READY;
-  }
-
-  private async forSpec(spec: SetupSpec): Promise<ProviderStatusInfo> {
-    if (!(await findExecutable(spec.binary, this.deps))) {
-      return { status: 'missing', hint: `${spec.binary} is not installed`, canSetup: true };
-    }
-    if (await this.signedIn(spec)) return { ...READY, canSetup: true };
-    const hint =
-      spec.accountLogin === null
-        ? 'No API key saved yet'
-        : 'No login found (you may already be signed in)';
-    return { status: 'unauthenticated', hint, canSetup: true };
-  }
-
-  private async signedIn(spec: SetupSpec): Promise<boolean> {
-    if (keyOf(spec, this.secrets()) !== null) return true;
-    const envVar = spec.apiKey?.envVar;
-    if (envVar !== undefined && this.deps.env[envVar]) return true;
-    for (const file of spec.credentialFiles) {
-      if (await this.deps.exists(posix.join(this.deps.home, file))) return true;
-    }
-    return false;
+    if (!spec || (await findExecutable(spec.binary, this.deps))) return READY;
+    return {
+      status: 'missing',
+      hint: `${spec.binary} is not installed`,
+      canInstall: spec.install !== null,
+    };
   }
 }

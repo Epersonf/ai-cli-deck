@@ -15,6 +15,7 @@
   --serif: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --brass-grad: linear-gradient(180deg, var(--brass-hi), var(--brass) 45%, var(--brass-lo));
+  --ctl: 40px;
   --glow: 0 0 10px rgb(255 180 58 / 55%);
 }
 

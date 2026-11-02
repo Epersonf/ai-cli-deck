@@ -68,6 +68,7 @@
   padding: 0;
 }
 .tree-row {
+  min-height: 36px;
   display: flex;
   align-items: center;
   gap: 6px;

@@ -1,15 +1,10 @@
 import type { ProviderSecrets } from '../../domain/provider.js';
 import type { AppConfig } from './schema.js';
 
-/** API keys for the built-in providers; `deepseekApiKey` is the legacy spelling. */
+/** The DeepSeek key comes from the environment or config.json; no other CLI needs a key from us. */
 export function secretsFromConfig(
   config: AppConfig,
   env: Readonly<Record<string, string | undefined>> = {},
 ): ProviderSecrets {
-  return {
-    anthropicApiKey: config.apiKeys.anthropic ?? null,
-    openaiApiKey: config.apiKeys.openai ?? null,
-    deepseekApiKey:
-      config.apiKeys.deepseek ?? config.deepseekApiKey ?? env['DEEPSEEK_API_KEY'] ?? null,
-  };
+  return { deepseekApiKey: config.deepseekApiKey ?? env['DEEPSEEK_API_KEY'] ?? null };
 }

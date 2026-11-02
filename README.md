@@ -62,8 +62,8 @@ The startup log prints the LAN URLs. Without `DECK_PASSWORD` the built-in defaul
   "host": "127.0.0.1",
   "port": 7842,
   "password": null,
-  "defaultCwd": "/root/workspace",
-  "deepseekApiKey": "sk-...",
+  "defaultCwd": null,
+  "deepseekApiKey": null,
   "portRange": { "min": 4100, "max": 4199 },
   "providers": [
     {
@@ -79,8 +79,20 @@ The startup log prints the LAN URLs. Without `DECK_PASSWORD` the built-in defaul
 }
 ```
 
+`defaultCwd` defaults to your home directory (`~` is accepted in the folder field). The only key the
+deck ever stores is the DeepSeek one (or set `DEEPSEEK_API_KEY`), because that provider is Claude Code
+pointed at DeepSeek's API. Every other CLI signs in by itself.
+
 Environment overrides: `DECK_HOST`, `DECK_PORT`, `DECK_PASSWORD`, `DECK_CONFIG_DIR`, `DECK_STATE_DIR`,
 `DECK_STATIC_DIR`. `mcpArgs` may contain `{mcpUrl}` to point a CLI at the deck MCP server.
+
+## Installing and signing in to CLIs
+
+The deck never handles logins. If a CLI is missing, the new-session dialog offers **Install in
+terminal**, which runs `clideck setup <cli>` (an `npm install -g` after you confirm). From then on
+the CLI shows its own sign-in the first time it starts, in the session terminal, whatever flow it
+uses today or tomorrow. If `npm` is missing (Debian/Ubuntu ship it separately), the setup tells you
+how to get it.
 
 ## Talking back to the deck
 

@@ -5,14 +5,14 @@ import { ApprovalsBadge } from './features/approvals/ApprovalsBadge';
 import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { LoginScreen } from './features/auth/LoginScreen';
-import { SettingsDialog } from './features/auth/SettingsDialog';
+import { SettingsDialog } from './features/settings/SettingsDialog';
 import { FilesPanel } from './features/files/FilesPanel';
 import { PreviewPanel } from './features/preview/PreviewPanel';
 import { NewSessionDialog } from './features/sessions/NewSessionDialog';
 import { SessionTabs } from './features/sessions/SessionTabs';
 import { useSessions } from './features/sessions/sessionsStore';
 import { TerminalPane } from './features/terminal/TerminalPane';
-import { keysVisible, loadMode, nextMode, saveMode } from './features/terminal/keysPreference';
+import { keysVisible, loadMode, saveMode, type KeysMode } from './features/terminal/keysPreference';
 import { api } from './shared/api/endpoints';
 import { onUnauthorized } from './shared/api/unauthorized';
 import { Gear } from './shared/ui/Gear';
@@ -57,10 +57,9 @@ export function App() {
     if (id !== activeId) return false;
     return wide ? pane === 'terminal' || rightView === pane : view === pane;
   };
-  const cycleKeys = (): void => {
-    const next = nextMode(keysMode);
-    saveMode(next);
-    setKeysMode(next);
+  const changeKeys = (mode: KeysMode): void => {
+    saveMode(mode);
+    setKeysMode(mode);
   };
 
   return (
@@ -71,14 +70,6 @@ export function App() {
           <strong>Deck</strong>
         </span>
         <SessionTabs onNew={() => setDialog('new')} />
-        <button
-          type="button"
-          className="tool"
-          onClick={cycleKeys}
-          title={`Terminal keys: ${keysMode}`}
-        >
-          ⌨<small>{keysMode}</small>
-        </button>
         <button
           type="button"
           className="tool"
@@ -127,7 +118,14 @@ export function App() {
       {dialog === 'new' && (
         <NewSessionDialog defaultCwd={config?.defaultCwd ?? null} onClose={() => setDialog(null)} />
       )}
-      {dialog === 'settings' && <SettingsDialog onClose={() => setDialog(null)} />}
+      {dialog === 'settings' && (
+        <SettingsDialog
+          keysMode={keysMode}
+          touchScreen={touch}
+          onKeysChange={changeKeys}
+          onClose={() => setDialog(null)}
+        />
+      )}
       <ApprovalsPanel />
     </div>
   );

@@ -1,7 +1,11 @@
 import type { Session } from '@deck/shared';
 import { useSessions } from './sessionsStore';
 
-const basename = (path: string): string => path.replace(/\/+$/, '').split('/').pop() || '/';
+const basename = (path: string): string =>
+  path
+    .replace(/[\\/]+$/, '')
+    .split(/[\\/]/)
+    .pop() || path;
 export const sessionLabel = (s: Session): string => `${s.provider} · ${basename(s.cwd)}`;
 
 export function SessionTabs({ onNew }: { onNew(): void }) {

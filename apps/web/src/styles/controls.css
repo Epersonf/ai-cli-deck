@@ -2,6 +2,7 @@ button,
 .btn,
 input,
 select {
+  min-height: var(--ctl);
   font: inherit;
   color: inherit;
 }
@@ -11,7 +12,13 @@ button,
   background: linear-gradient(180deg, var(--leather-2), var(--leather));
   border: 1px solid var(--brass);
   border-radius: 6px;
-  padding: 7px 12px;
+  padding: 0 14px;
+  min-height: var(--ctl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.2;
   cursor: pointer;
   text-decoration: none;
   color: var(--brass-hi);
@@ -43,6 +50,7 @@ button.primary {
   text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
 }
 button.link {
+  min-height: 0;
   background: none;
   border: 0;
   box-shadow: none;
@@ -69,6 +77,7 @@ select:focus {
     var(--glow);
 }
 input[type='checkbox'] {
+  min-height: 0;
   width: auto;
   accent-color: var(--brass);
 }

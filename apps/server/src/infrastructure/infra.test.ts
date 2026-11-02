@@ -23,7 +23,7 @@ describe('providers', () => {
   });
 
   it('claude-deepseek needs a key and sets the Anthropic-compatible env', () => {
-    expect(() => claudeDeepseek.buildCommand(ctx)).toThrow('clideck setup claude-deepseek');
+    expect(() => claudeDeepseek.buildCommand(ctx)).toThrow('DEEPSEEK_API_KEY');
     const env = claudeDeepseek.buildCommand({
       ...ctx,
       secrets: { ...ctx.secrets, deepseekApiKey: 'k' },

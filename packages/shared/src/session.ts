@@ -33,16 +33,16 @@ export const CreateSessionBodySchema = z.object({
 });
 export type CreateSessionBody = z.infer<typeof CreateSessionBodySchema>;
 
-export const ProviderStatusSchema = z.enum(['ready', 'missing', 'unauthenticated']);
+export const ProviderStatusSchema = z.enum(['ready', 'missing']);
 export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;
 
 export const ProviderInfoSchema = z.object({
   id: z.string(),
   label: z.string(),
-  /** missing = CLI not installed; unauthenticated = installed but no login/API key found. */
+  /** missing = the CLI is not installed. Sign-in is the CLI's own business. */
   status: ProviderStatusSchema,
   hint: z.string().nullable(),
-  /** True when `clideck setup <id>` can install and sign in. */
-  canSetup: z.boolean(),
+  /** True when `clideck setup <id>` can download the CLI for the user. */
+  canInstall: z.boolean(),
 });
 export type ProviderInfo = z.infer<typeof ProviderInfoSchema>;

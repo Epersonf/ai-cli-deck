@@ -1,10 +1,10 @@
 .approvals-badge {
   border-radius: 50%;
-  width: 42px;
-  height: 42px;
+  width: var(--ctl);
+  height: var(--ctl);
   padding: 0;
   background: radial-gradient(circle at 50% 30%, #3a2a1c, var(--ink));
-  border: 3px double var(--brass);
+  border: 2px double var(--brass);
   font-family: var(--mono);
   font-weight: 700;
   flex: none;

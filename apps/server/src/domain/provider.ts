@@ -1,7 +1,5 @@
 export interface ProviderSecrets {
   readonly deepseekApiKey: string | null;
-  readonly anthropicApiKey: string | null;
-  readonly openaiApiKey: string | null;
 }
 
 export interface ProviderContext {

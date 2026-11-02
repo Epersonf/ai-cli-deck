@@ -66,7 +66,6 @@ async function main(): Promise<void> {
   const statusResolver = new ProviderStatusResolver(
     SETUP_SPECS,
     config.providers,
-    secrets,
     realStatusDeps(),
   );
   const system = new SystemAdapter();

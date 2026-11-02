@@ -1,7 +1,9 @@
-import type { ProviderInfo } from '@deck/shared';
+import type { CreateSessionBody, ProviderInfo } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
+import { ProviderPicker } from './ProviderPicker';
 import { loadRecent, rememberFolder } from './recentFolders';
+import { SessionOptions } from './SessionOptions';
 import { useSessions } from './sessionsStore';
 import { splitArgs } from './splitArgs';
 
@@ -10,15 +12,19 @@ interface Props {
   onClose(): void;
 }
 
-const NEEDS_COMMAND = new Set(['custom']);
+const PREFERRED = ['claude', 'codex', 'shell'];
+
+const pickDefault = (list: readonly ProviderInfo[]): string =>
+  PREFERRED.map((id) => list.find((p) => p.id === id && p.status !== 'missing')).find(Boolean)
+    ?.id ??
+  list[0]?.id ??
+  '';
 
 export function NewSessionDialog({ defaultCwd, onClose }: Props) {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [provider, setProvider] = useState('');
   const [cwd, setCwd] = useState(() => loadRecent()[0] ?? defaultCwd ?? '');
-  const [command, setCommand] = useState('');
-  const [args, setArgs] = useState('');
-  const [useWorktree, setUseWorktree] = useState(false);
+  const [options, setOptions] = useState({ command: '', args: '', useWorktree: false });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -27,26 +33,17 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
       .providers()
       .then((list) => {
         setProviders(list);
-        setProvider(
-          (current) => current || (list.find((p) => p.id === 'claude') ?? list[0])?.id || '',
-        );
+        setProvider((current) => current || pickDefault(list));
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'failed'));
   }, []);
 
-  const submit = async (event: FormEvent): Promise<void> => {
-    event.preventDefault();
+  const launch = async (body: CreateSessionBody, remember: boolean): Promise<void> => {
     setBusy(true);
     setError(null);
     try {
-      const session = await api.createSession({
-        provider,
-        cwd: cwd.trim(),
-        useWorktree,
-        command: command.trim() === '' ? null : command.trim(),
-        args: splitArgs(args),
-      });
-      rememberFolder(session.cwd);
+      const session = await api.createSession(body);
+      if (remember) rememberFolder(session.cwd);
       useSessions.getState().upsert(session);
       useSessions.getState().select(session.id);
       onClose();
@@ -56,27 +53,51 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
     }
   };
 
+  const submit = (event: FormEvent): void => {
+    event.preventDefault();
+    void launch(
+      {
+        provider,
+        cwd: cwd.trim(),
+        useWorktree: options.useWorktree,
+        command: options.command.trim() === '' ? null : options.command.trim(),
+        args: splitArgs(options.args),
+      },
+      true,
+    );
+  };
+
+  const install = (): void =>
+    void launch(
+      {
+        provider: 'shell',
+        cwd: cwd.trim() || defaultCwd || '~',
+        useWorktree: false,
+        command: 'clideck',
+        args: ['setup', provider],
+      },
+      false,
+    );
+
+  const missing = providers.find((p) => p.id === provider)?.status === 'missing';
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={(e) => void submit(e)}>
+      <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>New session</h2>
-        <label>
-          CLI
-          <select value={provider} onChange={(e) => setProvider(e.target.value)}>
-            {providers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ProviderPicker
+          providers={providers}
+          value={provider}
+          onChange={setProvider}
+          onInstall={install}
+          disabled={busy}
+        />
         <label>
           Folder
           <input
             value={cwd}
             onChange={(e) => setCwd(e.target.value)}
             list="recent-folders"
-            placeholder="/root/workspace/project"
+            placeholder={defaultCwd ?? '~'}
             required
             autoCapitalize="off"
             autoCorrect="off"
@@ -88,40 +109,10 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
             ))}
           </datalist>
         </label>
-        {(NEEDS_COMMAND.has(provider) || provider === 'shell') && (
-          <label>
-            Command {provider === 'shell' ? '(optional, default bash)' : ''}
-            <input
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
-              placeholder="aider"
-              required={NEEDS_COMMAND.has(provider)}
-              autoCapitalize="off"
-              spellCheck={false}
-            />
-          </label>
-        )}
-        <label>
-          Extra arguments (optional)
-          <input
-            value={args}
-            onChange={(e) => setArgs(e.target.value)}
-            placeholder="--model fast"
-            autoCapitalize="off"
-            spellCheck={false}
-          />
-        </label>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={useWorktree}
-            onChange={(e) => setUseWorktree(e.target.checked)}
-          />
-          Allow the agent to request a git worktree
-        </label>
+        <SessionOptions provider={provider} values={options} onChange={setOptions} />
         {error !== null && <p className="notice error">{error}</p>}
         <div className="row">
-          <button type="submit" className="primary" disabled={busy || provider === ''}>
+          <button type="submit" className="primary" disabled={busy || provider === '' || missing}>
             Start
           </button>
           <button type="button" onClick={onClose}>

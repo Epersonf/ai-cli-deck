@@ -19,13 +19,6 @@ export const AppConfigSchema = z.object({
     .object({ min: z.number().int(), max: z.number().int() })
     .default({ ...DEFAULT_PORT_RANGE }),
   deepseekApiKey: z.string().min(1).nullable().default(null),
-  apiKeys: z
-    .object({
-      anthropic: z.string().min(1).optional(),
-      openai: z.string().min(1).optional(),
-      deepseek: z.string().min(1).optional(),
-    })
-    .default({}),
   allowedOrigins: z.array(z.string()).default([]),
   defaultCwd: z.string().nullable().default(null),
   extraKeys: z.array(z.string()).nullable().default(null),

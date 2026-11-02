@@ -56,3 +56,34 @@
 .login-card h1 {
   font-size: 34px;
 }
+
+.setting {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 25%);
+}
+.setting legend {
+  padding: 0 6px;
+  color: var(--brass-hi);
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+}
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--parchment);
+}
+.choice input {
+  margin-top: 4px;
+}
+.choice small {
+  display: block;
+  color: var(--muted);
+}

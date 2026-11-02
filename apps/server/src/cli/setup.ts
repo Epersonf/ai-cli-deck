@@ -1,83 +1,60 @@
-import type { ApiKeyName, SetupSpec } from '@deck/shared';
+import type { SetupSpec } from '@deck/shared';
 
 export interface SetupIo {
   say(text: string): void;
   ask(question: string): Promise<string>;
-  secret(prompt: string): Promise<string | null>;
   run(argv: readonly string[]): Promise<number>;
   has(binary: string): Promise<boolean>;
+  readonly platform: NodeJS.Platform;
 }
 
-export interface SetupDeps {
-  io: SetupIo;
-  saveKey(name: ApiKeyName, key: string): Promise<string>;
+/** Node can run without npm (Debian/Ubuntu ship them as separate packages). */
+export function npmHelp(platform: NodeJS.Platform): string {
+  const how =
+    platform === 'win32'
+      ? 'winget install OpenJS.NodeJS'
+      : platform === 'darwin'
+        ? 'brew install node'
+        : 'Debian/Ubuntu: apt install npm   |   Termux: pkg install nodejs   |   Fedora: dnf install npm';
+  return `npm was not found. Node is installed, but the npm package manager is separate on some systems.\nInstall it (${how}) and run this again.`;
 }
 
-type Choice = 'account' | 'apikey' | 'skip';
-
-export function loginChoices(spec: SetupSpec): Array<{ choice: Choice; label: string }> {
-  const list: Array<{ choice: Choice; label: string }> = [];
-  if (spec.accountLogin) list.push({ choice: 'account', label: 'Sign in with your account' });
-  if (spec.apiKey)
-    list.push({ choice: 'apikey', label: 'Paste an API key (kept only on this machine)' });
-  list.push({ choice: 'skip', label: 'Skip for now' });
-  return list;
-}
-
-/** "2" picks the second entry; a leading letter of the label also works. */
-export function pickChoice(
-  answer: string,
-  choices: ReturnType<typeof loginChoices>,
-): Choice | null {
-  const text = answer.trim().toLowerCase();
-  const byNumber = choices[Number(text) - 1];
-  if (byNumber) return byNumber.choice;
-  return choices.find((c) => text !== '' && c.label.toLowerCase().startsWith(text))?.choice ?? null;
-}
-
-async function ensureInstalled(spec: SetupSpec, { io }: SetupDeps): Promise<boolean> {
-  if (await io.has(spec.binary)) return (io.say(`${spec.binary} is installed.`), true);
-  if (!spec.install) return (io.say(`Install ${spec.binary} first, then run this again.`), false);
+/**
+ * Downloads a CLI for the user. It never signs in: the CLI shows its own login the first time
+ * it starts, inside the session terminal. Returns true when the CLI is available afterwards.
+ */
+export async function setupProvider(spec: SetupSpec, io: SetupIo): Promise<boolean> {
+  io.say(`\n== ${spec.label} ==`);
+  if (await io.has(spec.binary)) {
+    io.say(
+      `${spec.binary} is already installed. Start a session: it will ask you to sign in itself.`,
+    );
+    return true;
+  }
+  if (!spec.install) {
+    io.say(`Install ${spec.binary} first (see its documentation), then start a session.`);
+    return false;
+  }
+  const installer = spec.install[0] ?? 'npm';
+  if (!(await io.has(installer))) {
+    io.say(npmHelp(io.platform));
+    return false;
+  }
   const command = spec.install.join(' ');
   const answer = await io.ask(
-    `${spec.binary} is not installed. Install it now with "${command}"? [Y/n] `,
+    `${spec.binary} is not installed. Download it with "${command}"? [Y/n] `,
   );
-  if (/^n/i.test(answer.trim()))
-    return (io.say(`Skipped. Install it later with: ${command}`), false);
+  if (/^n/i.test(answer.trim())) {
+    io.say(`Skipped. You can install it later with: ${command}`);
+    return false;
+  }
   const code = await io.run(spec.install);
-  if (code === 0 && (await io.has(spec.binary))) return true;
+  if (code === 0 && (await io.has(spec.binary))) {
+    io.say(`\nInstalled. Start a new session: ${spec.binary} will walk you through signing in.`);
+    return true;
+  }
   io.say(
-    `The install did not finish (exit ${code}). Check permissions (sudo?) and your Node version.`,
+    `\nThe install did not finish (exit ${code}). Check permissions (sudo?) and your Node version.`,
   );
   return false;
-}
-
-async function saveFromPrompt(spec: SetupSpec, { io, saveKey }: SetupDeps): Promise<void> {
-  if (!spec.apiKey) return;
-  const key = await io.secret(`Paste your API key for ${spec.apiKey.envVar} (input is hidden): `);
-  if (key === null) return io.say('Cancelled, nothing was saved.');
-  if (key.trim() === '') return io.say('Nothing was entered, nothing was saved.');
-  const file = await saveKey(spec.apiKey.name, key.trim());
-  io.say(`Saved (${key.trim().length} characters) to ${file}. New sessions use it automatically.`);
-}
-
-/** Interactive install + sign-in for one built-in CLI. Returns false if it could not proceed. */
-export async function setupProvider(spec: SetupSpec, deps: SetupDeps): Promise<boolean> {
-  const { io } = deps;
-  io.say(`\n== ${spec.label} ==`);
-  if (!(await ensureInstalled(spec, deps))) return false;
-  const choices = loginChoices(spec);
-  io.say('\nHow do you want to sign in?');
-  choices.forEach((c, i) => io.say(`  ${i + 1}) ${c.label}`));
-  const choice = pickChoice(await io.ask('Choose: '), choices);
-  if (choice === 'account' && spec.accountLogin) {
-    if (spec.note) io.say(spec.note);
-    await io.run(spec.accountLogin);
-  } else if (choice === 'apikey') {
-    await saveFromPrompt(spec, deps);
-  } else {
-    io.say('Nothing changed.');
-  }
-  io.say('\nDone. Close this tab and start a new session.');
-  return true;
 }

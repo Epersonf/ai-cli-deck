@@ -23,16 +23,10 @@
   text-shadow: var(--glow);
 }
 .tool {
-  padding: 4px 9px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
-}
-.tool small {
-  font-size: 9px;
-  color: var(--muted);
-  font-variant: small-caps;
+  width: var(--ctl);
+  padding: 0;
+  font-size: 18px;
+  flex: none;
 }
 
 .tabs {
@@ -52,6 +46,7 @@
   overflow: hidden;
 }
 .tab > button {
+  min-height: calc(var(--ctl) - 2px);
   border: 0;
   border-radius: 0;
   background: none;
@@ -70,10 +65,14 @@
   color: var(--brass-hi);
 }
 .tab .close {
-  padding: 4px 8px;
+  padding: 0;
+  width: 34px;
 }
 .new-tab {
   flex: none;
+  width: var(--ctl);
+  padding: 0;
+  font-size: 18px;
 }
 .warn {
   color: var(--amber);
