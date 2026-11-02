@@ -1,4 +1,5 @@
 import { useT } from '../../shared/i18n/store';
+import { ModalTitle } from '../../shared/ui/ModalTitle';
 import type { KeysMode } from '../terminal/keysPreference';
 import { KeysSection } from './KeysSection';
 import { LanguageSection } from './LanguageSection';
@@ -16,7 +17,7 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()}>
-        <h2>{t('settings.title')}</h2>
+        <ModalTitle title={t('settings.title')} onClose={onClose} />
         <LanguageSection />
         <KeysSection mode={keysMode} touchScreen={touchScreen} onChange={onKeysChange} />
         <div className="setting">
