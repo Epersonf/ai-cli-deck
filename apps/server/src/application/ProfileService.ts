@@ -6,6 +6,8 @@ export interface ProfileServiceDeps {
   store: ProfileStorePort;
   /** Makes a (new or renamed) profile available to the session launcher right away. */
   register(profile: Profile): void;
+  /** Takes a deleted profile out of the launcher and the install-status checks. */
+  unregister(id: string): void;
   /** Ids already taken by built-in or configured providers. */
   reservedIds(): readonly string[];
 }
@@ -38,6 +40,13 @@ export class ProfileService {
     await this.deps.store.save(this.profiles);
     this.deps.register(profile);
     return profile;
+  }
+
+  async remove(id: string): Promise<void> {
+    if (!this.has(id)) throw notFound(`Profile ${id}`);
+    this.profiles = this.profiles.filter((p) => p.id !== id);
+    await this.deps.store.save(this.profiles);
+    this.deps.unregister(id);
   }
 
   async rename(id: string, label: string): Promise<Profile> {

@@ -18,5 +18,6 @@ export function createProviderRegistry(
     get: (id) => byId.get(id),
     list: () => [...byId.values()],
     add: (provider) => void byId.set(provider.id, provider),
+    remove: (id) => void byId.delete(id),
   };
 }

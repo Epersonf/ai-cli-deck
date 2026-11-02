@@ -46,6 +46,8 @@ export const ProviderInfoSchema = z.object({
   hint: z.string().nullable(),
   /** True when `clideck setup <id>` can download the CLI for the user. */
   canInstall: z.boolean(),
+  /** Built-in CLI that `clideck setup` should install for this entry (profiles share their base's). */
+  setupId: z.string().nullable().default(null),
   /** True for user-made profiles, which can be renamed. Built-in entries cannot. */
   profile: z.boolean().default(false),
 });

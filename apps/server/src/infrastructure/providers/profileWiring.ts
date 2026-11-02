@@ -19,6 +19,10 @@ export async function createProfileService(deps: Deps): Promise<ProfileService> 
   const service = new ProfileService({
     store: new JsonProfileStore(join(deps.configDir, 'profiles.json')),
     reservedIds: () => reserved,
+    unregister: (id) => {
+      deps.providers.remove(id);
+      deps.status.unregister(id);
+    },
     register: (profile) => {
       deps.providers.add(createProfileProvider(profile, profilesDir));
       if (profile.base === 'custom')

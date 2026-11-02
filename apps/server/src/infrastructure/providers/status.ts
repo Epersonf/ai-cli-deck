@@ -5,7 +5,7 @@ import type { ProviderInfo, SetupSpec } from '@deck/shared';
 import { pathKey } from '../config/platform.js';
 
 type Env = Readonly<Record<string, string | undefined>>;
-export type ProviderStatusInfo = Pick<ProviderInfo, 'status' | 'hint' | 'canInstall'>;
+export type ProviderStatusInfo = Pick<ProviderInfo, 'status' | 'hint' | 'canInstall' | 'setupId'>;
 
 export interface StatusDeps {
   env: Env;
@@ -38,7 +38,7 @@ export async function findExecutable(name: string, deps: StatusDeps): Promise<bo
   return false;
 }
 
-const READY: ProviderStatusInfo = { status: 'ready', hint: null, canInstall: false };
+const READY: ProviderStatusInfo = { status: 'ready', hint: null, canInstall: false, setupId: null };
 
 /** Tells the UI whether a provider's CLI is installed. Sign-in is the CLI's own flow. */
 export class ProviderStatusResolver {
@@ -55,6 +55,12 @@ export class ProviderStatusResolver {
     this.aliases.set(id, baseId);
   }
 
+  unregister(id: string): void {
+    this.aliases.delete(id);
+    const at = this.configured.findIndex((d) => d.id === id);
+    if (at >= 0) this.configured.splice(at, 1);
+  }
+
   register(entry: { id: string; command: string }): void {
     const at = this.configured.findIndex((d) => d.id === entry.id);
     if (at >= 0) this.configured.splice(at, 1);
@@ -66,7 +72,12 @@ export class ProviderStatusResolver {
     if (def) {
       return (await findExecutable(def.command, this.deps))
         ? READY
-        : { status: 'missing', hint: `"${def.command}" was not found in PATH`, canInstall: false };
+        : {
+            status: 'missing',
+            hint: `"${def.command}" was not found in PATH`,
+            canInstall: false,
+            setupId: null,
+          };
     }
     const spec = this.specs.find((s) => s.id === (this.aliases.get(id) ?? id));
     if (!spec || (await findExecutable(spec.binary, this.deps))) return READY;
@@ -74,6 +85,7 @@ export class ProviderStatusResolver {
       status: 'missing',
       hint: `${spec.binary} is not installed`,
       canInstall: spec.install !== null,
+      setupId: spec.id,
     };
   }
 }

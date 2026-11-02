@@ -32,4 +32,5 @@ export interface ProviderRegistry {
   list(): Provider[];
   /** Adds or replaces a provider at runtime (used when a profile is created in the UI). */
   add(provider: Provider): void;
+  remove(id: string): void;
 }

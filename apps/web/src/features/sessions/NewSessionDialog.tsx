@@ -10,6 +10,8 @@ import { splitArgs } from './splitArgs';
 
 interface Props {
   defaultCwd: string | null;
+  /** When set, the session is created inside this profile and the CLI picker is hidden. */
+  profileId: string | null;
   onClose(): void;
 }
 
@@ -21,10 +23,10 @@ const pickDefault = (list: readonly ProviderInfo[]): string =>
   list[0]?.id ??
   '';
 
-export function NewSessionDialog({ defaultCwd, onClose }: Props) {
+export function NewSessionDialog({ defaultCwd, profileId, onClose }: Props) {
   const t = useT();
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
-  const [provider, setProvider] = useState('');
+  const [provider, setProvider] = useState(profileId ?? '');
   const [cwd, setCwd] = useState(() => loadRecent()[0] ?? defaultCwd ?? '');
   const [options, setOptions] = useState({ command: '', args: '', useWorktree: false });
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
         cwd: cwd.trim() || defaultCwd || '~',
         useWorktree: false,
         command: 'clideck',
-        args: ['setup', provider],
+        args: ['setup', providers.find((p) => p.id === provider)?.setupId ?? provider],
       },
       false,
     );
@@ -88,7 +90,7 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>{t('newSession.title')}</h2>
         <ProviderPicker
-          providers={providers}
+          providers={profileId === null ? providers : providers.filter((p) => p.id === profileId)}
           value={provider}
           onChange={setProvider}
           onInstall={install}

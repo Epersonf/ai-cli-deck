@@ -28,6 +28,8 @@ export function App() {
   const { layout, patch } = useLayout();
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [newFor, setNewFor] = useState<string | null>(null);
+  const openNew = (profileId: string | null): void => (setNewFor(profileId), setDialog('new'));
   const [locked, setLocked] = useState(false);
   const [keysMode, setKeysMode] = useState(loadMode);
   const wide = useMediaQuery('(min-width: 1000px)');
@@ -80,7 +82,7 @@ export function App() {
         wide={wide}
         extraKeys={config?.extraKeys ?? null}
         showKeys={keysVisible(keysMode, touch)}
-        onNew={() => setDialog('new')}
+        onNew={() => openNew(null)}
       />
       {!wide && sessions.length > 0 && (
         <PaneTabs
@@ -91,16 +93,22 @@ export function App() {
         />
       )}
       {dialog === 'new' && (
-        <NewSessionDialog defaultCwd={config?.defaultCwd ?? null} onClose={() => setDialog(null)} />
+        <NewSessionDialog
+          defaultCwd={config?.defaultCwd ?? null}
+          profileId={newFor}
+          onClose={() => setDialog(null)}
+        />
       )}
       {dialog === 'switcher' && (
         <SessionSwitcher
-          onNew={() => setDialog('new')}
+          onNew={openNew}
           onProfile={() => setDialog('profile')}
           onClose={() => setDialog(null)}
         />
       )}
-      {dialog === 'profile' && <ProfileDialog onClose={() => setDialog(null)} />}
+      {dialog === 'profile' && (
+        <ProfileDialog onDone={() => setDialog('switcher')} onClose={() => setDialog(null)} />
+      )}
       {dialog === 'settings' && (
         <SettingsDialog
           keysMode={keysMode}

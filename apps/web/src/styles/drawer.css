@@ -75,3 +75,35 @@ button.danger {
   border-radius: 8px;
   background: var(--ink);
 }
+
+.profile-group {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--brass-lo);
+}
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.profile-head h3 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  color: var(--brass-hi);
+}
+.profile-head .close {
+  width: var(--ctl);
+  padding: 0;
+  flex: none;
+}
+.profile-group .hint {
+  margin: 0;
+}

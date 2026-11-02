@@ -36,11 +36,20 @@ const resolver = (d: StatusDeps) =>
   new ProviderStatusResolver(SETUP_SPECS, [{ id: 'aider', command: 'aider' }], d);
 
 describe('ProviderStatusResolver', () => {
+  it('treats a profile like its base CLI, so it installs the base', async () => {
+    const r = resolver(deps([]));
+    r.alias('work', 'claude');
+    expect(await r.resolve('work')).toMatchObject({ status: 'missing', setupId: 'claude' });
+    r.unregister('work');
+    expect((await r.resolve('work')).status).toBe('ready');
+  });
+
   it('only reports whether the CLI is installed, never whether it is signed in', async () => {
     expect(await resolver(deps([])).resolve('claude')).toEqual({
       status: 'missing',
       hint: 'claude is not installed',
       canInstall: true,
+      setupId: 'claude',
     });
     expect((await resolver(deps(['/usr/bin/claude'])).resolve('claude')).status).toBe('ready');
     expect((await resolver(deps(['/usr/bin/codex'])).resolve('codex')).status).toBe('ready');

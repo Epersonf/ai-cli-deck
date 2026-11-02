@@ -6,6 +6,7 @@ import {
 } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { removeProfile } from '../../../application/removeProfile.js';
 import type { Container } from '../../container.js';
 import { parseWith } from '../errors.js';
 
@@ -48,6 +49,11 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
   app.post('/api/profiles', async (request, reply) => {
     const body = parseWith(CreateProfileBodySchema, request.body);
     return reply.code(201).send(await c.profiles.create(body));
+  });
+
+  app.delete('/api/profiles/:id', async (request) => {
+    const { id } = parseWith(IdParams, request.params);
+    return removeProfile(c, id);
   });
 
   app.patch('/api/profiles/:id', async (request) => {

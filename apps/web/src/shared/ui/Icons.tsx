@@ -34,3 +34,28 @@ export function PencilIcon({ size = 18 }: Props) {
     </svg>
   );
 }
+
+/** A plus, used to add a terminal. */
+export function PlusIcon({ size = 18 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden {...base}>
+      <path d="M50 18v64M18 50h64" />
+    </svg>
+  );
+}
+
+/** A bin, used to delete a profile. */
+export function TrashIcon({ size = 18 }: Props) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      aria-hidden
+      {...base}
+      strokeLinejoin="round"
+    >
+      <path d="M20 28h60M40 28V16h20v12M28 28l5 56h34l5-56M44 44v28M56 44v28" />
+    </svg>
+  );
+}

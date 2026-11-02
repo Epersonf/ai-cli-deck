@@ -1,8 +1,8 @@
 import type { Session } from '@deck/shared';
 
-const session = (id: string, cwd: string): Session => ({
+export const makeSession = (id: string, cwd: string, provider = 'shell'): Session => ({
   id,
-  provider: 'shell',
+  provider,
   cwd,
   status: 'running',
   createdAt: `2026-01-0${id.slice(1)}T00:00:00Z`,
@@ -14,7 +14,7 @@ const session = (id: string, cwd: string): Session => ({
   name: null,
 });
 
-export const SESSIONS = [session('s1', '/work/alpha'), session('s2', '/work/beta')];
+export const SESSIONS = [makeSession('s1', '/work/alpha'), makeSession('s2', '/work/beta')];
 
 const ROUTES: Record<string, unknown> = {
   '/api/config': { defaultCwd: '/root', extraKeys: null, persistent: true },
@@ -22,6 +22,7 @@ const ROUTES: Record<string, unknown> = {
   '/api/approvals?status=pending': [],
   '/api/providers': [
     { id: 'shell', label: 'Shell', status: 'ready', hint: null, canInstall: false },
+    { id: 'work', label: 'Work', status: 'ready', hint: null, canInstall: false, profile: true },
   ],
   '/api/auth': { required: false, canDisable: true, isDefault: false },
 };
