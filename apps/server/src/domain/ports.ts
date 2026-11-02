@@ -1,0 +1,54 @@
+import type { FileContent, FileEntry, GitStatus, Session } from '@deck/shared';
+
+export interface LaunchSpec {
+  command: string;
+  args: string[];
+  env: Record<string, string>;
+  cwd: string;
+}
+
+export interface PtyHandle {
+  write(data: string): void;
+  resize(cols: number, rows: number): void;
+  onData(listener: (data: Uint8Array) => void): void;
+  onExit(listener: (code: number | null) => void): void;
+  kill(): void;
+}
+
+export interface PtyPort {
+  spawn(spec: LaunchSpec, size: { cols: number; rows: number }): PtyHandle;
+}
+
+export interface MultiplexerPort {
+  readonly available: boolean;
+  wrap(name: string, spec: LaunchSpec): LaunchSpec;
+  attach(name: string, spec: LaunchSpec): LaunchSpec;
+  list(): Promise<string[]>;
+  capture(name: string): Promise<Uint8Array | null>;
+  kill(name: string): Promise<void>;
+}
+
+export interface SessionStorePort {
+  load(): Promise<Session[]>;
+  save(sessions: Session[]): Promise<void>;
+}
+
+export interface WorktreePort {
+  add(input: { repoDir: string; branch: string; targetPath: string }): Promise<void>;
+}
+
+export interface FilesPort {
+  list(root: string, relative: string): Promise<FileEntry[]>;
+  read(root: string, relative: string, maxBytes: number): Promise<FileContent>;
+}
+
+export interface GitPort {
+  status(cwd: string): Promise<GitStatus>;
+}
+
+export interface SystemPort {
+  isDirectory(path: string): Promise<boolean>;
+  isPortFree(port: number): Promise<boolean>;
+  newId(): string;
+  now(): Date;
+}
