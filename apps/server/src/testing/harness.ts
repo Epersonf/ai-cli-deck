@@ -28,7 +28,8 @@ export function createHarness(options: HarnessOptions = {}) {
     deckUrl: 'http://127.0.0.1:7842',
     binDir: '/deck/bin',
     baseEnv: { PATH: '/bin' },
-    secrets: { deepseekApiKey: 'sk-test' },
+    secrets: () => ({ deepseekApiKey: 'sk-test', anthropicApiKey: null, openaiApiKey: null }),
+    defaultShell: 'bash',
   });
   const sessions = new SessionManager({
     launcher,

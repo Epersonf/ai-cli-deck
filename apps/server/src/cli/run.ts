@@ -3,11 +3,13 @@ import { call, readEnv } from './client.js';
 import { HELP } from './help.js';
 import { installSlashCommands } from './install.js';
 import { parseArgs, type Command } from './parse.js';
+import { runSetup } from './setupCommand.js';
 
 const show = (value: unknown): string => JSON.stringify(value, null, 2);
 
 async function execute(command: Command, env: NodeJS.ProcessEnv): Promise<string> {
   if (command.name === 'help') return HELP;
+  if (command.name === 'setup') return runSetup(command.provider);
   if (command.name === 'install')
     return (await installSlashCommands(homedir(), command.force)).join('\n');
   const deck = readEnv(env);

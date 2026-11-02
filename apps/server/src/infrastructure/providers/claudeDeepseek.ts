@@ -6,7 +6,8 @@ export const claudeDeepseek = createClaudeLike(
   'Claude Code (DeepSeek)',
   (ctx) => {
     const key = ctx.secrets.deepseekApiKey;
-    if (key === null) throw invalid('Set "deepseekApiKey" in ~/.config/ai-cli-deck/config.json');
+    if (key === null)
+      throw invalid('No DeepSeek API key saved yet. Run: clideck setup claude-deepseek');
     return {
       ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic',
       ANTHROPIC_AUTH_TOKEN: key,

@@ -86,6 +86,9 @@ export class FakeStore implements SessionStorePort {
 export class FakeSystem implements SystemPort {
   private counter = 0;
   constructor(private readonly dirs: readonly string[] = ['/work', '/other']) {}
+  homeDir(): string {
+    return '/home/test';
+  }
   isDirectory(path: string): Promise<boolean> {
     return Promise.resolve(this.dirs.includes(path));
   }

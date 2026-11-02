@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MCP_PATH } from '@deck/shared';
+import { homedir } from 'node:os';
+import { MCP_PATH, SETUP_SPECS } from '@deck/shared';
 import { ApprovalService } from './application/ApprovalService.js';
 import { PortAllocator } from './application/PortAllocator.js';
 import { PreviewService } from './application/PreviewService.js';
@@ -9,17 +10,21 @@ import { SessionLauncher } from './application/SessionLauncher.js';
 import { SessionManager } from './application/SessionManager.js';
 import { WorkspaceService } from './application/WorkspaceService.js';
 import { EventBus } from './domain/events.js';
+import type { ProviderSecrets } from './domain/provider.js';
 import { LoginThrottle } from './application/LoginThrottle.js';
 import { AuthService } from './application/AuthService.js';
 import { DEFAULT_PASSWORD } from './domain/auth.js';
 import { ScryptHasher } from './infrastructure/auth/ScryptHasher.js';
 import { JsonAuthStore } from './infrastructure/auth/JsonAuthStore.js';
 import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.js';
-import { loadConfig } from './infrastructure/config/loadConfig.js';
+import { loadConfig, loadConfigSync } from './infrastructure/config/loadConfig.js';
+import { defaultShell } from './infrastructure/config/platform.js';
+import { secretsFromConfig } from './infrastructure/config/secrets.js';
 import { FileReader } from './infrastructure/fs/FileReader.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
+import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
 import { createConfiguredProvider } from './infrastructure/providers/configured.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
@@ -50,6 +55,20 @@ async function main(): Promise<void> {
     undefined,
     config.providers.map(createConfiguredProvider),
   );
+  const initialSecrets = secretsFromConfig(config, process.env);
+  const secrets = (): ProviderSecrets => {
+    try {
+      return secretsFromConfig(loadConfigSync(process.env), process.env);
+    } catch {
+      return initialSecrets;
+    }
+  };
+  const statusResolver = new ProviderStatusResolver(
+    SETUP_SPECS,
+    config.providers,
+    secrets,
+    realStatusDeps(),
+  );
   const system = new SystemAdapter();
   const mux = await detectMultiplexer(runCommand);
   const git = new GitCli(runCommand);
@@ -62,7 +81,8 @@ async function main(): Promise<void> {
     deckUrl: `http://127.0.0.1:${config.port}`,
     binDir: join(here, '..', 'bin'),
     baseEnv: stringEnv(),
-    secrets: { deepseekApiKey: config.deepseekApiKey },
+    secrets,
+    defaultShell: defaultShell(process.env, process.platform),
   });
   const sessions = new SessionManager({
     launcher,
@@ -82,8 +102,9 @@ async function main(): Promise<void> {
     preview: new PreviewService(sessions, bus),
     providers: providers,
     bus,
+    providerStatus: (id) => statusResolver.resolve(id),
     publicConfig: {
-      defaultCwd: config.defaultCwd,
+      defaultCwd: config.defaultCwd ?? homedir(),
       extraKeys: config.extraKeys,
       persistent: mux.available,
     },

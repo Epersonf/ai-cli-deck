@@ -52,6 +52,7 @@ export interface GitPort {
 }
 
 export interface SystemPort {
+  homeDir(): string;
   isDirectory(path: string): Promise<boolean>;
   isPortFree(port: number): Promise<boolean>;
   newId(): string;

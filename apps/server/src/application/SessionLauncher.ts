@@ -1,5 +1,6 @@
 import { TMUX_PREFIX, type Session } from '@deck/shared';
 import { invalid } from '../domain/errors.js';
+import { prependToPath } from '../infrastructure/config/platform.js';
 import type { LaunchSpec, MultiplexerPort, PtyHandle, PtyPort } from '../domain/ports.js';
 import type { ProviderRegistry, ProviderSecrets } from '../domain/provider.js';
 
@@ -13,7 +14,9 @@ export interface LauncherDeps {
   /** Folder holding the `clideck` command; prepended to every session's PATH. */
   binDir: string | null;
   baseEnv: Record<string, string>;
-  secrets: ProviderSecrets;
+  /** Read on every launch, so keys saved by `clideck setup` apply without a restart. */
+  secrets: () => ProviderSecrets;
+  defaultShell: string;
 }
 
 export const tmuxNameFor = (sessionId: string): string => `${TMUX_PREFIX}${sessionId}`;
@@ -34,7 +37,8 @@ export class SessionLauncher {
       mcpUrl: `${this.deps.mcpBaseUrl}/${session.id}`,
       command,
       args,
-      secrets: this.deps.secrets,
+      secrets: this.deps.secrets(),
+      defaultShell: this.deps.defaultShell,
     };
     const parts = provider.buildCommand(ctx);
     const mcp = provider.buildMcpConfig(ctx);
@@ -49,7 +53,7 @@ export class SessionLauncher {
         ...parts.env,
         ...mcp.env,
         PORT: String(session.port),
-        PATH: this.sessionPath(),
+        ...this.pathEntry(),
         DECK_URL: this.deps.deckUrl,
         DECK_SESSION_ID: session.id,
         DECK_MCP_URL: ctx.mcpUrl,
@@ -58,10 +62,11 @@ export class SessionLauncher {
     return this.deps.mux.wrap(tmuxNameFor(session.id), spec);
   }
 
-  private sessionPath(): string {
-    const inherited = this.deps.baseEnv['PATH'] ?? '';
-    const { binDir } = this.deps;
-    return binDir === null ? inherited : `${binDir}:${inherited}`;
+  private pathEntry(): Record<string, string> {
+    const { binDir, baseEnv } = this.deps;
+    if (binDir === null) return {};
+    const { key, value } = prependToPath(baseEnv, binDir);
+    return { [key]: value };
   }
 
   reattach(session: Session): PtyHandle {

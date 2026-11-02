@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { providerCtx } from '../testing/providerContext.js';
 import { assertSecureBind } from './config/bind.js';
 import { mergeConfig } from './config/loadConfig.js';
 import { parseGitStatus } from './git/GitCli.js';
@@ -9,15 +10,7 @@ import { custom } from './providers/custom.js';
 import { createProviderRegistry } from './providers/registry.js';
 import { buildTmuxArgs } from './tmux/TmuxMultiplexer.js';
 
-const ctx = {
-  sessionId: 's1',
-  cwd: '/work',
-  port: 4100,
-  mcpUrl: 'http://127.0.0.1:7842/mcp/s1',
-  command: null,
-  args: [] as string[],
-  secrets: { deepseekApiKey: null as string | null },
-};
+const ctx = providerCtx;
 
 describe('providers', () => {
   it('claude injects the MCP endpoint via --mcp-config', () => {
@@ -30,8 +23,11 @@ describe('providers', () => {
   });
 
   it('claude-deepseek needs a key and sets the Anthropic-compatible env', () => {
-    expect(() => claudeDeepseek.buildCommand(ctx)).toThrow('deepseekApiKey');
-    const env = claudeDeepseek.buildCommand({ ...ctx, secrets: { deepseekApiKey: 'k' } }).env;
+    expect(() => claudeDeepseek.buildCommand(ctx)).toThrow('clideck setup claude-deepseek');
+    const env = claudeDeepseek.buildCommand({
+      ...ctx,
+      secrets: { ...ctx.secrets, deepseekApiKey: 'k' },
+    }).env;
     expect(env['ANTHROPIC_BASE_URL']).toBe('https://api.deepseek.com/anthropic');
     expect(env['ANTHROPIC_AUTH_TOKEN']).toBe('k');
   });

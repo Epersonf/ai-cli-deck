@@ -17,7 +17,7 @@ export interface ApprovalDeps {
 
 /** Siblings of the repo folder, so the worktree never nests inside the repo it came from. */
 export function worktreePathFor(cwd: string, sessionId: string): string {
-  const trimmed = cwd.replace(/\/+$/, '');
+  const trimmed = cwd.replace(/[\\/]+$/, '');
   return `${trimmed}-deck-${sessionId}`;
 }
 

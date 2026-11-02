@@ -9,7 +9,8 @@ export type Command =
   | { name: 'newtab'; url: string }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
-  | { name: 'install'; force: boolean };
+  | { name: 'install'; force: boolean }
+  | { name: 'setup'; provider: string | null };
 
 export type Parsed = { ok: true; command: Command } | { ok: false; error: string };
 
@@ -41,6 +42,8 @@ export function parseArgs(argv: readonly string[]): Parsed {
       return text === ''
         ? fail('usage: clideck status <requestId>')
         : ok({ name, requestId: text });
+    case 'setup':
+      return ok({ name, provider: rest[0] ?? null });
     case 'install':
       return ok({ name, force: rest.includes('--force') });
     default:

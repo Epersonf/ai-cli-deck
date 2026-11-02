@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { providerCtx } from '../../testing/providerContext.js';
 import { createConfiguredProvider } from './configured.js';
 import { createProviderRegistry } from './registry.js';
 
-const ctx = {
-  sessionId: 's1',
-  cwd: '/work',
-  port: 4100,
-  mcpUrl: 'http://127.0.0.1:7842/mcp/s1',
-  command: null,
-  args: [] as string[],
-  secrets: { deepseekApiKey: null as string | null },
-};
+const ctx = providerCtx;
 
 describe('configured providers', () => {
   it('builds any CLI from a config entry and substitutes the MCP url', () => {

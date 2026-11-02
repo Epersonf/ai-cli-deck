@@ -4,6 +4,10 @@ import type { Provider } from '../../domain/provider.js';
 export const shell: Provider = {
   id: 'shell',
   label: 'Shell',
-  buildCommand: (ctx) => ({ command: ctx.command ?? 'bash', args: [...ctx.args], env: {} }),
+  buildCommand: (ctx) => ({
+    command: ctx.command ?? ctx.defaultShell,
+    args: [...ctx.args],
+    env: {},
+  }),
   buildMcpConfig: () => ({ args: [], env: {} }),
 };

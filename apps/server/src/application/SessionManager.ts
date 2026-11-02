@@ -3,6 +3,8 @@ import { conflict, invalid, notFound } from '../domain/errors.js';
 import type { EventBus } from '../domain/events.js';
 import type { MultiplexerPort, PtyHandle, SessionStorePort, SystemPort } from '../domain/ports.js';
 import type { PortAllocator } from './PortAllocator.js';
+import { resolveCwd } from './cwd.js';
+import { wirePty } from './ptyWiring.js';
 import { RingBuffer } from './RingBuffer.js';
 import type { SessionLauncher } from './SessionLauncher.js';
 import { tmuxNameFor } from './SessionLauncher.js';
@@ -39,11 +41,12 @@ export class SessionManager {
 
   async create(body: CreateSessionBody): Promise<Session> {
     const { system, ports, mux } = this.deps;
-    if (!(await system.isDirectory(body.cwd))) throw invalid(`Not a directory: ${body.cwd}`);
+    const cwd = resolveCwd(body.cwd, system.homeDir());
+    if (!(await system.isDirectory(cwd))) throw invalid(`Not a directory: ${cwd}`);
     const session: Session = {
       id: system.newId(),
       provider: body.provider,
-      cwd: body.cwd,
+      cwd,
       status: 'starting',
       createdAt: system.now().toISOString(),
       previewUrl: null,
@@ -114,14 +117,9 @@ export class SessionManager {
     const pty = spawn();
     const runtime: Runtime = { ...this.runtimeOf(session), pty };
     this.runtimes.set(session.id, runtime);
-    pty.onData((data) => {
-      runtime.ring.push(data);
-      this.deps.bus.publish({ kind: 'output', sessionId: session.id, data });
-    });
-    pty.onExit((code) => {
+    wirePty(pty, runtime.ring, session.id, this.deps.bus, () => {
       runtime.pty = null;
       this.update(session.id, { status: 'exited' });
-      this.deps.bus.publish({ kind: 'exit', sessionId: session.id, code });
     });
     this.update(session.id, { status: 'running' });
   }

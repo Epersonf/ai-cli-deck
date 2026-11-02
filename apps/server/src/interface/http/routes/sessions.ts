@@ -10,7 +10,13 @@ const PreviewBody = z.object({ url: z.string().min(1) });
 export function sessionRoutes(app: FastifyInstance, c: Container): void {
   app.get('/api/config', () => c.publicConfig);
 
-  app.get('/api/providers', () => c.providers.list().map(({ id, label }) => ({ id, label })));
+  app.get('/api/providers', () =>
+    Promise.all(
+      c.providers
+        .list()
+        .map(async ({ id, label }) => ({ id, label, ...(await c.providerStatus(id)) })),
+    ),
+  );
 
   app.get('/api/sessions', () => c.sessions.list());
 

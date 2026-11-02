@@ -1,4 +1,5 @@
 import type { PublicConfig } from '@deck/shared';
+import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
 import type { AuthService } from '../application/AuthService.js';
 import type { LoginThrottle } from '../application/LoginThrottle.js';
@@ -23,6 +24,7 @@ export interface Container {
   providers: ProviderRegistry;
   bus: EventBus;
   publicConfig: PublicConfig;
+  providerStatus(id: string): Promise<ProviderStatusInfo>;
   security: SecurityOptions;
   auth: AuthService;
   throttle: LoginThrottle;
