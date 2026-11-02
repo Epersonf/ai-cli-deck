@@ -30,13 +30,14 @@ describe('filterEntries', () => {
     { name: 'node_modules', path: 'node_modules', kind: 'dir' as const },
     { name: 'src', path: 'src', kind: 'dir' as const },
     { name: 'a.ts', path: 'a.ts', kind: 'file' as const },
+    { name: '.env', path: '.env', kind: 'file' as const },
   ];
 
-  it('hides .git and node_modules and sorts dirs first', () => {
+  it('hides dotfiles, .git and node_modules and sorts dirs first', () => {
     expect(filterEntries(entries, false).map((e) => e.name)).toEqual(['src', 'a.ts', 'b.ts']);
   });
 
   it('shows everything when asked', () => {
-    expect(filterEntries(entries, true)).toHaveLength(5);
+    expect(filterEntries(entries, true)).toHaveLength(6);
   });
 });

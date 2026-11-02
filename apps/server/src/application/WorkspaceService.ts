@@ -3,13 +3,15 @@ import { notFound } from '../domain/errors.js';
 import type { FilesPort, GitPort, RawFileEntry } from '../domain/ports.js';
 
 const IGNORED = new Set(['.git', 'node_modules']);
+/** Hidden = dotfiles/dotfolders, plus node_modules which is never useful to browse. */
+const isHidden = (name: string): boolean => name.startsWith('.') || name === 'node_modules';
 export const MAX_FILE_BYTES = 512 * 1024;
 
 export function filterEntries(
   entries: readonly RawFileEntry[],
   showIgnored: boolean,
 ): RawFileEntry[] {
-  const visible = showIgnored ? [...entries] : entries.filter((e) => !IGNORED.has(e.name));
+  const visible = showIgnored ? [...entries] : entries.filter((e) => !isHidden(e.name));
   return visible.sort((a, b) =>
     a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'dir' ? -1 : 1,
   );

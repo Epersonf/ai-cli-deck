@@ -17,6 +17,13 @@ interface Props {
 
 const PREFERRED = ['claude', 'codex', 'shell'];
 
+/** The picker lists the user's profiles; before any exists it falls back to the built-in CLIs. */
+const choices = (list: readonly ProviderInfo[], profileId: string | null): ProviderInfo[] => {
+  if (profileId !== null) return list.filter((p) => p.id === profileId);
+  const profiles = list.filter((p) => p.profile);
+  return profiles.length > 0 ? profiles : [...list];
+};
+
 const pickDefault = (list: readonly ProviderInfo[]): string =>
   PREFERRED.map((id) => list.find((p) => p.id === id && p.status !== 'missing')).find(Boolean)
     ?.id ??
@@ -37,7 +44,7 @@ export function NewSessionDialog({ defaultCwd, profileId, onClose }: Props) {
       .providers()
       .then((list) => {
         setProviders(list);
-        setProvider((current) => current || pickDefault(list));
+        setProvider((current) => current || pickDefault(choices(list, null)));
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'failed'));
   }, []);
@@ -90,7 +97,7 @@ export function NewSessionDialog({ defaultCwd, profileId, onClose }: Props) {
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>{t('newSession.title')}</h2>
         <ProviderPicker
-          providers={profileId === null ? providers : providers.filter((p) => p.id === profileId)}
+          providers={choices(providers, profileId)}
           value={provider}
           onChange={setProvider}
           onInstall={install}
