@@ -20,6 +20,7 @@ import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
 import { FileReader } from './infrastructure/fs/FileReader.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
+import { acquireWakeLock } from './infrastructure/net/wakeLock.js';
 import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
@@ -117,6 +118,9 @@ async function main(): Promise<void> {
 
   if (!mux.available) app.log.warn('tmux not found: sessions will not survive a server restart');
   await app.listen({ host: config.host, port: config.port });
+  if (await acquireWakeLock(runCommand, process.env)) {
+    app.log.info('Termux wake lock requested (CPU + Wi-Fi stay awake with the screen off)');
+  }
   for (const url of lanUrls(config.host, config.port)) app.log.info(`Open ${url}`);
   if (auth.isDefault) {
     app.log.warn(

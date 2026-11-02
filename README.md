@@ -56,6 +56,13 @@ DECK_HOST=0.0.0.0 DECK_PASSWORD='your passphrase' npm run start
 The startup log prints the LAN URLs. Without `DECK_PASSWORD` the built-in default password
 `deck` is used and a warning is logged: change it in the app (gear icon) right away.
 
+## Keeping it fast with the screen off (Android)
+
+With the screen off, Android sleeps the CPU and Wi-Fi radio and every keystroke feels laggy. On
+Termux the server asks for the Termux wake lock (CPU + Wi-Fi) at startup, which fixes it. It costs
+battery while held: release it with `termux-wake-unlock`, or start the server with
+`DECK_WAKE_LOCK=0` to skip it. Also set Termux to "Unrestricted" in Android's battery settings.
+
 ## Configuration
 
 `~/.config/ai-cli-deck/config.json` (never committed, never sent to the browser):
