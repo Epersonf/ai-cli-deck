@@ -12,3 +12,19 @@
   fallback is not needed.
 - **Type-checked ESLint is off.** `typescript-eslint` strict (syntactic) only, to keep lint fast and
   light on RAM. `tsc --strict` already covers type errors.
+- **Providers are data.** Built-ins (`shell`, `claude`, `codex`, `claude-deepseek`, `custom`) are one
+  file each; any other CLI is declared in `config.json` (command, args, env, `mcpArgs`) with no code.
+- **tmux on a private socket** (`-L deck`) so deck sessions never mix with the user's own tmux.
+  Options (`status off`, `escape-time`) are set before `new-session -A`, which blocks until detach.
+- **Reattach without a provider.** After a server restart, live `deck-*` tmux sessions are
+  re-attached with `tmux attach` (the provider is not needed again).
+- **Approvals poll, not push.** The badge polls every 3 s; per-session approval events also arrive
+  on that session's socket.
+- **Media goes through `/raw`**, not through JSON, so the browser can stream and seek audio/video.
+- **One agent surface.** `createAgentTools` backs both the MCP tools and the `clideck` command.
+- **`clideck` is on every session's PATH** (`apps/server/bin`) with `DECK_URL` and `DECK_SESSION_ID`
+  exported; `clideck install` adds `/clideck` slash commands for Claude Code and Codex.
+- **DeepSeek provider** also sets `ANTHROPIC_MODEL` and `ANTHROPIC_SMALL_FAST_MODEL` to
+  `deepseek-chat`, as DeepSeek documents for Claude Code.
+- **Auth is a domain service** (`AuthService`) behind ports, so password rules are unit tested
+  without touching disk or crypto.

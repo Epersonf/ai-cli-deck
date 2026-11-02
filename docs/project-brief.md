@@ -154,3 +154,12 @@ Mobile first (narrow viewport, touch friendly), but works on desktop. Layout: to
 - Ask me before making decisions that are not covered here and are hard to undo. Otherwise decide, and note the decision in docs/architecture.md.
 - After each milestone, give me a short summary: what works, what was tested, what is next.
 - Keep dependencies minimal and justify any new one in the commit message.
+
+## Addenda (decided after the first brief)
+
+- Works with any AI CLI: extra providers come from `config.json`; a plain `shell` provider exists.
+- The file explorer plays/shows images, audio, video and PDFs and greys out git-ignored entries.
+- Password login: default fallback password when exposed beyond loopback, changeable in the app,
+  removable only while localhost-only. The extra keys bar is hidden on non-touch devices.
+- `clideck` command (and `/clideck help` slash commands) lets agents and users operate the deck.
+- Visual style: retro-futuristic steampunk (brass, copper, leather, glowing lamps).

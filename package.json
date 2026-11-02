@@ -15,7 +15,8 @@
     "dev:server": "npm run dev -w @deck/server",
     "dev:web": "npm run dev -w @deck/web",
     "build": "npm run build -w @deck/web",
-    "start": "npm run start -w @deck/server"
+    "start": "npm run start -w @deck/server",
+    "serve": "npm run build && npm run start"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
