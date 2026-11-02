@@ -13,6 +13,12 @@ export function parseGitStatus(output: string): GitStatus {
   return { isRepo: true, branch, changes };
 }
 
+const CHUNK = 200;
+const exitCodeOf = (error: unknown): unknown => (error as { code?: unknown }).code;
+
+/** Parses the NUL-separated output of `git check-ignore -z`. */
+export const parseIgnored = (output: string): string[] => output.split('\0').filter(Boolean);
+
 export class GitCli implements GitPort, WorktreePort {
   constructor(private readonly run: Runner) {}
 
@@ -22,6 +28,21 @@ export class GitCli implements GitPort, WorktreePort {
     } catch {
       return { isRepo: false, branch: null, changes: [] };
     }
+  }
+
+  async ignoredPaths(cwd: string, paths: readonly string[]): Promise<Set<string>> {
+    const ignored = new Set<string>();
+    for (let i = 0; i < paths.length; i += CHUNK) {
+      const chunk = paths.slice(i, i + CHUNK);
+      try {
+        const out = await this.run('git', ['check-ignore', '-z', '--', ...chunk], cwd);
+        parseIgnored(out).forEach((path) => ignored.add(path));
+      } catch (error) {
+        // exit 1 = nothing ignored, 128 = not a repository: both mean "nothing to mark".
+        if (exitCodeOf(error) !== 1 && exitCodeOf(error) !== 128) throw error;
+      }
+    }
+    return ignored;
   }
 
   async add(input: { repoDir: string; branch: string; targetPath: string }): Promise<void> {

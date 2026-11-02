@@ -63,3 +63,13 @@ describe('FileReader', () => {
     await expect(reader.read(root, 'escape/secret.txt', 10)).rejects.toThrow('escapes');
   });
 });
+
+describe('FileReader.resolveFile', () => {
+  const reader = new FileReader();
+
+  it('returns real path and size for files only', async () => {
+    expect(await reader.resolveFile(root, 'sub/a.txt')).toMatchObject({ size: 5 });
+    await expect(reader.resolveFile(root, 'sub')).rejects.toThrow('not a file');
+    await expect(reader.resolveFile(root, 'escape/secret.txt')).rejects.toThrow('escapes');
+  });
+});

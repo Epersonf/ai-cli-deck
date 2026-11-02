@@ -42,11 +42,11 @@ describe('providers', () => {
     expect(custom.buildCommand({ ...ctx, command: 'bash', args: ['-l'] }).args).toEqual(['-l']);
   });
 
-  it('registry exposes the four built-in providers', () => {
+  it('registry exposes the built-in providers', () => {
     const ids = createProviderRegistry()
       .list()
       .map((p) => p.id);
-    expect(ids).toEqual(['claude', 'codex', 'claude-deepseek', 'custom']);
+    expect(ids).toEqual(['shell', 'claude', 'codex', 'claude-deepseek', 'custom']);
   });
 });
 

@@ -37,13 +37,18 @@ export interface WorktreePort {
   add(input: { repoDir: string; branch: string; targetPath: string }): Promise<void>;
 }
 
+export type RawFileEntry = Omit<FileEntry, 'ignored'>;
+
 export interface FilesPort {
-  list(root: string, relative: string): Promise<FileEntry[]>;
+  list(root: string, relative: string): Promise<RawFileEntry[]>;
   read(root: string, relative: string, maxBytes: number): Promise<FileContent>;
+  resolveFile(root: string, relative: string): Promise<{ path: string; size: number }>;
 }
 
 export interface GitPort {
   status(cwd: string): Promise<GitStatus>;
+  /** Subset of `paths` (relative to cwd) that git ignores; empty outside a repository. */
+  ignoredPaths(cwd: string, paths: readonly string[]): Promise<Set<string>>;
 }
 
 export interface SystemPort {

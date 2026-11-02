@@ -9,6 +9,7 @@ import { terminalSocket } from '../ws/terminalSocket.js';
 import { registerErrorHandler } from './errors.js';
 import { approvalRoutes } from './routes/approvals.js';
 import { sessionRoutes } from './routes/sessions.js';
+import { rawRoutes } from './routes/raw.js';
 import { workspaceRoutes } from './routes/workspace.js';
 import { registerSecurity } from './security.js';
 
@@ -29,6 +30,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   await app.register(fastifyWebsocket);
   sessionRoutes(app, c);
   workspaceRoutes(app, c);
+  rawRoutes(app, c);
   approvalRoutes(app, c);
   mcpRoutes(app);
   terminalSocket(app, c);

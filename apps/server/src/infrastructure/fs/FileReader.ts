@@ -1,8 +1,8 @@
 import { open, readdir, stat } from 'node:fs/promises';
 import { posix } from 'node:path';
-import type { FileContent, FileEntry } from '@deck/shared';
+import type { FileContent } from '@deck/shared';
 import { invalid } from '../../domain/errors.js';
-import type { FilesPort } from '../../domain/ports.js';
+import type { FilesPort, RawFileEntry } from '../../domain/ports.js';
 import { resolveInside } from './pathGuard.js';
 
 const BINARY_SNIFF_BYTES = 8000;
@@ -18,16 +18,23 @@ async function kindOf(root: string, relative: string, isDir: boolean, isLink: bo
 }
 
 export class FileReader implements FilesPort {
-  async list(root: string, relative: string): Promise<FileEntry[]> {
+  async list(root: string, relative: string): Promise<RawFileEntry[]> {
     const dir = await resolveInside(root, relative);
     const dirents = await readdir(dir, { withFileTypes: true });
-    const entries: FileEntry[] = [];
+    const entries: RawFileEntry[] = [];
     for (const dirent of dirents) {
       const path = posix.join(relative, dirent.name);
       const kind = await kindOf(root, path, dirent.isDirectory(), dirent.isSymbolicLink());
       if (kind !== null) entries.push({ name: dirent.name, path, kind });
     }
     return entries;
+  }
+
+  async resolveFile(root: string, relative: string): Promise<{ path: string; size: number }> {
+    const real = await resolveInside(root, relative);
+    const info = await stat(real);
+    if (!info.isFile()) throw invalid('Path is not a file');
+    return { path: real, size: info.size };
   }
 
   async read(root: string, relative: string, maxBytes: number): Promise<FileContent> {

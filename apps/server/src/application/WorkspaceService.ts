@@ -1,11 +1,14 @@
 import type { FileContent, FileEntry, GitStatus, Session } from '@deck/shared';
 import { notFound } from '../domain/errors.js';
-import type { FilesPort, GitPort } from '../domain/ports.js';
+import type { FilesPort, GitPort, RawFileEntry } from '../domain/ports.js';
 
 const IGNORED = new Set(['.git', 'node_modules']);
 export const MAX_FILE_BYTES = 512 * 1024;
 
-export function filterEntries(entries: readonly FileEntry[], showIgnored: boolean): FileEntry[] {
+export function filterEntries(
+  entries: readonly RawFileEntry[],
+  showIgnored: boolean,
+): RawFileEntry[] {
   const visible = showIgnored ? [...entries] : entries.filter((e) => !IGNORED.has(e.name));
   return visible.sort((a, b) =>
     a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'dir' ? -1 : 1,
@@ -23,12 +26,21 @@ export class WorkspaceService {
   constructor(private readonly deps: WorkspaceDeps) {}
 
   async tree(sessionId: string, relative: string, showIgnored: boolean): Promise<FileEntry[]> {
-    const entries = await this.deps.files.list(this.root(sessionId), relative);
-    return filterEntries(entries, showIgnored);
+    const root = this.root(sessionId);
+    const entries = filterEntries(await this.deps.files.list(root, relative), showIgnored);
+    const ignored = await this.deps.git.ignoredPaths(
+      root,
+      entries.map((e) => e.path),
+    );
+    return entries.map((e) => ({ ...e, ignored: ignored.has(e.path) || IGNORED.has(e.name) }));
   }
 
   read(sessionId: string, relative: string): Promise<FileContent> {
     return this.deps.files.read(this.root(sessionId), relative, MAX_FILE_BYTES);
+  }
+
+  resolveFile(sessionId: string, relative: string): Promise<{ path: string; size: number }> {
+    return this.deps.files.resolveFile(this.root(sessionId), relative);
   }
 
   gitStatus(sessionId: string): Promise<GitStatus> {

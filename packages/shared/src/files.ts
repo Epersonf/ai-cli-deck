@@ -4,6 +4,8 @@ export const FileEntrySchema = z.object({
   name: z.string(),
   path: z.string(),
   kind: z.enum(['file', 'dir']),
+  /** True when git ignores this path (or it is .git / node_modules). */
+  ignored: z.boolean(),
 });
 export type FileEntry = z.infer<typeof FileEntrySchema>;
 

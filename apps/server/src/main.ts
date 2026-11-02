@@ -13,6 +13,7 @@ import { loadConfig, loadOrCreateToken } from './infrastructure/config/loadConfi
 import { FileReader } from './infrastructure/fs/FileReader.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
+import { createConfiguredProvider } from './infrastructure/providers/configured.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
@@ -31,6 +32,10 @@ async function main(): Promise<void> {
   const token = requiresToken(config.host) ? await loadOrCreateToken(paths.configDir) : null;
   assertSecureBind(config.host, token);
 
+  const providers = createProviderRegistry(
+    undefined,
+    config.providers.map(createConfiguredProvider),
+  );
   const system = new SystemAdapter();
   const mux = await detectMultiplexer(runCommand);
   const git = new GitCli(runCommand);
@@ -38,7 +43,7 @@ async function main(): Promise<void> {
   const launcher = new SessionLauncher({
     pty: new NodePtyAdapter(),
     mux,
-    providers: createProviderRegistry(),
+    providers: providers,
     mcpBaseUrl: `http://127.0.0.1:${config.port}${MCP_PATH}`,
     baseEnv: stringEnv(),
     secrets: { deepseekApiKey: config.deepseekApiKey },
@@ -60,7 +65,7 @@ async function main(): Promise<void> {
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
     workspace: new WorkspaceService({ sessions, files: new FileReader(), git }),
     preview: new PreviewService(sessions, bus),
-    providers: createProviderRegistry(),
+    providers: providers,
     bus,
     publicConfig: {
       defaultCwd: config.defaultCwd,
