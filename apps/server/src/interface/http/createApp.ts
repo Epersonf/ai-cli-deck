@@ -8,6 +8,7 @@ import { mcpRoutes } from '../mcp/mcpRoute.js';
 import { terminalSocket } from '../ws/terminalSocket.js';
 import { registerErrorHandler } from './errors.js';
 import { approvalRoutes } from './routes/approvals.js';
+import { authRoutes } from './routes/auth.js';
 import { sessionRoutes } from './routes/sessions.js';
 import { rawRoutes } from './routes/raw.js';
 import { workspaceRoutes } from './routes/workspace.js';
@@ -28,6 +29,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   registerErrorHandler(app);
   registerSecurity(app, c.security);
   await app.register(fastifyWebsocket);
+  authRoutes(app, c);
   sessionRoutes(app, c);
   workspaceRoutes(app, c);
   rawRoutes(app, c);

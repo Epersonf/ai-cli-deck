@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertSecureBind, requiresToken } from './config/bind.js';
+import { assertSecureBind } from './config/bind.js';
 import { mergeConfig } from './config/loadConfig.js';
 import { parseGitStatus } from './git/GitCli.js';
 import { createClaudeLike } from './providers/claudeLike.js';
@@ -90,12 +90,9 @@ describe('config and bind safety', () => {
     expect(mergeConfig(null, {})).toMatchObject({ host: '127.0.0.1', deepseekApiKey: null });
   });
 
-  it('refuses to bind beyond loopback without a token', () => {
-    expect(requiresToken('127.0.0.1')).toBe(false);
-    expect(requiresToken('0.0.0.0')).toBe(true);
-    expect(() => assertSecureBind('0.0.0.0', null)).toThrow('without an access token');
-    expect(() => assertSecureBind('0.0.0.0', 'short')).toThrow();
-    expect(() => assertSecureBind('0.0.0.0', 'x'.repeat(32))).not.toThrow();
-    expect(() => assertSecureBind('127.0.0.1', null)).not.toThrow();
+  it('refuses to listen beyond loopback without a password', () => {
+    expect(() => assertSecureBind('0.0.0.0', false)).toThrow('without a password');
+    expect(() => assertSecureBind('0.0.0.0', true)).not.toThrow();
+    expect(() => assertSecureBind('127.0.0.1', false)).not.toThrow();
   });
 });

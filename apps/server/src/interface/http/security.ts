@@ -8,10 +8,11 @@ import {
   isLoopbackAddress,
   isLoopbackHostname,
   hostnameOf,
-  tokensMatch,
 } from './guards.js';
 
 const PROTECTED_PREFIXES = ['/api', '/ws'];
+/** Reachable without a token (still origin/host checked): the login handshake itself. */
+const PUBLIC_PATHS = new Set(['/api/login', '/api/auth']);
 
 function readToken(request: FastifyRequest): string | undefined {
   const header = request.headers[TOKEN_HEADER];
@@ -38,7 +39,8 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
     ) {
       return reply.code(403).send({ error: 'Origin or host not allowed' });
     }
-    if (options.token !== null && !tokensMatch(options.token, readToken(request))) {
+    if (PUBLIC_PATHS.has(url.split('?')[0] ?? url)) return;
+    if (!options.isValidToken(readToken(request))) {
       return reply.code(401).send({ error: 'Missing or invalid access token' });
     }
   });

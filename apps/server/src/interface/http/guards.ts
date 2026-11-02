@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { safeEqual } from '../../domain/safeEqual.js';
 
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
 const LOOPBACK_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
@@ -32,9 +32,6 @@ export function isAllowedHost(hostHeader: string | undefined, bindIsLoopback: bo
   return !bindIsLoopback || isLoopbackHostname(hostnameOf(hostHeader));
 }
 
-const digest = (value: string): Buffer => createHash('sha256').update(value).digest();
-
 export function tokensMatch(expected: string, provided: string | undefined): boolean {
-  if (provided === undefined) return false;
-  return timingSafeEqual(digest(expected), digest(provided));
+  return provided !== undefined && safeEqual(expected, provided);
 }

@@ -22,6 +22,12 @@ export class DeckError extends Error {
   }
 }
 
+export class WrongPasswordError extends DeckError {
+  constructor() {
+    super('forbidden', 'Current password is wrong');
+  }
+}
+
 export const notFound = (what: string): DeckError =>
   new DeckError('not-found', `${what} not found`);
 export const invalid = (message: string): DeckError => new DeckError('invalid', message);

@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MCP_PATH } from '@deck/shared';
@@ -8,10 +9,16 @@ import { SessionLauncher } from './application/SessionLauncher.js';
 import { SessionManager } from './application/SessionManager.js';
 import { WorkspaceService } from './application/WorkspaceService.js';
 import { EventBus } from './domain/events.js';
-import { assertSecureBind, requiresToken } from './infrastructure/config/bind.js';
-import { loadConfig, loadOrCreateToken } from './infrastructure/config/loadConfig.js';
+import { LoginThrottle } from './application/LoginThrottle.js';
+import { AuthService } from './application/AuthService.js';
+import { DEFAULT_PASSWORD } from './domain/auth.js';
+import { ScryptHasher } from './infrastructure/auth/ScryptHasher.js';
+import { JsonAuthStore } from './infrastructure/auth/JsonAuthStore.js';
+import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.js';
+import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { FileReader } from './infrastructure/fs/FileReader.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
+import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { createConfiguredProvider } from './infrastructure/providers/configured.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
@@ -29,8 +36,14 @@ function stringEnv(): Record<string, string> {
 
 async function main(): Promise<void> {
   const { config, paths } = await loadConfig(process.env);
-  const token = requiresToken(config.host) ? await loadOrCreateToken(paths.configDir) : null;
-  assertSecureBind(config.host, token);
+  const auth = await AuthService.create({
+    store: new JsonAuthStore(join(paths.configDir, 'auth.json')),
+    hasher: new ScryptHasher(),
+    newToken: () => randomBytes(24).toString('base64url'),
+    loopback: isLoopbackHost(config.host),
+    envPassword: config.password,
+  });
+  assertSecureBind(config.host, auth.required);
 
   const providers = createProviderRegistry(
     undefined,
@@ -71,15 +84,25 @@ async function main(): Promise<void> {
       defaultCwd: config.defaultCwd,
       extraKeys: config.extraKeys,
       persistent: mux.available,
-      tokenRequired: token !== null,
     },
-    security: { bindHost: config.host, token, allowedOrigins: config.allowedOrigins },
+    auth,
+    throttle: new LoginThrottle(() => Date.now()),
+    security: {
+      bindHost: config.host,
+      allowedOrigins: config.allowedOrigins,
+      isValidToken: (token) => auth.isValidToken(token),
+    },
     staticDir: paths.staticDir ?? join(here, '..', '..', 'web', 'dist'),
   });
 
   if (!mux.available) app.log.warn('tmux not found: sessions will not survive a server restart');
   await app.listen({ host: config.host, port: config.port });
-  if (token !== null) app.log.info(`Open http://<this-device>:${config.port}/?token=${token}`);
+  for (const url of lanUrls(config.host, config.port)) app.log.info(`Open ${url}`);
+  if (auth.isDefault) {
+    app.log.warn(
+      `Using the DEFAULT password "${DEFAULT_PASSWORD}". Set DECK_PASSWORD or "password" in config.json.`,
+    );
+  }
 }
 
 main().catch((error: unknown) => {
