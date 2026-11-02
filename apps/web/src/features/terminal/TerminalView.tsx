@@ -3,6 +3,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
+import { api } from '../../shared/api/endpoints';
 import { openTerminalSocket } from '../../shared/ws/terminalSocket';
 import { usePreview, previewable } from '../preview/previewStore';
 import { useT } from '../../shared/i18n/store';
@@ -86,6 +87,26 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     );
     term.onResize(({ cols, rows }) => socket.send({ type: 'resize', cols, rows }));
 
+    // A screenshot on the clipboard lives in the browser, not on this machine: upload it and
+    // type its path, which the agent CLIs read as an image attachment.
+    const onPaste = (event: ClipboardEvent): void => {
+      const image = [...(event.clipboardData?.files ?? [])].find((f) =>
+        f.type.startsWith('image/'),
+      );
+      if (!image) return;
+      event.preventDefault();
+      event.stopPropagation();
+      void api
+        .paste(sessionId, image)
+        .then(({ path }) => term.paste(`${path} `))
+        .catch((e: unknown) =>
+          term.write(
+            `\r\n\x1b[31m[paste failed: ${e instanceof Error ? e.message : 'error'}]\x1b[0m\r\n`,
+          ),
+        );
+    };
+    element.addEventListener('paste', onPaste, true);
+
     let frame = 0;
     const observer = new ResizeObserver(() => {
       cancelAnimationFrame(frame);
@@ -94,6 +115,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     observer.observe(element);
 
     return () => {
+      element.removeEventListener('paste', onPaste, true);
       observer.disconnect();
       cancelAnimationFrame(frame);
       socket.close();

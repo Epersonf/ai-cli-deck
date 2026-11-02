@@ -14,7 +14,7 @@ import {
   type CreateSessionBody,
 } from '@deck/shared';
 import { z } from 'zod';
-import { request, withToken } from './client';
+import { extensionOf, request, sendRaw, withToken } from './client';
 
 const enc = encodeURIComponent;
 const session = (id: string): string => `/api/sessions/${enc(id)}`;
@@ -48,6 +48,10 @@ export const api = {
   file: (id: string, path: string) =>
     request(FileContentSchema, 'GET', `${session(id)}/file?path=${enc(path)}`),
   git: (id: string) => request(GitStatusSchema, 'GET', `${session(id)}/git`),
+  upload: (id: string, dir: string, file: File) =>
+    sendRaw(`${session(id)}/upload?dir=${enc(dir)}&name=${enc(file.name)}`, file),
+  paste: (id: string, blob: Blob) =>
+    sendRaw(`${session(id)}/paste?ext=${enc(extensionOf(blob.type))}`, blob),
   approvals: () => request(z.array(ApprovalRequestSchema), 'GET', '/api/approvals?status=pending'),
   decide: (id: string, decision: ApprovalDecision) =>
     request(ApprovalRequestSchema, 'POST', `/api/approvals/${enc(id)}/decision`, { decision }),

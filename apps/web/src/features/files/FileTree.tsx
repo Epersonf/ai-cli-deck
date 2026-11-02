@@ -4,6 +4,7 @@ import { useT } from '../../shared/i18n/store';
 import { FileList } from './FileList';
 import { parentOf } from './explorerPath';
 import { PathBar } from './PathBar';
+import { UploadButton, useUpload } from './Uploader';
 
 interface Props {
   sessionId: string;
@@ -20,6 +21,12 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
   const [showIgnored, setShowIgnored] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [changes, setChanges] = useState<Record<string, string>>({});
+  const [dragging, setDragging] = useState(false);
+  const { upload, note, busy } = useUpload({
+    sessionId,
+    dir,
+    onDone: () => setReloadKey((k) => k + 1),
+  });
 
   useEffect(() => {
     api
@@ -29,12 +36,22 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
   }, [sessionId, reloadKey]);
 
   return (
-    <div className="file-tree">
+    <div
+      className={`file-tree${dragging ? ' drop-target' : ''}`}
+      onDragOver={(e) => (e.preventDefault(), setDragging(true))}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        void upload([...e.dataTransfer.files]);
+      }}
+    >
       <PathBar cwd={cwd} dir={dir} onGo={onDir} onBack={() => onDir(parentOf(dir))} />
       <div className="tree-tools">
         <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
           ⟳ {t('common.refresh')}
         </button>
+        <UploadButton busy={busy} onFiles={(files) => void upload(files)} />
         <label>
           <input
             type="checkbox"
@@ -44,6 +61,7 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
           {t('files.showHidden')}
         </label>
       </div>
+      {note !== null && <p className="hint">{note}</p>}
       <FileList
         sessionId={sessionId}
         dir={dir}

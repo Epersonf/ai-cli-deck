@@ -72,3 +72,27 @@ a {
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* Themed scrollbars everywhere (file lists, drawer, dialogs, viewers, xterm). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-lo) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--brass-lo);
+  border: 2px solid var(--bg);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--brass);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
