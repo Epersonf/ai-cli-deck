@@ -4,6 +4,7 @@ import type {
   MultiplexerPort,
   PtyHandle,
   PtyPort,
+  ScrollbackStorePort,
   SessionStorePort,
   SystemPort,
 } from '../domain/ports.js';
@@ -62,8 +63,9 @@ export class FakeMux implements MultiplexerPort {
   list(): Promise<string[]> {
     return Promise.resolve(this.live);
   }
+  captured: Uint8Array | null = null;
   capture(): Promise<Uint8Array | null> {
-    return Promise.resolve(null);
+    return Promise.resolve(this.captured);
   }
   kill(name: string): Promise<void> {
     this.killed.push(name);
@@ -79,6 +81,21 @@ export class FakeStore implements SessionStorePort {
   }
   save(sessions: Session[]): Promise<void> {
     this.saved = sessions;
+    return Promise.resolve();
+  }
+}
+
+export class FakeScrollback implements ScrollbackStorePort {
+  readonly files = new Map<string, Uint8Array>();
+  load(id: string): Promise<Uint8Array | null> {
+    return Promise.resolve(this.files.get(id) ?? null);
+  }
+  save(id: string, data: Uint8Array): Promise<void> {
+    this.files.set(id, data);
+    return Promise.resolve();
+  }
+  remove(id: string): Promise<void> {
+    this.files.delete(id);
     return Promise.resolve();
   }
 }

@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import type { KeysMode } from '../terminal/keysPreference';
 import { KeysSection } from './KeysSection';
 import { LanguageSection } from './LanguageSection';
-import { PasswordSection } from './PasswordSection';
+import { PasswordDialog } from './PasswordDialog';
 
 interface Props {
   keysMode: KeysMode;
@@ -14,6 +15,8 @@ interface Props {
 
 export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }: Props) {
   const t = useT();
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  if (passwordOpen) return <PasswordDialog onClose={() => setPasswordOpen(false)} />;
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()}>
@@ -24,7 +27,12 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
           <h3>{t('shortcuts.title')}</h3>
           <p className="hint">{t('shortcuts.body')}</p>
         </div>
-        <PasswordSection />
+        <div className="setting">
+          <h3>{t('password.title')}</h3>
+          <button type="button" onClick={() => setPasswordOpen(true)}>
+            {t('password.open')}
+          </button>
+        </div>
         <button type="button" onClick={onClose}>
           {t('common.close')}
         </button>

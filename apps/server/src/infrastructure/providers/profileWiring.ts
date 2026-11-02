@@ -1,3 +1,4 @@
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { ProviderRegistry } from '../../domain/provider.js';
 import { ProfileService } from '../../application/ProfileService.js';
@@ -19,6 +20,10 @@ export async function createProfileService(deps: Deps): Promise<ProfileService> 
   const service = new ProfileService({
     store: new JsonProfileStore(join(deps.configDir, 'profiles.json')),
     reservedIds: () => reserved,
+    wipeData: async (id) => {
+      if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) return;
+      await rm(join(profilesDir, id), { recursive: true, force: true });
+    },
     unregister: (id) => {
       deps.providers.remove(id);
       deps.status.unregister(id);

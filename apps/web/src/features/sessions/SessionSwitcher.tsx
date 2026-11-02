@@ -44,7 +44,6 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
             ))}
           </ProfileGroup>
         ))}
-        <p className="hint">{t('switcher.hint')}</p>
         <button type="button" onClick={() => (onClose(), onNew(null))}>
           {t('topbar.newSession')}
         </button>

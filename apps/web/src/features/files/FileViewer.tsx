@@ -1,6 +1,6 @@
 import { mediaKindOf, type FileContent } from '@deck/shared';
 import { useEffect, useState } from 'react';
-import { api, rawUrl } from '../../shared/api/endpoints';
+import { api, downloadUrl, rawUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 
 interface Props {
@@ -56,6 +56,9 @@ export function FileViewer({ sessionId, path, onClose }: Props) {
         <span className="viewer-title">{path}</span>
         <a className="btn" href={raw} target="_blank" rel="noopener noreferrer">
           {t('common.open')} ↗
+        </a>
+        <a className="btn" href={downloadUrl(sessionId, path)} download>
+          ⬇ {t('files.download')}
         </a>
       </div>
       <div className="viewer-body">

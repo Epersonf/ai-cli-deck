@@ -114,3 +114,15 @@
 .tree-tools {
   flex-wrap: wrap;
 }
+
+.password-form {
+  display: grid;
+  gap: 8px;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant: normal;
+  letter-spacing: 0;
+}

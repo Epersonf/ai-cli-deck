@@ -1,20 +1,27 @@
 import type { FileContent, FileEntry, GitStatus, Session } from '@deck/shared';
 import { notFound } from '../domain/errors.js';
+import { resolveInside } from '../infrastructure/fs/pathGuard.js';
 import type { FilesPort, GitPort, RawFileEntry } from '../domain/ports.js';
 
 const IGNORED = new Set(['.git', 'node_modules']);
-/** Hidden = dotfiles/dotfolders, plus node_modules which is never useful to browse. */
-const isHidden = (name: string): boolean => name.startsWith('.') || name === 'node_modules';
 export const MAX_FILE_BYTES = 512 * 1024;
 
+/** Sorts folders first; dotfiles/dotfolders are dropped unless `showHidden`. */
 export function filterEntries(
   entries: readonly RawFileEntry[],
-  showIgnored: boolean,
+  showHidden: boolean,
 ): RawFileEntry[] {
-  const visible = showIgnored ? [...entries] : entries.filter((e) => !isHidden(e.name));
+  const visible = showHidden ? [...entries] : entries.filter((e) => !e.name.startsWith('.'));
   return visible.sort((a, b) =>
     a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'dir' ? -1 : 1,
   );
+}
+
+export interface TreeOptions {
+  /** Include dotfiles and dotfolders. */
+  hidden: boolean;
+  /** Include what git ignores (and node_modules, .git). */
+  ignored: boolean;
 }
 
 export interface WorkspaceDeps {
@@ -27,18 +34,27 @@ export interface WorkspaceDeps {
 export class WorkspaceService {
   constructor(private readonly deps: WorkspaceDeps) {}
 
-  async tree(sessionId: string, relative: string, showIgnored: boolean): Promise<FileEntry[]> {
+  async tree(sessionId: string, relative: string, options: TreeOptions): Promise<FileEntry[]> {
     const root = this.root(sessionId);
-    const entries = filterEntries(await this.deps.files.list(root, relative), showIgnored);
+    const entries = filterEntries(await this.deps.files.list(root, relative), options.hidden);
     const ignored = await this.deps.git.ignoredPaths(
       root,
       entries.map((e) => e.path),
     );
-    return entries.map((e) => ({ ...e, ignored: ignored.has(e.path) || IGNORED.has(e.name) }));
+    const marked = entries.map((e) => ({
+      ...e,
+      ignored: ignored.has(e.path) || IGNORED.has(e.name),
+    }));
+    return options.ignored ? marked : marked.filter((e) => !e.ignored);
   }
 
   read(sessionId: string, relative: string): Promise<FileContent> {
     return this.deps.files.read(this.root(sessionId), relative, MAX_FILE_BYTES);
+  }
+
+  /** Absolute path of a folder inside the session folder, for zipping. */
+  async resolveDir(sessionId: string, relative: string): Promise<string> {
+    return resolveInside(this.root(sessionId), relative);
   }
 
   resolveFile(sessionId: string, relative: string): Promise<{ path: string; size: number }> {

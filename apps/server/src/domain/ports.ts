@@ -33,6 +33,13 @@ export interface SessionStorePort {
   save(sessions: Session[]): Promise<void>;
 }
 
+/** Last screen contents of each terminal, so a dead session can still be read after a restart. */
+export interface ScrollbackStorePort {
+  load(id: string): Promise<Uint8Array | null>;
+  save(id: string, data: Uint8Array): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
 export interface ProfileStorePort {
   load(): Promise<Profile[]>;
   save(profiles: Profile[]): Promise<void>;

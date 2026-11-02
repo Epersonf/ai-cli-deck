@@ -27,7 +27,7 @@ function setup(ignoredByGit: string[]) {
 
 describe('WorkspaceService.tree', () => {
   it('marks git-ignored entries and keeps them visible', async () => {
-    const tree = await setup(['dist']).tree('s1', '', false);
+    const tree = await setup(['dist']).tree('s1', '', { hidden: false, ignored: true });
     expect(tree.map((e) => [e.name, e.ignored])).toEqual([
       ['dist', true],
       ['src', false],
@@ -35,8 +35,13 @@ describe('WorkspaceService.tree', () => {
     ]);
   });
 
+  it('drops git-ignored entries unless asked', async () => {
+    const tree = await setup(['dist']).tree('s1', '', { hidden: true, ignored: false });
+    expect(tree.map((e) => e.name)).toEqual(['src', 'a.ts']);
+  });
+
   it('marks .git as ignored when internals are shown', async () => {
-    const tree = await setup([]).tree('s1', '', true);
+    const tree = await setup([]).tree('s1', '', { hidden: true, ignored: true });
     expect(tree.find((e) => e.name === '.git')?.ignored).toBe(true);
   });
 });

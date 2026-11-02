@@ -65,8 +65,7 @@ export function PasswordSection() {
 
   const required = status?.required !== false;
   return (
-    <form className="setting" onSubmit={submit}>
-      <h3>{required ? t('password.change') : t('password.set')}</h3>
+    <form className="password-form" onSubmit={submit}>
       {status?.isDefault === true && <p className="notice error">{t('password.defaultInUse')}</p>}
       {!required && <p className="hint">{t('password.none')}</p>}
       {required && (

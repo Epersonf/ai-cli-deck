@@ -39,11 +39,11 @@ export const api = {
   deleteSession: (id: string) => request(z.void(), 'DELETE', session(id)),
   setPreview: (id: string, url: string) =>
     request(z.object({ url: z.string() }), 'PUT', `${session(id)}/preview`, { url }),
-  tree: (id: string, path: string, showIgnored: boolean) =>
+  tree: (id: string, path: string, show: { hidden: boolean; ignored: boolean }) =>
     request(
       TreeResponseSchema,
       'GET',
-      `${session(id)}/tree?path=${enc(path)}&showIgnored=${showIgnored}`,
+      `${session(id)}/tree?path=${enc(path)}&hidden=${show.hidden}&ignored=${show.ignored}`,
     ),
   file: (id: string, path: string) =>
     request(FileContentSchema, 'GET', `${session(id)}/file?path=${enc(path)}`),
@@ -60,3 +60,11 @@ export const api = {
 /** URL of a session file served raw (images, audio, video, pdf). */
 export const rawUrl = (id: string, path: string): string =>
   withToken(`${session(id)}/raw?path=${enc(path)}`);
+
+/** A session file as a download (saved instead of displayed). */
+export const downloadUrl = (id: string, path: string): string =>
+  withToken(`${session(id)}/raw?path=${enc(path)}&download=1`);
+
+/** A session folder as a .zip download. */
+export const zipUrl = (id: string, path: string): string =>
+  withToken(`${session(id)}/zip?path=${enc(path)}`);

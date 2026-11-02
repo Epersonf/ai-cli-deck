@@ -8,6 +8,8 @@ export interface ProfileServiceDeps {
   register(profile: Profile): void;
   /** Takes a deleted profile out of the launcher and the install-status checks. */
   unregister(id: string): void;
+  /** Erases the profile's CLI config folder (logins, history). Must be safe to repeat. */
+  wipeData(id: string): Promise<void>;
   /** Ids already taken by built-in or configured providers. */
   reservedIds(): readonly string[];
 }
@@ -36,6 +38,8 @@ export class ProfileService {
       throw invalid('Only custom profiles take a command');
     const taken = [...this.deps.reservedIds(), ...this.profiles.map((p) => p.id)];
     const profile: Profile = { ...body, id: profileIdFor(body.label, taken) };
+    // A new profile always starts empty, even if an old folder with this id was left behind.
+    await this.deps.wipeData(profile.id);
     this.profiles = [...this.profiles, profile];
     await this.deps.store.save(this.profiles);
     this.deps.register(profile);
@@ -47,6 +51,12 @@ export class ProfileService {
     this.profiles = this.profiles.filter((p) => p.id !== id);
     await this.deps.store.save(this.profiles);
     this.deps.unregister(id);
+  }
+
+  /** Erases a deleted profile's logins; call once its terminals have ended. */
+  async purgeData(id: string): Promise<void> {
+    if (this.has(id)) throw invalid('Profile still exists');
+    await this.deps.wipeData(id);
   }
 
   async rename(id: string, label: string): Promise<Profile> {

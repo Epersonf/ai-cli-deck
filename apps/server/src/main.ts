@@ -10,6 +10,9 @@ import { SessionLauncher } from './application/SessionLauncher.js';
 import { SessionManager } from './application/SessionManager.js';
 import { WorkspaceService } from './application/WorkspaceService.js';
 import { EventBus } from './domain/events.js';
+
+/** How often changed terminal screens are written to disk. */
+const SCROLLBACK_SAVE_MS = 5_000;
 import { LoginThrottle } from './application/LoginThrottle.js';
 import { AuthService } from './application/AuthService.js';
 import { DEFAULT_PASSWORD } from './domain/auth.js';
@@ -28,6 +31,7 @@ import { createConfiguredProvider } from './infrastructure/providers/configured.
 import { createProfileService } from './infrastructure/providers/profileWiring.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
+import { FileScrollbackStore } from './infrastructure/store/FileScrollbackStore.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
 import { runCommand } from './infrastructure/tmux/exec.js';
 import { detectMultiplexer } from './infrastructure/tmux/NoMultiplexer.js';
@@ -85,12 +89,14 @@ async function main(): Promise<void> {
     launcher,
     mux,
     store: new JsonSessionStore(join(paths.stateDir, 'sessions.json')),
+    scrollback: new FileScrollbackStore(join(paths.stateDir, 'scrollback')),
     ports: new PortAllocator(config.portRange, (p) => system.isPortFree(p)),
     system,
     bus,
     replayBytes: 64 * 1024,
   });
   await sessions.restore();
+  sessions.screens.start(SCROLLBACK_SAVE_MS);
 
   const app = await createApp({
     sessions,

@@ -9,9 +9,11 @@ export function wirePty(
   sessionId: string,
   bus: EventBus,
   onExit: () => void,
+  onOutput: () => void = () => undefined,
 ): void {
   pty.onData((data) => {
     ring.push(data);
+    onOutput();
     bus.publish({ kind: 'output', sessionId, data });
   });
   pty.onExit((code) => {

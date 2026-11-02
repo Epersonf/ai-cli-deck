@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../shared/api/endpoints';
+import { api, zipUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { ExplorerOptions } from './ExplorerOptions';
+import { loadPrefs, savePrefs, type ExplorerPrefs } from './explorerPrefs';
 import { FileList } from './FileList';
 import { parentOf } from './explorerPath';
 import { PathBar } from './PathBar';
@@ -18,7 +20,8 @@ interface Props {
 /** One explorer: address bar with back, tools, and the current folder's entries. */
 export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props) {
   const t = useT();
-  const [showIgnored, setShowIgnored] = useState(false);
+  const [prefs, setPrefs] = useState<ExplorerPrefs>(loadPrefs);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
@@ -52,20 +55,25 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
           ⟳ {t('common.refresh')}
         </button>
         <UploadButton busy={busy} onFiles={(files) => void upload(files)} />
-        <label>
-          <input
-            type="checkbox"
-            checked={showIgnored}
-            onChange={(e) => setShowIgnored(e.target.checked)}
-          />
-          {t('files.showHidden')}
-        </label>
+        <a className="btn" href={zipUrl(sessionId, dir)} download title={t('files.downloadZip')}>
+          ⬇ {t('files.zip')}
+        </a>
+        <button type="button" onClick={() => setOptionsOpen(true)}>
+          ⚙ {t('files.options')}
+        </button>
       </div>
+      {optionsOpen && (
+        <ExplorerOptions
+          prefs={prefs}
+          onChange={(next) => (setPrefs(next), savePrefs(next))}
+          onClose={() => setOptionsOpen(false)}
+        />
+      )}
       {note !== null && <p className="hint">{note}</p>}
       <FileList
         sessionId={sessionId}
         dir={dir}
-        showIgnored={showIgnored}
+        prefs={prefs}
         reloadKey={reloadKey}
         changes={changes}
         selected={selected}

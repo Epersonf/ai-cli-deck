@@ -6,11 +6,13 @@ import { removeProfile } from './removeProfile.js';
 describe('removeProfile', () => {
   it('ends the profile terminals and keeps the others', async () => {
     const h = createHarness();
+    const wiped: string[] = [];
     const profiles = new ProfileService({
       store: { load: () => Promise.resolve([]), save: () => Promise.resolve() },
       register: () => undefined,
       unregister: () => undefined,
       reservedIds: () => [],
+      wipeData: (id) => (wiped.push(id), Promise.resolve()),
     });
     await profiles.create({ label: 'Custom', base: 'custom', command: '' });
     const mine = await h.sessions.create({ ...customBody(), provider: 'custom' });
@@ -20,5 +22,6 @@ describe('removeProfile', () => {
     expect(h.sessions.get(mine.id)).toBeUndefined();
     expect(h.sessions.get(other.id)).toBeDefined();
     expect(profiles.has('custom')).toBe(false);
+    expect(wiped).toContain('custom');
   });
 });

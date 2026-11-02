@@ -15,4 +15,10 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
+  {
+    // Translation dictionaries are flat data (one entry per UI string) and only ever grow.
+    files: ['apps/web/src/shared/i18n/*.ts'],
+    ignores: ['apps/web/src/shared/i18n/*.test.ts'],
+    rules: { 'max-lines': 'off' },
+  },
 );

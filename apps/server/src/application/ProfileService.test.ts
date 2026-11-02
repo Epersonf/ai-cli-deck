@@ -6,14 +6,35 @@ function setup(reserved: string[] = ['claude']) {
   const saved: Profile[][] = [];
   const registered: Profile[] = [];
   const removed: string[] = [];
+  const wiped: string[] = [];
   const service = new ProfileService({
     store: { load: () => Promise.resolve([]), save: (p) => (saved.push(p), Promise.resolve()) },
     register: (p) => registered.push(p),
     unregister: (id) => void removed.push(id),
     reservedIds: () => reserved,
+    wipeData: (id) => (wiped.push(id), Promise.resolve()),
   });
-  return { service, saved, registered, removed };
+  return { service, saved, registered, removed, wiped };
 }
+
+describe('ProfileService data erasure', () => {
+  it('wipes the folder before a new profile starts, so a reused name never inherits a login', async () => {
+    const { service, wiped } = setup([]);
+    const first = await service.create({ label: 'Work', base: 'claude', command: '' });
+    expect(wiped).toEqual([first.id]);
+    await service.remove(first.id);
+    await service.purgeData(first.id);
+    const again = await service.create({ label: 'Work', base: 'claude', command: '' });
+    expect(again.id).toBe(first.id);
+    expect(wiped).toEqual([first.id, first.id, first.id]);
+  });
+
+  it('refuses to purge a profile that still exists', async () => {
+    const { service } = setup([]);
+    const p = await service.create({ label: 'Keep', base: 'claude', command: '' });
+    await expect(service.purgeData(p.id)).rejects.toThrow();
+  });
+});
 
 describe('ProfileService', () => {
   it('creates a profile with a unique id and registers it', async () => {

@@ -33,8 +33,13 @@ describe('filterEntries', () => {
     { name: '.env', path: '.env', kind: 'file' as const },
   ];
 
-  it('hides dotfiles, .git and node_modules and sorts dirs first', () => {
-    expect(filterEntries(entries, false).map((e) => e.name)).toEqual(['src', 'a.ts', 'b.ts']);
+  it('hides dotfiles and sorts dirs first', () => {
+    expect(filterEntries(entries, false).map((e) => e.name)).toEqual([
+      'node_modules',
+      'src',
+      'a.ts',
+      'b.ts',
+    ]);
   });
 
   it('shows everything when asked', () => {
