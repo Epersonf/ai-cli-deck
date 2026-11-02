@@ -1,0 +1,80 @@
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.col-left,
+.col-right {
+  display: contents;
+}
+.pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-nav,
+.right-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--leather);
+}
+.bottom-nav {
+  border-top: 3px double var(--brass);
+}
+.bottom-nav button,
+.right-tabs button {
+  flex: 1;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+}
+.bottom-nav button.active,
+.right-tabs button.active {
+  background: var(--brass-grad);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.app.wide .workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+.app.wide .col-left,
+.app.wide .col-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.app.wide .right-tabs {
+  position: absolute;
+  right: 10px;
+  top: 50px;
+  z-index: 5;
+  width: 38%;
+  background: none;
+  padding: 0;
+}
+.app.wide .col-right .pane {
+  margin-top: 38px;
+}
+
+.welcome {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+}
+.welcome h1 {
+  font-size: 40px;
+}

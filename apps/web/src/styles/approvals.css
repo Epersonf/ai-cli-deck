@@ -1,0 +1,34 @@
+.approvals-badge {
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  background: radial-gradient(circle at 50% 30%, #3a2a1c, var(--ink));
+  border: 3px double var(--brass);
+  font-family: var(--mono);
+  font-weight: 700;
+  flex: none;
+}
+.approvals-badge.attention {
+  color: var(--amber);
+  border-color: var(--amber);
+  animation: throb 1.2s ease-in-out infinite;
+}
+@keyframes throb {
+  50% {
+    box-shadow:
+      var(--glow),
+      0 0 22px rgb(255 180 58 / 70%);
+  }
+}
+.approval {
+  padding: 10px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: var(--ink);
+  display: grid;
+  gap: 6px;
+}
+.approval p {
+  margin: 0;
+}

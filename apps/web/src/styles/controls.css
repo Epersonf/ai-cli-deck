@@ -1,0 +1,121 @@
+button,
+.btn,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button,
+.btn {
+  background: linear-gradient(180deg, var(--leather-2), var(--leather));
+  border: 1px solid var(--brass);
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--brass-hi);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 12%),
+    0 2px 0 var(--brass-lo);
+  touch-action: manipulation;
+}
+button:hover,
+.btn:hover {
+  border-color: var(--brass-hi);
+  text-shadow: var(--glow);
+}
+button:active,
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 60%);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--brass-grad);
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--brass-hi);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
+}
+button.link {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: var(--amber);
+  text-decoration: underline;
+  padding: 0 6px;
+}
+
+input,
+select {
+  width: 100%;
+  background: var(--ink);
+  border: 1px solid var(--brass-lo);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 70%);
+}
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow:
+    inset 0 2px 6px rgb(0 0 0 / 70%),
+    var(--glow);
+}
+input[type='checkbox'] {
+  width: auto;
+  accent-color: var(--brass);
+}
+label {
+  display: grid;
+  gap: 4px;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--parchment);
+}
+
+.notice {
+  margin: 6px 8px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--amber);
+  background: rgb(255 180 58 / 8%);
+  border-radius: 4px;
+}
+.notice.error {
+  border-color: var(--danger);
+  background: rgb(224 97 79 / 10%);
+  color: #ffb8ac;
+}
+
+.gear {
+  color: var(--brass);
+  filter: drop-shadow(0 0 6px rgb(255 180 58 / 35%));
+}
+.gear.spin {
+  animation: turn 24s linear infinite;
+}
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gear.spin,
+  .approvals-badge.attention {
+    animation: none;
+  }
+}

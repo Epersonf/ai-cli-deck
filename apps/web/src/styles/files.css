@@ -1,0 +1,108 @@
+.files-pane,
+.preview-pane {
+  margin: 8px;
+  border: 3px double var(--brass);
+  border-radius: 12px;
+  background: var(--leather);
+  overflow: hidden;
+  box-shadow: inset 0 0 30px rgb(0 0 0 / 50%);
+}
+.app.wide .files-pane,
+.app.wide .preview-pane {
+  margin: 38px 0 0;
+  flex: 1;
+}
+
+.files-pane {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+}
+.files-pane.hidden {
+  display: none;
+}
+.app.wide .files-pane {
+  grid-template-columns: minmax(180px, 38%) minmax(0, 1fr);
+}
+.files-pane.has-selection .file-tree {
+  display: none;
+}
+.app.wide .files-pane.has-selection .file-tree {
+  display: block;
+}
+.viewer-placeholder {
+  display: none;
+  align-self: center;
+}
+.app.wide .viewer-placeholder {
+  display: block;
+}
+
+.file-tree {
+  overflow: auto;
+  border-right: 1px solid var(--brass-lo);
+}
+.tree-tools {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  background: var(--leather-2);
+  border-bottom: 1px solid var(--brass-lo);
+  font-size: 13px;
+}
+.tree-tools label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-variant: normal;
+  letter-spacing: 0;
+}
+.tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  text-align: left;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  color: var(--parchment);
+}
+.tree-row:hover {
+  background: rgb(255 180 58 / 10%);
+}
+.tree-row.selected {
+  background: rgb(255 180 58 / 18%);
+  box-shadow: inset 3px 0 0 var(--amber);
+}
+.tree-row.ignored {
+  color: #7d6f5c;
+  font-style: italic;
+  opacity: 0.6;
+}
+.tree-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.git-code {
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 11px;
+}
