@@ -11,6 +11,8 @@ Commands:
   newtab <url|port>        Offer the user a button to open a page in a new tab
   worktree "<reason>"      Ask the user to create a git worktree (needs approval)
   status <requestId>       Check an approval request: pending, approved or rejected
+  profile add <id> <claude|codex> [--key-env VAR]
+                          Extra account/key for an official CLI, with its own login folder
   setup <provider>         Download a CLI (claude, codex...); it signs you in itself on first run
   install [--force]        Add /clideck slash commands for Claude Code and Codex
 

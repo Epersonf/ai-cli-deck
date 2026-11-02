@@ -97,6 +97,22 @@ the CLI shows its own sign-in the first time it starts, in the session terminal,
 uses today or tomorrow. If `npm` is missing (Debian/Ubuntu ship it separately), the setup tells you
 how to get it.
 
+## Several accounts of the same CLI (profiles)
+
+Each profile runs the **official** CLI with its own config folder (`CLAUDE_CONFIG_DIR` /
+`CODEX_HOME`, under `~/.config/ai-cli-deck/profiles/<id>`), so every profile keeps its own login
+or API key. The deck never reads or stores credentials.
+
+```sh
+clideck profile add work claude --label "Claude (work)" --key-env WORK_ANTHROPIC_KEY
+clideck profile add personal claude          # no key: sign in inside the CLI itself
+clideck profile add team codex --key-env TEAM_OPENAI_KEY
+```
+
+`--key-env` names a host environment variable that holds the key, so it stays out of
+`config.json`. Restart the deck to see the new profiles in the "new session" list. In
+`config.json` a profile is `{ "id", "label", "base": "claude" | "codex", "envFromHost", "configDir" }`.
+
 ## Talking back to the deck
 
 Inside any session, `clideck help` lists the commands (`preview`, `sessions`, `worktree`, `status`...).

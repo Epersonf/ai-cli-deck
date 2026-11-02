@@ -1,15 +1,27 @@
 import { DEFAULT_PORT_RANGE, DEFAULT_SERVER_PORT } from '@deck/shared';
 import { z } from 'zod';
 
-export const ProviderDefSchema = z.object({
-  id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
-  label: z.string().min(1),
-  command: z.string().min(1),
-  args: z.array(z.string()).default([]),
-  env: z.record(z.string(), z.string()).default({}),
-  /** Extra args that point the CLI at the deck MCP server; `{mcpUrl}` is substituted. */
-  mcpArgs: z.array(z.string()).default([]),
-});
+export const PROFILE_BASES = ['claude', 'codex'] as const;
+
+export const ProviderDefSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+    label: z.string().min(1),
+    /** Reuse a built-in CLI (command, MCP wiring) as an isolated profile, e.g. a second Claude account. */
+    base: z.enum(PROFILE_BASES).nullable().default(null),
+    command: z.string().default(''),
+    args: z.array(z.string()).default([]),
+    env: z.record(z.string(), z.string()).default({}),
+    /** Env var name -> name of a host env var holding the value, so keys stay out of config.json. */
+    envFromHost: z.record(z.string(), z.string()).default({}),
+    /** Config home of the official CLI for this profile; defaults to a private per-profile folder. */
+    configDir: z.string().nullable().default(null),
+    /** Extra args that point the CLI at the deck MCP server; `{mcpUrl}` is substituted. */
+    mcpArgs: z.array(z.string()).default([]),
+  })
+  .refine((def) => def.base !== null || def.command !== '', {
+    message: 'a provider needs either "base" or "command"',
+  });
 export type ProviderDef = z.infer<typeof ProviderDefSchema>;
 
 export const AppConfigSchema = z.object({

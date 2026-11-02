@@ -10,7 +10,8 @@ export type Command =
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
-  | { name: 'setup'; provider: string | null };
+  | { name: 'setup'; provider: string | null }
+  | { name: 'profile'; args: string[] };
 
 export type Parsed = { ok: true; command: Command } | { ok: false; error: string };
 
@@ -44,6 +45,10 @@ export function parseArgs(argv: readonly string[]): Parsed {
         : ok({ name, requestId: text });
     case 'setup':
       return ok({ name, provider: rest[0] ?? null });
+    case 'profile':
+      return rest[0] === 'add'
+        ? ok({ name, args: rest.slice(1) })
+        : fail('usage: clideck profile add <id> <claude|codex> [--key-env VAR]');
     case 'install':
       return ok({ name, force: rest.includes('--force') });
     default:

@@ -25,7 +25,7 @@ import { GitCli } from './infrastructure/git/GitCli.js';
 import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
-import { createConfiguredProvider } from './infrastructure/providers/configured.js';
+import { commandOf, createConfiguredProvider } from './infrastructure/providers/configured.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
@@ -53,7 +53,12 @@ async function main(): Promise<void> {
   const here = dirname(fileURLToPath(import.meta.url));
   const providers = createProviderRegistry(
     undefined,
-    config.providers.map(createConfiguredProvider),
+    config.providers.map((def) =>
+      createConfiguredProvider(def, {
+        env: process.env,
+        profilesDir: join(paths.configDir, 'profiles'),
+      }),
+    ),
   );
   const initialSecrets = secretsFromConfig(config, process.env);
   const secrets = (): ProviderSecrets => {
@@ -65,7 +70,7 @@ async function main(): Promise<void> {
   };
   const statusResolver = new ProviderStatusResolver(
     SETUP_SPECS,
-    config.providers,
+    config.providers.map((def) => ({ id: def.id, command: commandOf(def) })),
     realStatusDeps(),
   );
   const system = new SystemAdapter();
