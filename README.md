@@ -8,6 +8,9 @@ pty, streamed with xterm.js and kept alive by tmux.
 Built for an Android phone (Termux > Ubuntu via proot-distro) and a phone browser, but it works
 on any Linux box and desktop browser.
 
+> **Security:** the deck gives its users a real shell on your machine. Keep it on localhost or a
+> trusted LAN with a password, and never expose it to the internet as is. See [SECURITY.md](SECURITY.md).
+
 ## Features
 
 - Terminal per session (tabs), survives closing the browser and restarting the server (tmux)
@@ -135,3 +138,7 @@ npm run ci      # typecheck + lint + tests
 Use `dev.sh` from a git worktree to hack on the deck while you keep working inside the stable one.
 
 Docs: [architecture](docs/architecture.md), [protocol](docs/protocol.md), [security](docs/security.md).
+
+## License
+
+[MIT](LICENSE)
