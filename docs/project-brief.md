@@ -103,6 +103,14 @@ Tree view of the session cwd with lazy loading, file viewer (read-only first, sy
 ### UI
 Mobile first (narrow viewport, touch friendly), but works on desktop. Layout: top bar with session tabs and a "new session" button; main area switchable between Terminal, Files and Preview (on wide screens show them side by side). An approvals badge opens the pending requests list. Extra keys bar for the terminal (Esc, Tab, Ctrl, arrows) because mobile keyboards lack them.
 
+#### Extra keys bar (Termux style, required)
+- Same idea as the Termux extra keys row, always visible under the terminal on touch devices: `ESC`, `TAB`, `CTRL`, `ALT`, `HOME`, `END`, `PGUP`, `PGDN`, arrows (`←` `↑` `↓` `→`), plus `-`, `/`, `|`, `~`.
+- `CTRL` and `ALT` are sticky modifiers: tap once to arm for the next key (highlighted), double tap to lock, tap again to release. Ctrl+letter must work with the phone keyboard too (for example arm `CTRL`, then type `c` to send `^C`).
+- Holding an arrow, `PGUP` or `PGDN` repeats the key.
+- Keys send the proper escape sequences (for example `\x1b[A` for up, `\x1b[H` for home) through the normal `input` WebSocket message; no special protocol.
+- The bar must not steal focus from xterm (so the soft keyboard stays open) and must be configurable (key list and order) from the app config.
+- Pure functions map `(key, modifiers)` to the byte sequence, covered by Vitest tests.
+
 ## Security
 - Default bind 127.0.0.1. If the user sets host 0.0.0.0, require a random access token (generated on first run, printed in the console, sent as header or query for WS, constant-time compare) and refuse to start without it.
 - Strict origin check on WebSocket and HTTP.
