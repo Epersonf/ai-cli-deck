@@ -1,0 +1,31 @@
+{
+  "name": "ai-cli-deck",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "ci": "npm run typecheck && npm run lint && npm run test",
+    "dev:server": "npm run dev -w @deck/server",
+    "dev:web": "npm run dev -w @deck/web",
+    "build": "npm run build -w @deck/web",
+    "start": "npm run start -w @deck/server"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  }
+}

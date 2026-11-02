@@ -1,0 +1,19 @@
+{
+  "name": "@deck/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^11.3.6",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "fastify": "^5.12.8",
+    "node-pty": "^1.1.0",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  }
+}
