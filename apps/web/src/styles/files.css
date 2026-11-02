@@ -15,7 +15,7 @@
 
 .files-pane {
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-columns: minmax(0, 1fr);
 }
 .files-pane.hidden {
@@ -78,8 +78,7 @@
   box-shadow: none;
   background: none;
   text-align: left;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding: 5px 8px;
   color: var(--parchment);
 }
 .tree-row:hover {

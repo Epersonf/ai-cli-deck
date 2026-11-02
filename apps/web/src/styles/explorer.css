@@ -1,0 +1,57 @@
+.explorer-tabs {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  overflow-x: auto;
+  padding: 6px 8px;
+  background: var(--leather-2);
+  border-bottom: 1px solid var(--brass-lo);
+  scrollbar-width: none;
+}
+.explorer-tab {
+  display: flex;
+  flex: none;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px 8px 2px 2px;
+  overflow: hidden;
+}
+.explorer-tab.active {
+  border-color: var(--amber);
+}
+.explorer-tab > button {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.explorer-tabs > button {
+  flex: none;
+  width: var(--ctl);
+  padding: 0;
+}
+.path-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--brass-lo);
+}
+.path-bar > button {
+  width: var(--ctl);
+  padding: 0;
+  flex: none;
+}
+.path-bar input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.path-note {
+  flex-basis: 100%;
+  margin: 0;
+}

@@ -8,6 +8,7 @@ import './styles/layout.css';
 import './styles/workspace.css';
 import './styles/dialogs.css';
 import './styles/drawer.css';
+import './styles/explorer.css';
 import './styles/terminal.css';
 import './styles/files.css';
 import './styles/viewer.css';

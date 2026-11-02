@@ -1,87 +1,21 @@
-import type { FileEntry } from '@deck/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
-import { iconFor } from './fileIcon';
-
-interface LevelProps {
-  sessionId: string;
-  path: string;
-  depth: number;
-  showIgnored: boolean;
-  reloadKey: number;
-  changes: Readonly<Record<string, string>>;
-  selected: string | null;
-  onOpen(path: string): void;
-}
-
-function TreeLevel(props: LevelProps) {
-  const t = useT();
-  const { sessionId, path, depth, showIgnored, reloadKey, changes, selected, onOpen } = props;
-  const [entries, setEntries] = useState<FileEntry[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
-
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .tree(sessionId, path, showIgnored)
-      .then((tree) => !cancelled && (setEntries(tree.entries), setError(null)))
-      .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : 'failed'));
-    return () => {
-      cancelled = true;
-    };
-  }, [sessionId, path, showIgnored, reloadKey]);
-
-  const toggle = (entry: FileEntry): void => {
-    if (entry.kind === 'file') return onOpen(entry.path);
-    const next = new Set(expanded);
-    if (!next.delete(entry.path)) next.add(entry.path);
-    setExpanded(next);
-  };
-
-  if (error !== null) return <p className="notice error">{error}</p>;
-  if (entries === null) return <p className="hint">{t('common.loading')}</p>;
-  return (
-    <ul className="tree">
-      {entries.map((entry) => (
-        <li key={entry.path}>
-          <button
-            type="button"
-            className={`tree-row${entry.ignored ? ' ignored' : ''}${selected === entry.path ? ' selected' : ''}`}
-            style={{ paddingLeft: 8 + depth * 14 }}
-            onClick={() => toggle(entry)}
-            title={entry.ignored ? t('files.ignoredTip', { path: entry.path }) : entry.path}
-          >
-            <span aria-hidden>
-              {entry.kind === 'dir'
-                ? expanded.has(entry.path)
-                  ? '📂'
-                  : '📁'
-                : iconFor(entry.name, 'file')}
-            </span>
-            <span className="tree-name">{entry.name}</span>
-            {changes[entry.path] !== undefined && (
-              <span className="git-code">{changes[entry.path]}</span>
-            )}
-          </button>
-          {entry.kind === 'dir' && expanded.has(entry.path) && (
-            <TreeLevel {...props} path={entry.path} depth={depth + 1} />
-          )}
-        </li>
-      ))}
-      {entries.length === 0 && <li className="hint">{t('files.empty')}</li>}
-    </ul>
-  );
-}
+import { FileList } from './FileList';
+import { parentOf } from './explorerPath';
+import { PathBar } from './PathBar';
 
 interface Props {
   sessionId: string;
+  cwd: string;
+  dir: string;
   selected: string | null;
+  onDir(path: string): void;
   onOpen(path: string): void;
 }
 
-export function FileTree({ sessionId, selected, onOpen }: Props) {
+/** One explorer: address bar with back, tools, and the current folder's entries. */
+export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props) {
   const t = useT();
   const [showIgnored, setShowIgnored] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -96,6 +30,7 @@ export function FileTree({ sessionId, selected, onOpen }: Props) {
 
   return (
     <div className="file-tree">
+      <PathBar cwd={cwd} dir={dir} onGo={onDir} onBack={() => onDir(parentOf(dir))} />
       <div className="tree-tools">
         <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
           ⟳ {t('common.refresh')}
@@ -109,15 +44,15 @@ export function FileTree({ sessionId, selected, onOpen }: Props) {
           {t('files.showHidden')}
         </label>
       </div>
-      <TreeLevel
+      <FileList
         sessionId={sessionId}
-        path=""
-        depth={0}
+        dir={dir}
         showIgnored={showIgnored}
         reloadKey={reloadKey}
         changes={changes}
         selected={selected}
-        onOpen={onOpen}
+        onOpenDir={onDir}
+        onOpenFile={onOpen}
       />
     </div>
   );
