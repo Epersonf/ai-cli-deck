@@ -9,6 +9,7 @@ import {
   SessionSchema,
   TreeResponseSchema,
   type ApprovalDecision,
+  type CreateProfileBody,
   type CreateSessionBody,
 } from '@deck/shared';
 import { z } from 'zod';
@@ -27,6 +28,10 @@ export const api = {
   sessions: () => request(z.array(SessionSchema), 'GET', '/api/sessions'),
   createSession: (body: Omit<CreateSessionBody, never>) =>
     request(SessionSchema, 'POST', '/api/sessions', body),
+  renameSession: (id: string, name: string | null) =>
+    request(SessionSchema, 'PATCH', session(id), { name }),
+  createProfile: (body: CreateProfileBody) =>
+    request(z.object({ ok: z.boolean() }), 'POST', '/api/profiles', body),
   deleteSession: (id: string) => request(z.void(), 'DELETE', session(id)),
   setPreview: (id: string, url: string) =>
     request(z.object({ url: z.string() }), 'PUT', `${session(id)}/preview`, { url }),

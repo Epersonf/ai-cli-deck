@@ -14,5 +14,9 @@ export function createProviderRegistry(
   configured: readonly Provider[] = [],
 ): ProviderRegistry {
   const byId = new Map([...providers, ...configured].map((p) => [p.id, p]));
-  return { get: (id) => byId.get(id), list: () => [...byId.values()] };
+  return {
+    get: (id) => byId.get(id),
+    list: () => [...byId.values()],
+    add: (provider) => void byId.set(provider.id, provider),
+  };
 }

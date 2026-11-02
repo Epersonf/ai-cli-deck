@@ -1,17 +1,24 @@
 import type { Session } from '@deck/shared';
 import { useT } from '../../shared/i18n/store';
+import { useConfirm } from '../confirm/confirmStore';
 import { sessionLabel } from './sessionLabel';
 import { useSessions } from './sessionsStore';
 
-/** Confirms, then stops a session; shared by the tab strip and the terminal switcher. */
+/** Asks (with the app's own dialog), then stops a session. */
 export function useCloseSession(): (session: Session) => void {
   const t = useT();
-  return (session) => {
-    if (window.confirm(t('tabs.closeConfirm', { name: sessionLabel(session) }))) {
-      void useSessions
-        .getState()
-        .remove(session.id)
-        .catch(() => undefined);
-    }
-  };
+  const ask = useConfirm((s) => s.ask);
+  return (session) =>
+    ask({
+      title: t('confirm.closeTitle'),
+      message: t('tabs.closeConfirm', { name: sessionLabel(session) }),
+      confirmLabel: t('confirm.closeAction'),
+      cancelLabel: t('confirm.keep'),
+      onConfirm: () => {
+        void useSessions
+          .getState()
+          .remove(session.id)
+          .catch(() => undefined);
+      },
+    });
 }

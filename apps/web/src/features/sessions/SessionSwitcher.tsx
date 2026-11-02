@@ -1,19 +1,17 @@
 import { useT } from '../../shared/i18n/store';
-import { sessionLabel } from './sessionLabel';
-import { useCloseSession } from './useCloseSession';
+import { SessionRow } from './SessionRow';
 import { useSessions } from './sessionsStore';
 
 interface Props {
   onNew(): void;
+  onProfile(): void;
   onClose(): void;
 }
 
-/** Every terminal in one list: one tap to jump, works the same on phone and desktop. */
-export function SessionSwitcher({ onNew, onClose }: Props) {
+/** Side drawer with every terminal: one tap to jump, rename, end, or add a session/profile. */
+export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   const t = useT();
   const { sessions, activeId, select } = useSessions();
-  const close = useCloseSession();
-
   return (
     <div className="drawer-backdrop" onClick={onClose}>
       <aside className="drawer" onClick={(event) => event.stopPropagation()}>
@@ -22,44 +20,25 @@ export function SessionSwitcher({ onNew, onClose }: Props) {
         <ul className="session-list">
           {sessions.map((session, index) => (
             <li key={session.id}>
-              <button
-                type="button"
-                className={`session-row${session.id === activeId ? ' active' : ''}`}
-                onClick={() => (select(session.id), onClose())}
-              >
-                <span className={`dot ${session.status}`} />
-                <span className="session-main">
-                  <strong>{sessionLabel(session)}</strong>
-                  <small>{session.cwd}</small>
-                </span>
-                {session.sharedCwdWith.length > 0 && (
-                  <span className="warn" title={t('tabs.sharedFolder')}>
-                    ⚠
-                  </span>
-                )}
-                <span className="badge">{t(`status.${session.status}`)}</span>
-                {index < 9 && <kbd>Alt+{index + 1}</kbd>}
-              </button>
-              <button
-                type="button"
-                className="close"
-                aria-label={t('tabs.closeAria')}
-                onClick={() => close(session)}
-              >
-                ×
-              </button>
+              <SessionRow
+                session={session}
+                index={index}
+                active={session.id === activeId}
+                onPick={() => (select(session.id), onClose())}
+              />
             </li>
           ))}
         </ul>
         <p className="hint">{t('switcher.hint')}</p>
-        <div className="row">
-          <button type="button" className="primary" onClick={() => (onClose(), onNew())}>
-            {t('topbar.newSession')}
-          </button>
-          <button type="button" onClick={onClose}>
-            {t('common.close')}
-          </button>
-        </div>
+        <button type="button" className="primary" onClick={() => (onClose(), onNew())}>
+          {t('topbar.newSession')}
+        </button>
+        <button type="button" onClick={() => (onClose(), onProfile())}>
+          {t('switcher.newProfile')}
+        </button>
+        <button type="button" onClick={onClose}>
+          {t('common.close')}
+        </button>
       </aside>
     </div>
   );

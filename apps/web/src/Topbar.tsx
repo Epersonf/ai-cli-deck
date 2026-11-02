@@ -1,26 +1,23 @@
 import { ApprovalsBadge } from './features/approvals/ApprovalsBadge';
-import { SessionTabs } from './features/sessions/SessionTabs';
+import { sessionLabel } from './features/sessions/sessionLabel';
+import { useActiveSession } from './features/sessions/sessionsStore';
 import { useT } from './shared/i18n/store';
 import { Gear } from './shared/ui/Gear';
+import { MenuIcon } from './shared/ui/Icons';
 
 interface Props {
   wide: boolean;
   splitOn: boolean;
-  onNew(): void;
   onSwitcher(): void;
   onSplit(): void;
   onSettings(): void;
 }
 
-export function Topbar({ wide, splitOn, onNew, onSwitcher, onSplit, onSettings }: Props) {
+export function Topbar({ wide, splitOn, onSwitcher, onSplit, onSettings }: Props) {
   const t = useT();
+  const active = useActiveSession();
   return (
     <header className="topbar">
-      <span className="brand">
-        <Gear size={24} className="spin" />
-        <strong>Deck</strong>
-      </span>
-      <SessionTabs onNew={onNew} />
       <button
         type="button"
         className="tool"
@@ -28,8 +25,14 @@ export function Topbar({ wide, splitOn, onNew, onSwitcher, onSplit, onSettings }
         title={t('topbar.sessions')}
         aria-label={t('topbar.sessions')}
       >
-        ☰
+        <MenuIcon />
       </button>
+      <span className="brand">
+        <Gear size={22} className="spin" />
+      </span>
+      <strong className="current-name">
+        {active ? sessionLabel(active) : t('switcher.empty')}
+      </strong>
       {wide && (
         <button
           type="button"

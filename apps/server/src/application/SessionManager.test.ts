@@ -15,6 +15,14 @@ describe('SessionManager lifecycle', () => {
     expect(h.store.saved).toHaveLength(1);
   });
 
+  it('renames a session, persists it, and clears the name when empty', async () => {
+    const h = createHarness();
+    const { id } = await h.sessions.create(customBody());
+    expect((await h.sessions.rename(id, 'API server')).name).toBe('API server');
+    expect(h.store.saved.at(-1)?.name).toBe('API server');
+    expect((await h.sessions.rename(id, null)).name).toBeNull();
+  });
+
   it('falls back to a plain pty without tmux', async () => {
     const h = createHarness({ tmux: false });
     const session = await h.sessions.create(customBody());

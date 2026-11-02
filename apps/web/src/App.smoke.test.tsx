@@ -63,29 +63,36 @@ const click = (el: Element | null) =>
   act(() => void el?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 
 describe('App smoke', () => {
-  it('shows one tab per session and switches between them', async () => {
+  it('shows the active session name in the top bar, with no tab strip', async () => {
     await mount();
-    const tabs = [...document.querySelectorAll('.tab > button[role="tab"]')];
-    expect(tabs.map((t) => t.textContent)).toEqual(['shell · alpha', 'shell · beta']);
-    click(tabs[1] ?? null);
-    expect(document.querySelectorAll('.tab.active')[0]?.textContent).toContain('beta');
+    expect($('.tabs')).toBeNull();
+    expect($('.current-name')?.textContent).toBe('shell · alpha');
   });
 
-  it('opens the terminal list, jumps to a session and supports Alt+number', async () => {
+  it('opens the drawer, jumps to a session and supports Alt+number', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
+    expect($('.drawer')).not.toBeNull();
     expect(document.querySelectorAll('.session-row')).toHaveLength(2);
-    expect(document.body.textContent).toContain('Alt+2');
     click(document.querySelectorAll('.session-row')[1] ?? null);
-    expect($('.modal')).toBeNull();
-    expect($('.tab.active')?.textContent).toContain('beta');
+    expect($('.drawer')).toBeNull();
+    expect($('.current-name')?.textContent).toBe('shell · beta');
     act(
       () =>
         void window.dispatchEvent(
           new KeyboardEvent('keydown', { code: 'Digit1', altKey: true, bubbles: true }),
         ),
     );
-    expect($('.tab.active')?.textContent).toContain('alpha');
+    expect($('.current-name')?.textContent).toBe('shell · alpha');
+  });
+
+  it('asks with the app dialog (not window.confirm) before ending a session', async () => {
+    await mount();
+    click($('button[aria-label="All terminals"]'));
+    click($('.session-list button[aria-label="Close session"]'));
+    expect($('[role="alertdialog"]')?.textContent).toContain('shell · alpha');
+    click($('[role="alertdialog"] .row button'));
+    expect($('[role="alertdialog"]')).toBeNull();
   });
 
   it('switches the whole interface language', async () => {

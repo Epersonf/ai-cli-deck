@@ -5,6 +5,8 @@ import { Topbar } from './Topbar';
 import { Workspace } from './Workspace';
 import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
 import { useApprovals } from './features/approvals/approvalsStore';
+import { ConfirmHost } from './features/confirm/ConfirmHost';
+import { ProfileDialog } from './features/sessions/ProfileDialog';
 import { LoginScreen } from './features/auth/LoginScreen';
 import { useLayout } from './features/layout/layoutStore';
 import { useShortcuts } from './features/layout/useShortcuts';
@@ -18,7 +20,7 @@ import { onUnauthorized } from './shared/api/unauthorized';
 import { useMediaQuery } from './shared/ui/useMediaQuery';
 import { usePolling } from './shared/ui/usePolling';
 
-type Dialog = 'new' | 'settings' | 'switcher' | null;
+type Dialog = 'new' | 'settings' | 'switcher' | 'profile' | null;
 
 export function App() {
   const { sessions, activeId, view, select, setView } = useSessions();
@@ -63,7 +65,6 @@ export function App() {
       <Topbar
         wide={wide}
         splitOn={layout.showRight}
-        onNew={() => setDialog('new')}
         onSwitcher={() => setDialog('switcher')}
         onSplit={() => patch({ showRight: !layout.showRight })}
         onSettings={() => setDialog('settings')}
@@ -88,8 +89,13 @@ export function App() {
         <NewSessionDialog defaultCwd={config?.defaultCwd ?? null} onClose={() => setDialog(null)} />
       )}
       {dialog === 'switcher' && (
-        <SessionSwitcher onNew={() => setDialog('new')} onClose={() => setDialog(null)} />
+        <SessionSwitcher
+          onNew={() => setDialog('new')}
+          onProfile={() => setDialog('profile')}
+          onClose={() => setDialog(null)}
+        />
       )}
+      {dialog === 'profile' && <ProfileDialog onClose={() => setDialog(null)} />}
       {dialog === 'settings' && (
         <SettingsDialog
           keysMode={keysMode}
@@ -99,6 +105,7 @@ export function App() {
         />
       )}
       <ApprovalsPanel />
+      <ConfirmHost />
     </div>
   );
 }

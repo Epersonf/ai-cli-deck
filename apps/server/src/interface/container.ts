@@ -1,4 +1,4 @@
-import type { PublicConfig } from '@deck/shared';
+import type { CreateProfileBody, PublicConfig } from '@deck/shared';
 import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
 import type { AuthService } from '../application/AuthService.js';
@@ -25,6 +25,8 @@ export interface Container {
   bus: EventBus;
   publicConfig: PublicConfig;
   providerStatus(id: string): Promise<ProviderStatusInfo>;
+  /** Saves a profile to config.json and makes it available without a restart. */
+  addProfile(body: CreateProfileBody): Promise<void>;
   security: SecurityOptions;
   auth: AuthService;
   throttle: LoginThrottle;

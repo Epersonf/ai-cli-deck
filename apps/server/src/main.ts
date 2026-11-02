@@ -25,6 +25,7 @@ import { GitCli } from './infrastructure/git/GitCli.js';
 import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
+import { saveProfile } from './infrastructure/config/profileStore.js';
 import { commandOf, createConfiguredProvider } from './infrastructure/providers/configured.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
@@ -51,14 +52,10 @@ async function main(): Promise<void> {
   assertSecureBind(config.host, auth.required);
 
   const here = dirname(fileURLToPath(import.meta.url));
+  const profileDeps = { env: process.env, profilesDir: join(paths.configDir, 'profiles') };
   const providers = createProviderRegistry(
     undefined,
-    config.providers.map((def) =>
-      createConfiguredProvider(def, {
-        env: process.env,
-        profilesDir: join(paths.configDir, 'profiles'),
-      }),
-    ),
+    config.providers.map((def) => createConfiguredProvider(def, profileDeps)),
   );
   const initialSecrets = secretsFromConfig(config, process.env);
   const secrets = (): ProviderSecrets => {
@@ -107,6 +104,11 @@ async function main(): Promise<void> {
     providers: providers,
     bus,
     providerStatus: (id) => statusResolver.resolve(id),
+    addProfile: async (body) => {
+      const def = await saveProfile(paths.configDir, body);
+      providers.add(createConfiguredProvider(def, profileDeps));
+      statusResolver.register({ id: def.id, command: commandOf(def) });
+    },
     publicConfig: {
       defaultCwd: config.defaultCwd ?? homedir(),
       extraKeys: config.extraKeys,

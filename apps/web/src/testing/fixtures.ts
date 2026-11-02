@@ -11,6 +11,7 @@ const session = (id: string, cwd: string): Session => ({
   worktree: { enabled: false, path: null, branch: null },
   persistent: true,
   sharedCwdWith: [],
+  name: null,
 });
 
 export const SESSIONS = [session('s1', '/work/alpha'), session('s2', '/work/beta')];

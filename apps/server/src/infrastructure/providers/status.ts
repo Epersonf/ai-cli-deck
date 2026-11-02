@@ -44,9 +44,15 @@ const READY: ProviderStatusInfo = { status: 'ready', hint: null, canInstall: fal
 export class ProviderStatusResolver {
   constructor(
     private readonly specs: readonly SetupSpec[],
-    private readonly configured: readonly { id: string; command: string }[],
+    private readonly configured: { id: string; command: string }[],
     private readonly deps: StatusDeps,
   ) {}
+
+  register(entry: { id: string; command: string }): void {
+    const at = this.configured.findIndex((d) => d.id === entry.id);
+    if (at >= 0) this.configured.splice(at, 1);
+    this.configured.push(entry);
+  }
 
   async resolve(id: string): Promise<ProviderStatusInfo> {
     const def = this.configured.find((d) => d.id === id);

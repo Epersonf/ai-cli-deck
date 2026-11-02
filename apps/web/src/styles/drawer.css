@@ -25,3 +25,39 @@
     transform: translateX(-100%);
   }
 }
+
+.confirm-backdrop {
+  z-index: 40;
+}
+.confirm p {
+  margin: 0;
+}
+button.danger {
+  border-color: #a33;
+  color: #ffb3a0;
+}
+.session-rename {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.session-rename input {
+  flex: 1;
+  min-width: 0;
+}
+.session-main strong,
+.session-main small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.current-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--brass-hi);
+}

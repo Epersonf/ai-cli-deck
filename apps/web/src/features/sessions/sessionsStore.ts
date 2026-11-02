@@ -11,6 +11,7 @@ interface SessionsState {
   refresh(): Promise<void>;
   upsert(session: Session): void;
   remove(id: string): Promise<void>;
+  rename(id: string, name: string | null): Promise<void>;
   select(id: string): void;
   setView(view: View): void;
 }
@@ -32,6 +33,9 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   async remove(id) {
     await api.deleteSession(id);
     await get().refresh();
+  },
+  async rename(id, name) {
+    get().upsert(await api.renameSession(id, name));
   },
   select: (id) => set({ activeId: id, view: 'terminal' }),
   setView: (view) => set({ view }),

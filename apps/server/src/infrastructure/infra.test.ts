@@ -22,6 +22,12 @@ describe('providers', () => {
     });
   });
 
+  it('claude tells the agent it runs inside the deck and how to use clideck', () => {
+    const args = createClaudeLike('claude', 'Claude').buildMcpConfig(ctx).args;
+    expect(args[2]).toBe('--append-system-prompt');
+    expect(args[3]).toContain('clideck help');
+  });
+
   it('claude-deepseek needs a key and sets the Anthropic-compatible env', () => {
     expect(() => claudeDeepseek.buildCommand(ctx)).toThrow('DEEPSEEK_API_KEY');
     const env = claudeDeepseek.buildCommand({
@@ -33,7 +39,9 @@ describe('providers', () => {
   });
 
   it('codex overrides mcp_servers and custom requires a command', () => {
-    expect(codex.buildMcpConfig(ctx).args).toEqual(['-c', `mcp_servers.deck.url="${ctx.mcpUrl}"`]);
+    const args = codex.buildMcpConfig(ctx).args;
+    expect(args.slice(0, 2)).toEqual(['-c', `mcp_servers.deck.url="${ctx.mcpUrl}"`]);
+    expect(args[3]).toContain('developer_instructions=');
     expect(() => custom.buildCommand(ctx)).toThrow('command');
     expect(custom.buildCommand({ ...ctx, command: 'bash', args: ['-l'] }).args).toEqual(['-l']);
   });

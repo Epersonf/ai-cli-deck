@@ -8,6 +8,7 @@ import { wirePty } from './ptyWiring.js';
 import { RingBuffer } from './RingBuffer.js';
 import type { SessionLauncher } from './SessionLauncher.js';
 import { tmuxNameFor } from './SessionLauncher.js';
+import { newSession } from './newSession.js';
 import { withSharedCwd } from './sharedCwd.js';
 
 export interface SessionManagerDeps {
@@ -43,18 +44,11 @@ export class SessionManager {
     const { system, ports, mux } = this.deps;
     const cwd = resolveCwd(body.cwd, system.homeDir());
     if (!(await system.isDirectory(cwd))) throw invalid(`Not a directory: ${cwd}`);
-    const session: Session = {
+    const session = newSession(body, cwd, await ports.allocate(), {
       id: system.newId(),
-      provider: body.provider,
-      cwd,
-      status: 'starting',
-      createdAt: system.now().toISOString(),
-      previewUrl: null,
-      port: await ports.allocate(),
-      worktree: { enabled: body.useWorktree, path: null, branch: null },
+      now: system.now(),
       persistent: mux.available,
-      sharedCwdWith: [],
-    };
+    });
     try {
       this.start(session, () => this.deps.launcher.launch(session, body.command, body.args));
     } catch (error) {
@@ -97,6 +91,12 @@ export class SessionManager {
     const runtime = this.require(id);
     const captured = await this.deps.mux.capture(tmuxNameFor(id));
     return captured ?? runtime.ring.snapshot();
+  }
+
+  async rename(id: string, name: string | null): Promise<Session> {
+    this.update(id, { name });
+    await this.persist();
+    return this.get(id) ?? this.require(id).session;
   }
 
   setPreview(id: string, url: string): string {
