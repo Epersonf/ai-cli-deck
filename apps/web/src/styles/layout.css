@@ -22,6 +22,19 @@
   color: var(--brass-hi);
   text-shadow: var(--glow);
 }
+.tool.on {
+  border-color: var(--amber);
+  color: var(--amber);
+  box-shadow: var(--glow);
+}
+.icon-split {
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent 55%, currentColor 55% 65%, transparent 65%);
+}
 .tool {
   width: var(--ctl);
   padding: 0;

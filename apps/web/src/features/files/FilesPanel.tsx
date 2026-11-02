@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useT } from '../../shared/i18n/store';
 import { FileTree } from './FileTree';
 import { FileViewer } from './FileViewer';
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function FilesPanel({ sessionId, visible }: Props) {
+  const t = useT();
   const [selected, setSelected] = useState<string | null>(null);
   return (
     <section
@@ -17,7 +19,7 @@ export function FilesPanel({ sessionId, visible }: Props) {
       {selected !== null ? (
         <FileViewer sessionId={sessionId} path={selected} onClose={() => setSelected(null)} />
       ) : (
-        <p className="empty viewer-placeholder">Pick a file to view it.</p>
+        <p className="empty viewer-placeholder">{t('files.pick')}</p>
       )}
     </section>
   );

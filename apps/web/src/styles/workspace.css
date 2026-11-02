@@ -39,10 +39,10 @@
   font-weight: 700;
 }
 
+/* Desktop: one column, or terminal | splitter | side panel when the panel is open. */
 .app.wide .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
   padding: 10px;
 }
 .app.wide .col-left,
@@ -52,17 +52,34 @@
   min-height: 0;
   min-width: 0;
 }
-.app.wide .right-tabs {
-  position: absolute;
-  right: 10px;
-  top: 50px;
-  z-index: 5;
-  width: 38%;
-  background: none;
-  padding: 0;
+.app.wide .workspace:not(.split) .col-right {
+  display: none;
 }
-.app.wide .col-right .pane {
-  margin-top: 38px;
+.right-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 0 0 8px;
+}
+.right-header .right-tabs {
+  flex: 1;
+  padding: 0;
+  background: none;
+}
+
+.splitter {
+  width: 10px;
+  align-self: stretch;
+  cursor: col-resize;
+  touch-action: none;
+  border-radius: 5px;
+  background: linear-gradient(90deg, transparent 4px, var(--brass-lo) 4px 6px, transparent 6px);
+}
+.splitter:hover,
+.splitter:focus-visible,
+.splitter.dragging {
+  outline: none;
+  background: linear-gradient(90deg, transparent 3px, var(--amber) 3px 7px, transparent 7px);
 }
 
 .welcome {

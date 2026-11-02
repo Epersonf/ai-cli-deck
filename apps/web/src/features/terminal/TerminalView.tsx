@@ -5,7 +5,8 @@ import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { openTerminalSocket } from '../../shared/ws/terminalSocket';
 import { usePreview, previewable } from '../preview/previewStore';
-import { useSessions } from '../sessions/sessionsStore';
+import { useT } from '../../shared/i18n/store';
+import { showSidePane } from '../layout/layoutStore';
 import { dispatchMessage } from './dispatch';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { TERMINAL_THEME } from './theme';
@@ -28,13 +29,14 @@ const hasFinePointer = (): boolean => window.matchMedia('(pointer: fine)').match
 function openLink(sessionId: string, uri: string): void {
   if (previewable(uri, window.location.origin) !== null) {
     usePreview.getState().open(sessionId, uri);
-    useSessions.getState().setView('preview');
+    showSidePane('preview');
   } else {
     window.open(uri, '_blank', 'noopener,noreferrer');
   }
 }
 
 export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
+  const t = useT();
   const host = useRef<HTMLDivElement>(null);
   const fitRef = useRef<FitAddon | null>(null);
   const termRef = useRef<Terminal | null>(null);
@@ -108,7 +110,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   return (
     <div className="terminal-wrap">
       <div ref={host} className="terminal-host" />
-      {!online && <div className="terminal-offline">reconnecting…</div>}
+      {!online && <div className="terminal-offline">{t('terminal.reconnecting')}</div>}
     </div>
   );
 }

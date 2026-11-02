@@ -1,3 +1,4 @@
+import { useT } from '../../shared/i18n/store';
 import { KeyButton } from './KeyButton';
 import { sequenceFor } from './keymap';
 import type { ModifiersApi } from './useModifiers';
@@ -30,6 +31,7 @@ export function chunkKeys(keys: readonly string[], size: number): string[][] {
 
 /** Termux-style extra keys row(s): ESC, TAB, sticky CTRL/ALT, HOME/END, PGUP/PGDN, arrows. */
 export function ExtraKeys({ keys, mods, send, applicationCursor }: Props) {
+  const t = useT();
   const press = (key: string): void => {
     if (key === 'CTRL') return mods.tap('ctrl');
     if (key === 'ALT') return mods.tap('alt');
@@ -38,7 +40,7 @@ export function ExtraKeys({ keys, mods, send, applicationCursor }: Props) {
   const state = (key: string) => (key === 'CTRL' ? mods.ctrl : key === 'ALT' ? mods.alt : null);
 
   return (
-    <div className="extra-keys" role="toolbar" aria-label="Terminal keys">
+    <div className="extra-keys" role="toolbar" aria-label={t('keys.aria')}>
       {chunkKeys(keys ?? DEFAULT_KEYS, ROW_SIZE).map((row) => (
         <div className="extra-keys-row" key={row.join('')}>
           {row.map((key) => (

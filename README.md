@@ -16,6 +16,9 @@ on any Linux box and desktop browser.
 - Per-session preview iframe (localhost only); click a `localhost:PORT` link in the terminal
 - `clideck` command and MCP tools so agents can talk back (preview, worktree request...)
 - Password login, changeable in the app; open without password while localhost-only
+- Desktop split view (terminal | files or preview, draggable divider, optional) and a terminal list
+  (`☰`, or Alt+1…9 / Alt+[ ]) to switch terminals on phone and desktop
+- Interface in 8 languages: English, Português (Brasil), Español, Italiano, Français, 中文, 日本語, Русский
 
 ## Setup (Termux > Ubuntu proot)
 

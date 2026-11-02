@@ -1,6 +1,7 @@
 import type { CreateSessionBody, ProviderInfo } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
+import { useT } from '../../shared/i18n/store';
 import { ProviderPicker } from './ProviderPicker';
 import { loadRecent, rememberFolder } from './recentFolders';
 import { SessionOptions } from './SessionOptions';
@@ -21,6 +22,7 @@ const pickDefault = (list: readonly ProviderInfo[]): string =>
   '';
 
 export function NewSessionDialog({ defaultCwd, onClose }: Props) {
+  const t = useT();
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [provider, setProvider] = useState('');
   const [cwd, setCwd] = useState(() => loadRecent()[0] ?? defaultCwd ?? '');
@@ -55,12 +57,13 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
 
   const submit = (event: FormEvent): void => {
     event.preventDefault();
+    const command = options.command.trim();
     void launch(
       {
         provider,
         cwd: cwd.trim(),
         useWorktree: options.useWorktree,
-        command: options.command.trim() === '' ? null : options.command.trim(),
+        command: command === '' ? null : command,
         args: splitArgs(options.args),
       },
       true,
@@ -83,7 +86,7 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>New session</h2>
+        <h2>{t('newSession.title')}</h2>
         <ProviderPicker
           providers={providers}
           value={provider}
@@ -92,7 +95,7 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
           disabled={busy}
         />
         <label>
-          Folder
+          {t('newSession.folder')}
           <input
             value={cwd}
             onChange={(e) => setCwd(e.target.value)}
@@ -113,10 +116,10 @@ export function NewSessionDialog({ defaultCwd, onClose }: Props) {
         {error !== null && <p className="notice error">{error}</p>}
         <div className="row">
           <button type="submit" className="primary" disabled={busy || provider === '' || missing}>
-            Start
+            {t('newSession.start')}
           </button>
           <button type="button" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
       </form>

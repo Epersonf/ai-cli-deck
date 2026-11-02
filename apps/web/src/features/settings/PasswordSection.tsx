@@ -2,6 +2,7 @@ import { MIN_PASSWORD_LENGTH, type AuthStatus } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { clearToken, setToken } from '../../shared/api/token';
+import { useT } from '../../shared/i18n/store';
 
 interface Message {
   text: string;
@@ -9,6 +10,7 @@ interface Message {
 }
 
 export function PasswordSection() {
+  const t = useT();
   const [status, setStatus] = useState<AuthStatus | null>(null);
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -33,7 +35,7 @@ export function PasswordSection() {
       setNext('');
       setAgain('');
       setMessage({
-        text: password === null ? 'Password removed.' : 'Password saved.',
+        text: password === null ? t('password.removed') : t('password.saved'),
         error: false,
       });
       load();
@@ -46,14 +48,17 @@ export function PasswordSection() {
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     if (next.length < MIN_PASSWORD_LENGTH) {
-      return setMessage({ text: `Use at least ${MIN_PASSWORD_LENGTH} characters.`, error: true });
+      return setMessage({
+        text: t('password.tooShort', { min: MIN_PASSWORD_LENGTH }),
+        error: true,
+      });
     }
-    if (next !== again) return setMessage({ text: 'The two passwords differ.', error: true });
+    if (next !== again) return setMessage({ text: t('password.mismatch'), error: true });
     void apply(next);
   };
 
   const remove = (): void => {
-    if (window.confirm('Remove the password? Anyone who can open this page will get in.')) {
+    if (window.confirm(t('password.removeConfirm'))) {
       void apply(null);
     }
   };
@@ -61,18 +66,12 @@ export function PasswordSection() {
   const required = status?.required !== false;
   return (
     <form className="setting" onSubmit={submit}>
-      <h3>{required ? 'Change password' : 'Set a password'}</h3>
-      {status?.isDefault === true && (
-        <p className="notice error">The built-in default password is in use. Please change it.</p>
-      )}
-      {!required && (
-        <p className="hint">
-          No password is set. That is fine while the server only listens on this machine.
-        </p>
-      )}
+      <h3>{required ? t('password.change') : t('password.set')}</h3>
+      {status?.isDefault === true && <p className="notice error">{t('password.defaultInUse')}</p>}
+      {!required && <p className="hint">{t('password.none')}</p>}
       {required && (
         <label>
-          Current password
+          {t('password.current')}
           <input
             type="password"
             value={current}
@@ -83,7 +82,7 @@ export function PasswordSection() {
         </label>
       )}
       <label>
-        New password
+        {t('password.new')}
         <input
           type="password"
           value={next}
@@ -93,7 +92,7 @@ export function PasswordSection() {
         />
       </label>
       <label>
-        Repeat new password
+        {t('password.repeat')}
         <input
           type="password"
           value={again}
@@ -107,18 +106,16 @@ export function PasswordSection() {
       )}
       <div className="row">
         <button type="submit" className="primary" disabled={busy}>
-          Save password
+          {t('password.save')}
         </button>
         {status?.required === true && status.canDisable && (
           <button type="button" onClick={remove} disabled={busy || current === ''}>
-            Remove password
+            {t('password.remove')}
           </button>
         )}
       </div>
       {status?.required === true && !status.canDisable && (
-        <p className="hint">
-          A password is mandatory while the server is reachable from the network.
-        </p>
+        <p className="hint">{t('password.mandatory')}</p>
       )}
     </form>
   );

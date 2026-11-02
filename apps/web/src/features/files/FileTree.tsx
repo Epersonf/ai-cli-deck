@@ -1,6 +1,7 @@
 import type { FileEntry } from '@deck/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../../shared/api/endpoints';
+import { useT } from '../../shared/i18n/store';
 import { iconFor } from './fileIcon';
 
 interface LevelProps {
@@ -15,6 +16,7 @@ interface LevelProps {
 }
 
 function TreeLevel(props: LevelProps) {
+  const t = useT();
   const { sessionId, path, depth, showIgnored, reloadKey, changes, selected, onOpen } = props;
   const [entries, setEntries] = useState<FileEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ function TreeLevel(props: LevelProps) {
   };
 
   if (error !== null) return <p className="notice error">{error}</p>;
-  if (entries === null) return <p className="hint">Loading…</p>;
+  if (entries === null) return <p className="hint">{t('common.loading')}</p>;
   return (
     <ul className="tree">
       {entries.map((entry) => (
@@ -49,7 +51,7 @@ function TreeLevel(props: LevelProps) {
             className={`tree-row${entry.ignored ? ' ignored' : ''}${selected === entry.path ? ' selected' : ''}`}
             style={{ paddingLeft: 8 + depth * 14 }}
             onClick={() => toggle(entry)}
-            title={entry.ignored ? `${entry.path} (ignored by git)` : entry.path}
+            title={entry.ignored ? t('files.ignoredTip', { path: entry.path }) : entry.path}
           >
             <span aria-hidden>
               {entry.kind === 'dir'
@@ -68,7 +70,7 @@ function TreeLevel(props: LevelProps) {
           )}
         </li>
       ))}
-      {entries.length === 0 && <li className="hint">Empty folder</li>}
+      {entries.length === 0 && <li className="hint">{t('files.empty')}</li>}
     </ul>
   );
 }
@@ -80,6 +82,7 @@ interface Props {
 }
 
 export function FileTree({ sessionId, selected, onOpen }: Props) {
+  const t = useT();
   const [showIgnored, setShowIgnored] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [changes, setChanges] = useState<Record<string, string>>({});
@@ -95,7 +98,7 @@ export function FileTree({ sessionId, selected, onOpen }: Props) {
     <div className="file-tree">
       <div className="tree-tools">
         <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
-          ⟳ Refresh
+          ⟳ {t('common.refresh')}
         </button>
         <label>
           <input
@@ -103,7 +106,7 @@ export function FileTree({ sessionId, selected, onOpen }: Props) {
             checked={showIgnored}
             onChange={(e) => setShowIgnored(e.target.checked)}
           />
-          .git / node_modules
+          {t('files.showHidden')}
         </label>
       </div>
       <TreeLevel

@@ -1,3 +1,5 @@
+import { useT } from '../../shared/i18n/store';
+
 interface Values {
   command: string;
   args: string;
@@ -14,12 +16,13 @@ const NEEDS_COMMAND = new Set(['custom']);
 
 /** Optional launch settings: custom command, extra arguments and worktree permission. */
 export function SessionOptions({ provider, values, onChange }: Props) {
+  const t = useT();
   const set = (patch: Partial<Values>): void => onChange({ ...values, ...patch });
   return (
     <>
       {(NEEDS_COMMAND.has(provider) || provider === 'shell') && (
         <label>
-          Command {provider === 'shell' ? '(optional, default shell)' : ''}
+          {t('newSession.command')} {provider === 'shell' ? t('newSession.commandOptional') : ''}
           <input
             value={values.command}
             onChange={(e) => set({ command: e.target.value })}
@@ -31,7 +34,7 @@ export function SessionOptions({ provider, values, onChange }: Props) {
         </label>
       )}
       <label>
-        Extra arguments (optional)
+        {t('newSession.args')}
         <input
           value={values.args}
           onChange={(e) => set({ args: e.target.value })}
@@ -46,7 +49,7 @@ export function SessionOptions({ provider, values, onChange }: Props) {
           checked={values.useWorktree}
           onChange={(e) => set({ useWorktree: e.target.checked })}
         />
-        Allow the agent to request a git worktree
+        {t('newSession.worktree')}
       </label>
     </>
   );

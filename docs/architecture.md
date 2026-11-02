@@ -28,3 +28,11 @@
   `deepseek-chat`, as DeepSeek documents for Claude Code.
 - **Auth is a domain service** (`AuthService`) behind ports, so password rules are unit tested
   without touching disk or crypto.
+- **Localization without a library.** `apps/web/src/shared/i18n` holds one typed dictionary per
+  language; English is the source of truth and every other file must define the same keys (the
+  type checker and a parity test, which also compares `{placeholders}`, enforce it). The language is
+  saved in the browser, defaults to the browser language, and server error messages stay English.
+- **Layout state is a store** (`layoutStore`) so code outside React (socket handlers, terminal links)
+  can open the preview pane with `showSidePane`.
+- **Desktop split** is optional: terminal | draggable splitter | files or preview, remembered in
+  `localStorage`. On narrow screens the same panes become tabs.

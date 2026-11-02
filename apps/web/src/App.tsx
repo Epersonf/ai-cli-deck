@@ -1,34 +1,32 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { PublicConfig } from '@deck/shared';
 import { PaneTabs } from './PaneTabs';
-import { ApprovalsBadge } from './features/approvals/ApprovalsBadge';
+import { Topbar } from './Topbar';
+import { Workspace } from './Workspace';
 import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { LoginScreen } from './features/auth/LoginScreen';
-import { SettingsDialog } from './features/settings/SettingsDialog';
-import { FilesPanel } from './features/files/FilesPanel';
-import { PreviewPanel } from './features/preview/PreviewPanel';
+import { useLayout } from './features/layout/layoutStore';
+import { useShortcuts } from './features/layout/useShortcuts';
 import { NewSessionDialog } from './features/sessions/NewSessionDialog';
-import { SessionTabs } from './features/sessions/SessionTabs';
+import { SessionSwitcher } from './features/sessions/SessionSwitcher';
 import { useSessions } from './features/sessions/sessionsStore';
-import { TerminalPane } from './features/terminal/TerminalPane';
+import { SettingsDialog } from './features/settings/SettingsDialog';
 import { keysVisible, loadMode, saveMode, type KeysMode } from './features/terminal/keysPreference';
 import { api } from './shared/api/endpoints';
 import { onUnauthorized } from './shared/api/unauthorized';
-import { Gear } from './shared/ui/Gear';
 import { useMediaQuery } from './shared/ui/useMediaQuery';
 import { usePolling } from './shared/ui/usePolling';
 
-type Dialog = 'new' | 'settings' | null;
-type Pane = 'terminal' | 'files' | 'preview';
+type Dialog = 'new' | 'settings' | 'switcher' | null;
 
 export function App() {
-  const { sessions, activeId, view } = useSessions();
+  const { sessions, activeId, view, select, setView } = useSessions();
+  const { layout, patch } = useLayout();
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [locked, setLocked] = useState(false);
   const [keysMode, setKeysMode] = useState(loadMode);
-  const [rightView, setRightView] = useState<'files' | 'preview'>('files');
   const wide = useMediaQuery('(min-width: 1000px)');
   const touch = useMediaQuery('(pointer: coarse)');
 
@@ -45,18 +43,16 @@ export function App() {
 
   useEffect(() => onUnauthorized(() => setLocked(true)), []);
   useEffect(reload, [reload]);
-  useEffect(() => {
-    if (view !== 'terminal') setRightView(view);
-  }, [view]);
+  useShortcuts(
+    sessions.map((s) => s.id),
+    activeId,
+    select,
+  );
   usePolling(() => (locked ? Promise.resolve() : useSessions.getState().refresh()), 5000);
   usePolling(() => (locked ? Promise.resolve() : useApprovals.getState().refresh()), 3000);
 
   if (locked) return <LoginScreen onDone={reload} />;
 
-  const showing = (id: string, pane: Pane): boolean => {
-    if (id !== activeId) return false;
-    return wide ? pane === 'terminal' || rightView === pane : view === pane;
-  };
   const changeKeys = (mode: KeysMode): void => {
     saveMode(mode);
     setKeysMode(mode);
@@ -64,59 +60,35 @@ export function App() {
 
   return (
     <div className={`app${wide ? ' wide' : ''}`}>
-      <header className="topbar">
-        <span className="brand">
-          <Gear size={24} className="spin" />
-          <strong>Deck</strong>
-        </span>
-        <SessionTabs onNew={() => setDialog('new')} />
-        <button
-          type="button"
-          className="tool"
-          onClick={() => setDialog('settings')}
-          title="Settings"
-        >
-          ⚙
-        </button>
-        <ApprovalsBadge />
-      </header>
-      {wide && <PaneTabs views={['files', 'preview']} className="right-tabs" />}
-      <main className="workspace">
-        <div className="col-left">
-          {sessions.map((s) => (
-            <TerminalPane
-              key={s.id}
-              sessionId={s.id}
-              visible={showing(s.id, 'terminal')}
-              extraKeys={config?.extraKeys ?? null}
-              showKeys={keysVisible(keysMode, touch)}
-            />
-          ))}
-        </div>
-        <div className="col-right">
-          {sessions.map((s) => (
-            <FilesPanel key={`f${s.id}`} sessionId={s.id} visible={showing(s.id, 'files')} />
-          ))}
-          {sessions.map((s) => (
-            <PreviewPanel key={`p${s.id}`} sessionId={s.id} visible={showing(s.id, 'preview')} />
-          ))}
-        </div>
-        {sessions.length === 0 && (
-          <div className="welcome">
-            <Gear size={96} teeth={14} className="spin" />
-            <h1>Deck</h1>
-            <p>Run any AI CLI in a real terminal, with files and a live preview beside it.</p>
-            <button type="button" className="primary" onClick={() => setDialog('new')}>
-              Start a session
-            </button>
-          </div>
-        )}
-      </main>
+      <Topbar
+        wide={wide}
+        splitOn={layout.showRight}
+        onNew={() => setDialog('new')}
+        onSwitcher={() => setDialog('switcher')}
+        onSplit={() => patch({ showRight: !layout.showRight })}
+        onSettings={() => setDialog('settings')}
+      />
+      <Workspace
+        sessions={sessions}
+        activeId={activeId}
+        wide={wide}
+        extraKeys={config?.extraKeys ?? null}
+        showKeys={keysVisible(keysMode, touch)}
+        onNew={() => setDialog('new')}
+      />
       {!wide && sessions.length > 0 && (
-        <PaneTabs views={['terminal', 'files', 'preview']} className="bottom-nav" />
+        <PaneTabs
+          views={['terminal', 'files', 'preview']}
+          active={view}
+          className="bottom-nav"
+          onSelect={setView}
+        />
       )}
       {dialog === 'new' && (
         <NewSessionDialog defaultCwd={config?.defaultCwd ?? null} onClose={() => setDialog(null)} />
+      )}
+      {dialog === 'switcher' && (
+        <SessionSwitcher onNew={() => setDialog('new')} onClose={() => setDialog(null)} />
       )}
       {dialog === 'settings' && (
         <SettingsDialog

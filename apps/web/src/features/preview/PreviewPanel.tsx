@@ -1,5 +1,6 @@
 import { normalizeUrl } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
+import { useT } from '../../shared/i18n/store';
 import { currentUrl, usePreview } from './previewStore';
 
 const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals';
@@ -11,6 +12,7 @@ interface Props {
 
 /** Per-session browser: only localhost pages, rendered in a sandboxed iframe. */
 export function PreviewPanel({ sessionId, visible }: Props) {
+  const t = useT();
   const state = usePreview((s) => s.byId[sessionId]);
   const suggested = usePreview((s) => s.newTab[sessionId] ?? null);
   const { open, back, forward, reload, suggestNewTab } = usePreview.getState();
@@ -23,7 +25,7 @@ export function PreviewPanel({ sessionId, visible }: Props) {
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     const ok = open(sessionId, normalizeUrl(draft));
-    setError(ok ? null : 'Only http(s)://localhost or 127.0.0.1 pages can be previewed');
+    setError(ok ? null : t('preview.onlyLocal'));
   };
 
   return (
@@ -53,14 +55,14 @@ export function PreviewPanel({ sessionId, visible }: Props) {
         />
         {url !== null && (
           <a className="btn" href={url} target="_blank" rel="noopener noreferrer">
-            Open in new tab ↗
+            {t('preview.openTab')} ↗
           </a>
         )}
       </form>
       {error !== null && <p className="notice error">{error}</p>}
       {suggested !== null && (
         <p className="notice">
-          An agent suggests opening{' '}
+          {t('preview.suggested')}{' '}
           <a
             href={suggested}
             target="_blank"
@@ -70,24 +72,22 @@ export function PreviewPanel({ sessionId, visible }: Props) {
             {suggested} ↗
           </a>
           <button type="button" className="link" onClick={() => suggestNewTab(sessionId, null)}>
-            dismiss
+            {t('preview.dismiss')}
           </button>
         </p>
       )}
       {url === null ? (
-        <p className="empty">Tap a localhost link in the terminal, or type an address above.</p>
+        <p className="empty">{t('preview.empty')}</p>
       ) : (
         <iframe
           key={`${url}#${state?.reloadKey ?? 0}`}
-          title={`Preview of ${url}`}
+          title={url}
           src={url}
           sandbox={SANDBOX}
           referrerPolicy="no-referrer"
         />
       )}
-      {url !== null && (
-        <p className="hint">Page blank? It may forbid embedding. Use “Open in new tab”.</p>
-      )}
+      {url !== null && <p className="hint">{t('preview.blankHint')}</p>}
     </section>
   );
 }

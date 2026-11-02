@@ -1,5 +1,7 @@
 import type { ServerMessage } from '@deck/shared';
+import { translateNow } from '../../shared/i18n/store';
 import { useApprovals } from '../approvals/approvalsStore';
+import { showSidePane } from '../layout/layoutStore';
 import { usePreview } from '../preview/previewStore';
 import { useSessions } from '../sessions/sessionsStore';
 
@@ -26,15 +28,18 @@ export function dispatchMessage(
       useSessions.getState().upsert(message.session);
       break;
     case 'exit':
-      sink.note(`process exited${message.code === null ? '' : ` (code ${message.code})`}`);
+      sink.note(
+        message.code === null
+          ? translateNow('terminal.exited')
+          : translateNow('terminal.exitedCode', { code: message.code }),
+      );
       break;
     case 'approval-request':
       useApprovals.getState().receive(message.request);
       break;
     case 'preview-open':
       if (usePreview.getState().open(sessionId, message.url)) {
-        if (useSessions.getState().activeId === sessionId)
-          useSessions.getState().setView('preview');
+        if (useSessions.getState().activeId === sessionId) showSidePane('preview');
       }
       break;
     case 'new-tab':

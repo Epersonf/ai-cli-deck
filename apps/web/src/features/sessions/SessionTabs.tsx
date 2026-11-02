@@ -1,24 +1,23 @@
-import type { Session } from '@deck/shared';
+import { useEffect, useRef } from 'react';
+import { useT } from '../../shared/i18n/store';
+import { sessionLabel } from './sessionLabel';
+import { useCloseSession } from './useCloseSession';
 import { useSessions } from './sessionsStore';
 
-const basename = (path: string): string =>
-  path
-    .replace(/[\\/]+$/, '')
-    .split(/[\\/]/)
-    .pop() || path;
-export const sessionLabel = (s: Session): string => `${s.provider} · ${basename(s.cwd)}`;
-
 export function SessionTabs({ onNew }: { onNew(): void }) {
-  const { sessions, activeId, select, remove } = useSessions();
+  const t = useT();
+  const { sessions, activeId, select } = useSessions();
+  const close = useCloseSession();
+  const strip = useRef<HTMLDivElement>(null);
 
-  const close = (session: Session): void => {
-    if (window.confirm(`Close ${sessionLabel(session)}? The process will be stopped.`)) {
-      void remove(session.id).catch(() => undefined);
-    }
-  };
+  useEffect(() => {
+    strip.current
+      ?.querySelector('.tab.active')
+      ?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  }, [activeId, sessions.length]);
 
   return (
-    <div className="tabs" role="tablist">
+    <div className="tabs" role="tablist" ref={strip}>
       {sessions.map((session) => (
         <div key={session.id} className={`tab${session.id === activeId ? ' active' : ''}`}>
           <button
@@ -30,7 +29,7 @@ export function SessionTabs({ onNew }: { onNew(): void }) {
             <span className={`dot ${session.status}`} />
             {sessionLabel(session)}
             {session.sharedCwdWith.length > 0 && (
-              <span className="warn" title="Another session is using this folder">
+              <span className="warn" title={t('tabs.sharedFolder')}>
                 ⚠
               </span>
             )}
@@ -38,14 +37,14 @@ export function SessionTabs({ onNew }: { onNew(): void }) {
           <button
             type="button"
             className="close"
-            aria-label="Close session"
+            aria-label={t('tabs.closeAria')}
             onClick={() => close(session)}
           >
             ×
           </button>
         </div>
       ))}
-      <button type="button" className="new-tab" onClick={onNew} aria-label="New session">
+      <button type="button" className="new-tab" onClick={onNew} aria-label={t('topbar.newSession')}>
         ＋
       </button>
     </div>

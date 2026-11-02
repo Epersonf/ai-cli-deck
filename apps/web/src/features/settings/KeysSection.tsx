@@ -1,3 +1,4 @@
+import { useT } from '../../shared/i18n/store';
 import type { KeysMode } from '../terminal/keysPreference';
 
 interface Props {
@@ -6,26 +7,20 @@ interface Props {
   onChange(mode: KeysMode): void;
 }
 
-const OPTIONS: ReadonlyArray<{ mode: KeysMode; label: string; help: string }> = [
-  {
-    mode: 'auto',
-    label: 'Automatic',
-    help: 'Show on touch screens, hide on a computer with a keyboard.',
-  },
-  { mode: 'on', label: 'Always show', help: 'Show the keys bar on every device.' },
-  { mode: 'off', label: 'Never show', help: 'Hide it everywhere and use the real keyboard.' },
-];
-
 /** Explains the on-screen keys bar (Esc, Tab, Ctrl, arrows...) and lets the user force it. */
 export function KeysSection({ mode, touchScreen, onChange }: Props) {
+  const t = useT();
+  const options = [
+    { mode: 'auto', label: t('keys.auto'), help: t('keys.autoHelp') },
+    { mode: 'on', label: t('keys.on'), help: t('keys.onHelp') },
+    { mode: 'off', label: t('keys.off'), help: t('keys.offHelp') },
+  ] as const;
+  const device = t(touchScreen ? 'keys.deviceTouch' : 'keys.deviceDesktop');
   return (
     <fieldset className="setting">
-      <legend>On-screen terminal keys</legend>
-      <p className="hint">
-        The row of Esc, Tab, Ctrl, Alt, Home/End and arrow keys under the terminal. This device
-        looks like {touchScreen ? 'a touch screen' : 'a computer with a keyboard'}.
-      </p>
-      {OPTIONS.map((option) => (
+      <legend>{t('keys.title')}</legend>
+      <p className="hint">{t('keys.about', { device })}</p>
+      {options.map((option) => (
         <label className="choice" key={option.mode}>
           <input
             type="radio"

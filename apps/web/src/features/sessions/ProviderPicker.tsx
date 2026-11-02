@@ -1,4 +1,5 @@
 import type { ProviderInfo } from '@deck/shared';
+import { useT } from '../../shared/i18n/store';
 
 interface Props {
   providers: readonly ProviderInfo[];
@@ -10,31 +11,30 @@ interface Props {
 
 /** CLI selector; flags CLIs that are not installed and offers to download them in a terminal. */
 export function ProviderPicker({ providers, value, onChange, onInstall, disabled }: Props) {
+  const t = useT();
   const current = providers.find((p) => p.id === value);
   return (
     <>
       <label>
-        CLI
+        {t('newSession.cli')}
         <select value={value} onChange={(e) => onChange(e.target.value)}>
           {providers.map((p) => (
             <option key={p.id} value={p.id}>
               {p.label}
-              {p.status === 'missing' ? ' — not installed' : ''}
+              {p.status === 'missing' ? t('provider.notInstalledSuffix') : ''}
             </option>
           ))}
         </select>
       </label>
       {current?.status === 'missing' && (
         <div className="notice error">
-          <p>{current.hint}</p>
+          <p>{t('provider.missing', { name: current.label })}</p>
           {current.canInstall && (
             <>
               <button type="button" onClick={onInstall} disabled={disabled}>
-                Install in terminal
+                {t('provider.install')}
               </button>
-              <p className="hint">
-                Downloads it for you. When you start it, the CLI asks you to sign in by itself.
-              </p>
+              <p className="hint">{t('provider.installHint')}</p>
             </>
           )}
         </div>

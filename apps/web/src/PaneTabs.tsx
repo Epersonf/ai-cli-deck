@@ -1,19 +1,25 @@
-import { useSessions, type View } from './features/sessions/sessionsStore';
+import type { View } from './features/sessions/sessionsStore';
+import { useT } from './shared/i18n/store';
 
-const LABELS: Record<View, string> = { terminal: 'Console', files: 'Archive', preview: 'Viewport' };
+interface Props {
+  views: readonly View[];
+  active: View;
+  className: string;
+  onSelect(view: View): void;
+}
 
-export function PaneTabs({ views, className }: { views: readonly View[]; className: string }) {
-  const { view, setView } = useSessions();
+export function PaneTabs({ views, active, className, onSelect }: Props) {
+  const t = useT();
   return (
     <nav className={className}>
-      {views.map((v) => (
+      {views.map((view) => (
         <button
-          key={v}
+          key={view}
           type="button"
-          className={v === view ? 'active' : ''}
-          onClick={() => setView(v)}
+          className={view === active ? 'active' : ''}
+          onClick={() => onSelect(view)}
         >
-          {LABELS[v]}
+          {t(`nav.${view}`)}
         </button>
       ))}
     </nav>

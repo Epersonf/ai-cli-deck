@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { setToken } from '../../shared/api/token';
+import { useT } from '../../shared/i18n/store';
 import { Gear } from '../../shared/ui/Gear';
 
 export function LoginScreen({ onDone }: { onDone(): void }) {
+  const t = useT();
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -17,7 +19,13 @@ export function LoginScreen({ onDone }: { onDone(): void }) {
       if (token !== null) setToken(token);
       onDone();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not reach the server');
+      setError(
+        e instanceof TypeError
+          ? t('login.unreachable')
+          : e instanceof Error
+            ? e.message
+            : t('login.unreachable'),
+      );
       setBusy(false);
     }
   };
@@ -27,19 +35,19 @@ export function LoginScreen({ onDone }: { onDone(): void }) {
       <form className="modal login-card" onSubmit={(event) => void submit(event)}>
         <Gear size={64} teeth={12} className="spin" />
         <h1>Deck</h1>
-        <p className="hint">Speak the passphrase to enter the workshop.</p>
+        <p className="hint">{t('login.hint')}</p>
         <input
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Passphrase"
+          placeholder={t('login.placeholder')}
           autoComplete="current-password"
           autoFocus
           required
         />
         {error !== null && <p className="notice error">{error}</p>}
         <button type="submit" className="primary" disabled={busy}>
-          Unlock
+          {t('login.unlock')}
         </button>
       </form>
     </div>

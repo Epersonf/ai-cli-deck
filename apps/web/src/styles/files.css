@@ -9,7 +9,7 @@
 }
 .app.wide .files-pane,
 .app.wide .preview-pane {
-  margin: 38px 0 0;
+  margin: 0;
   flex: 1;
 }
 
