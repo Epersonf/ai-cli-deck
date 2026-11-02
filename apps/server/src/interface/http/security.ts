@@ -1,4 +1,4 @@
-import { MCP_PATH, TOKEN_HEADER, TOKEN_QUERY } from '@deck/shared';
+import { AGENT_PATH, MCP_PATH, TOKEN_HEADER, TOKEN_QUERY } from '@deck/shared';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { isLoopbackHost } from '../../infrastructure/config/bind.js';
 import type { SecurityOptions } from '../container.js';
@@ -11,6 +11,8 @@ import {
 } from './guards.js';
 
 const PROTECTED_PREFIXES = ['/api', '/ws'];
+/** Agent-facing endpoints: reachable from this machine only, never from the network. */
+const LOCAL_ONLY_PREFIXES = [MCP_PATH, AGENT_PATH];
 /** Reachable without a token (still origin/host checked): the login handshake itself. */
 const PUBLIC_PATHS = new Set(['/api/login', '/api/auth']);
 
@@ -26,10 +28,10 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
   const loopbackBind = isLoopbackHost(options.bindHost);
   app.addHook('onRequest', async (request, reply) => {
     const url = request.url;
-    if (url.startsWith(MCP_PATH)) {
+    if (LOCAL_ONLY_PREFIXES.some((prefix) => url.startsWith(prefix))) {
       const hostOk = isLoopbackHostname(hostnameOf(request.headers.host));
       if (isLoopbackAddress(request.ip) && hostOk) return;
-      return reply.code(403).send({ error: 'MCP is reachable from localhost only' });
+      return reply.code(403).send({ error: 'Agent endpoints are reachable from localhost only' });
     }
     if (!PROTECTED_PREFIXES.some((prefix) => url.startsWith(prefix))) return;
     const { host, origin } = request.headers;

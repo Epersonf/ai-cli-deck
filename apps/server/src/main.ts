@@ -45,6 +45,7 @@ async function main(): Promise<void> {
   });
   assertSecureBind(config.host, auth.required);
 
+  const here = dirname(fileURLToPath(import.meta.url));
   const providers = createProviderRegistry(
     undefined,
     config.providers.map(createConfiguredProvider),
@@ -58,6 +59,8 @@ async function main(): Promise<void> {
     mux,
     providers: providers,
     mcpBaseUrl: `http://127.0.0.1:${config.port}${MCP_PATH}`,
+    deckUrl: `http://127.0.0.1:${config.port}`,
+    binDir: join(here, '..', 'bin'),
     baseEnv: stringEnv(),
     secrets: { deepseekApiKey: config.deepseekApiKey },
   });
@@ -72,7 +75,6 @@ async function main(): Promise<void> {
   });
   await sessions.restore();
 
-  const here = dirname(fileURLToPath(import.meta.url));
   const app = await createApp({
     sessions,
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),

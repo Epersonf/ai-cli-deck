@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeUrl } from './normalizeUrl';
+import { normalizeUrl } from './normalizeUrl.js';
 
 describe('normalizeUrl', () => {
   it('expands bare ports and host:port shorthands', () => {

@@ -7,6 +7,7 @@ import type { Container } from '../container.js';
 import { mcpRoutes } from '../mcp/mcpRoute.js';
 import { terminalSocket } from '../ws/terminalSocket.js';
 import { registerErrorHandler } from './errors.js';
+import { agentRoutes } from './routes/agent.js';
 import { approvalRoutes } from './routes/approvals.js';
 import { authRoutes } from './routes/auth.js';
 import { sessionRoutes } from './routes/sessions.js';
@@ -34,7 +35,8 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   workspaceRoutes(app, c);
   rawRoutes(app, c);
   approvalRoutes(app, c);
-  mcpRoutes(app);
+  mcpRoutes(app, c);
+  agentRoutes(app, c);
   terminalSocket(app, c);
   if (c.staticDir !== null && existsSync(c.staticDir)) await serveStatic(app, c.staticDir);
   return app;

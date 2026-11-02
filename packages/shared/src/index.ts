@@ -7,3 +7,4 @@ export * from './constants.js';
 export * from './media.js';
 export * from './publicConfig.js';
 export * from './auth.js';
+export * from './normalizeUrl.js';

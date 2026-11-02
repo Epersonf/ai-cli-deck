@@ -8,6 +8,10 @@ export interface LauncherDeps {
   mux: MultiplexerPort;
   providers: ProviderRegistry;
   mcpBaseUrl: string;
+  /** Base URL of this server as seen from a session (loopback), exported as DECK_URL. */
+  deckUrl: string;
+  /** Folder holding the `clideck` command; prepended to every session's PATH. */
+  binDir: string | null;
   baseEnv: Record<string, string>;
   secrets: ProviderSecrets;
 }
@@ -45,11 +49,19 @@ export class SessionLauncher {
         ...parts.env,
         ...mcp.env,
         PORT: String(session.port),
+        PATH: this.sessionPath(),
+        DECK_URL: this.deps.deckUrl,
         DECK_SESSION_ID: session.id,
         DECK_MCP_URL: ctx.mcpUrl,
       },
     };
     return this.deps.mux.wrap(tmuxNameFor(session.id), spec);
+  }
+
+  private sessionPath(): string {
+    const inherited = this.deps.baseEnv['PATH'] ?? '';
+    const { binDir } = this.deps;
+    return binDir === null ? inherited : `${binDir}:${inherited}`;
   }
 
   reattach(session: Session): PtyHandle {

@@ -1,6 +1,6 @@
+import { normalizeUrl } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { currentUrl, usePreview } from './previewStore';
-import { normalizeUrl } from './normalizeUrl';
 
 const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals';
 

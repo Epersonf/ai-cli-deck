@@ -1,8 +1,40 @@
+import { MCP_PATH } from '@deck/shared';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import { notFound } from '../../domain/errors.js';
+import { createAgentTools } from '../agent/agentTools.js';
+import type { Container } from '../container.js';
+import { parseWith } from '../http/errors.js';
+import { buildMcpServer } from './mcpServer.js';
 
-/** Placeholder until milestone 5 wires the per-session MCP endpoint. */
-export function mcpRoutes(app: FastifyInstance): void {
-  app.all('/mcp/:sessionId', (_request, reply) =>
-    reply.code(501).send({ error: 'MCP endpoint not implemented yet' }),
-  );
+const Params = z.object({ sessionId: z.string().min(1) });
+const NOT_ALLOWED = {
+  jsonrpc: '2.0',
+  error: { code: -32000, message: 'Method not allowed: use POST' },
+  id: null,
+};
+
+/** Stateless Streamable HTTP MCP endpoint: `/mcp/<sessionId>` (loopback only, see security hook). */
+export function mcpRoutes(app: FastifyInstance, c: Container): void {
+  app.post(`${MCP_PATH}/:sessionId`, async (request, reply) => {
+    const { sessionId } = parseWith(Params, request.params);
+    if (!c.sessions.get(sessionId)) throw notFound(`Session ${sessionId}`);
+    const server = buildMcpServer(createAgentTools(c, sessionId));
+    const transport = new StreamableHTTPServerTransport({});
+    reply.hijack();
+    reply.raw.on('close', () => {
+      void transport.close();
+      void server.close();
+    });
+    await server.connect(transport);
+    await transport.handleRequest(request.raw, reply.raw, request.body);
+  });
+
+  const notAllowed = (
+    _request: unknown,
+    reply: { code(n: number): { send(b: unknown): unknown } },
+  ) => reply.code(405).send(NOT_ALLOWED);
+  app.get(`${MCP_PATH}/:sessionId`, notAllowed);
+  app.delete(`${MCP_PATH}/:sessionId`, notAllowed);
 }

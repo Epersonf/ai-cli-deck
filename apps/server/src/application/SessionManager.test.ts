@@ -10,6 +10,8 @@ describe('SessionManager lifecycle', () => {
     expect(spawned?.spec.command).toBe('tmux');
     expect(spawned?.spec.env['PORT']).toBe('4100');
     expect(spawned?.spec.env['DECK_SESSION_ID']).toBe(session.id);
+    expect(spawned?.spec.env['DECK_URL']).toBe('http://127.0.0.1:7842');
+    expect(spawned?.spec.env['PATH']).toBe('/deck/bin:/bin');
     expect(h.store.saved).toHaveLength(1);
   });
 

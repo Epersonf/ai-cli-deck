@@ -25,6 +25,8 @@ export function createHarness(options: HarnessOptions = {}) {
     mux,
     providers: createProviderRegistry(),
     mcpBaseUrl: 'http://127.0.0.1:7842/mcp',
+    deckUrl: 'http://127.0.0.1:7842',
+    binDir: '/deck/bin',
     baseEnv: { PATH: '/bin' },
     secrets: { deepseekApiKey: 'sk-test' },
   });
@@ -32,7 +34,7 @@ export function createHarness(options: HarnessOptions = {}) {
     launcher,
     mux,
     store,
-    ports: new PortAllocator({ min: 4100, max: 4102 }, () => Promise.resolve(true)),
+    ports: new PortAllocator({ min: 4100, max: 4109 }, () => Promise.resolve(true)),
     system,
     bus,
     replayBytes: 1024,

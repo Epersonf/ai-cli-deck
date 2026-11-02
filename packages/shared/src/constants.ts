@@ -6,3 +6,4 @@ export const TOKEN_QUERY = 'token';
 export const TMUX_PREFIX = 'deck-';
 export const DEFAULT_SERVER_PORT = 7842;
 export const DEFAULT_PORT_RANGE = { min: 4100, max: 4199 } as const;
+export const AGENT_PATH = '/agent';

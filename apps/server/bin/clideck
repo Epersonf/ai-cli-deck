@@ -1,0 +1,4 @@
+#!/bin/sh
+# Entry point of the `clideck` command; every deck session gets this folder on its PATH.
+DIR=$(cd "$(dirname "$0")" && pwd)
+exec node --import "$DIR/../../../node_modules/tsx/dist/esm/index.mjs" "$DIR/../src/cli/main.ts" "$@"
