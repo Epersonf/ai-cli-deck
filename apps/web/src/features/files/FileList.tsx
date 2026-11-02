@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { displayName, type ExplorerPrefs } from './explorerPrefs';
+import { FileActionDialog } from './FileActionDialog';
 import { iconFor } from './fileIcon';
 
 interface Props {
@@ -22,6 +23,7 @@ export function FileList(props: Props) {
   const { sessionId, dir, prefs, reloadKey, changes, selected } = props;
   const [entries, setEntries] = useState<FileEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [asking, setAsking] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +46,7 @@ export function FileList(props: Props) {
           <button
             type="button"
             className={`tree-row${entry.ignored ? ' ignored' : ''}${selected === entry.path ? ' selected' : ''}`}
-            onClick={() => (entry.kind === 'dir' ? props.onOpenDir : props.onOpenFile)(entry.path)}
+            onClick={() => (entry.kind === 'dir' ? props.onOpenDir(entry.path) : setAsking(entry.path))}
             title={entry.ignored ? t('files.ignoredTip', { path: entry.path }) : entry.path}
           >
             <span aria-hidden>{entry.kind === 'dir' ? '📁' : iconFor(entry.name, 'file')}</span>
@@ -57,6 +59,14 @@ export function FileList(props: Props) {
           </button>
         </li>
       ))}
+      {asking !== null && (
+        <FileActionDialog
+          sessionId={sessionId}
+          path={asking}
+          onOpen={() => props.onOpenFile(asking)}
+          onClose={() => setAsking(null)}
+        />
+      )}
       {entries.length === 0 && <li className="hint">{t('files.empty')}</li>}
     </ul>
   );

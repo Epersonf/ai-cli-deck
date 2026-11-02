@@ -108,6 +108,8 @@ export const es: Messages = {
   'files.download': 'Descargar',
   'files.downloadZip': 'Descargar esta carpeta como .zip',
   'files.zip': 'Carpeta .zip',
+  'files.transfer': 'Transferir',
+  'files.fileTitle': '¿Qué quieres hacer con este archivo?',
   'password.title': 'Contraseña',
   'password.open': 'Cambiar contraseña…',
   'files.empty': 'Carpeta vacía',

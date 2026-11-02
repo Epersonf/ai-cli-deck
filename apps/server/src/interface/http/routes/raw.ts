@@ -1,4 +1,5 @@
 import { createReadStream } from 'node:fs';
+import { open } from 'node:fs/promises';
 import { mimeOf } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
@@ -13,6 +14,19 @@ const RawQuery = z.object({ path: z.string().min(1), download: z.enum(['1']).opt
 export const attachment = (path: string): string =>
   `attachment; filename*=UTF-8''${encodeURIComponent(path.split('/').pop() || 'download')}`;
 
+/** Unknown extensions: show as UTF-8 text when the start has no NUL byte, else leave it binary. */
+async function sniffType(file: string): Promise<string> {
+  const handle = await open(file, 'r');
+  try {
+    const { bytesRead, buffer } = await handle.read(Buffer.alloc(8192), 0, 8192, 0);
+    return buffer.subarray(0, bytesRead).includes(0)
+      ? 'application/octet-stream'
+      : 'text/plain; charset=utf-8';
+  } finally {
+    await handle.close();
+  }
+}
+
 /** Streams a file from the session folder with Range support (audio/video seeking). */
 export function rawRoutes(app: FastifyInstance, c: Container): void {
   app.get('/api/sessions/:id/raw', async (request, reply) => {
@@ -20,7 +34,7 @@ export function rawRoutes(app: FastifyInstance, c: Container): void {
     const { path, download } = parseWith(RawQuery, request.query);
     const target = await c.workspace.resolveFile(id, path);
     reply
-      .header('content-type', mimeOf(path) ?? 'application/octet-stream')
+      .header('content-type', mimeOf(path) ?? (await sniffType(target.path)))
       .header('accept-ranges', 'bytes')
       .header('x-content-type-options', 'nosniff')
       .header('content-security-policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'")

@@ -107,6 +107,8 @@ export const ja: Messages = {
   'files.download': 'ダウンロード',
   'files.downloadZip': 'このフォルダーを .zip でダウンロード',
   'files.zip': 'フォルダー .zip',
+  'files.transfer': '転送',
+  'files.fileTitle': 'このファイルをどうしますか？',
   'password.title': 'パスワード',
   'password.open': 'パスワードを変更…',
   'files.empty': '空のフォルダー',

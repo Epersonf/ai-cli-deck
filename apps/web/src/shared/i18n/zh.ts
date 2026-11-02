@@ -102,6 +102,8 @@ export const zh: Messages = {
   'files.download': '下载',
   'files.downloadZip': '将此文件夹下载为 .zip',
   'files.zip': '文件夹 .zip',
+  'files.transfer': '传输',
+  'files.fileTitle': '你想如何处理这个文件？',
   'password.title': '密码',
   'password.open': '修改密码…',
   'files.empty': '空文件夹',

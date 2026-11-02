@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { api, zipUrl } from '../../shared/api/endpoints';
+import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { ExplorerOptions } from './ExplorerOptions';
 import { loadPrefs, savePrefs, type ExplorerPrefs } from './explorerPrefs';
 import { FileList } from './FileList';
 import { parentOf } from './explorerPath';
 import { PathBar } from './PathBar';
-import { UploadButton, useUpload } from './Uploader';
+import { TransferDialog } from './TransferDialog';
+import { useUpload } from './Uploader';
 
 interface Props {
   sessionId: string;
@@ -22,6 +23,7 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
   const t = useT();
   const [prefs, setPrefs] = useState<ExplorerPrefs>(loadPrefs);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
@@ -51,17 +53,36 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
     >
       <PathBar cwd={cwd} dir={dir} onGo={onDir} onBack={() => onDir(parentOf(dir))} />
       <div className="tree-tools">
-        <button type="button" onClick={() => setReloadKey((k) => k + 1)}>
-          ⟳ {t('common.refresh')}
+        <button
+          type="button"
+          title={t('common.refresh')}
+          aria-label={t('common.refresh')}
+          onClick={() => setReloadKey((k) => k + 1)}
+        >
+          ⟳
         </button>
-        <UploadButton busy={busy} onFiles={(files) => void upload(files)} />
-        <a className="btn" href={zipUrl(sessionId, dir)} download title={t('files.downloadZip')}>
-          ⬇ {t('files.zip')}
-        </a>
+        <button
+          type="button"
+          title={t('files.transfer')}
+          aria-label={t('files.transfer')}
+          disabled={busy}
+          onClick={() => setTransferOpen(true)}
+        >
+          ⇅
+        </button>
         <button type="button" onClick={() => setOptionsOpen(true)}>
           ⚙ {t('files.options')}
         </button>
       </div>
+      {transferOpen && (
+        <TransferDialog
+          sessionId={sessionId}
+          dir={dir}
+          busy={busy}
+          onFiles={(files) => void upload(files)}
+          onClose={() => setTransferOpen(false)}
+        />
+      )}
       {optionsOpen && (
         <ExplorerOptions
           prefs={prefs}

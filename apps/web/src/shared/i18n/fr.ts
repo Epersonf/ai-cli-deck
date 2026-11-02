@@ -110,6 +110,8 @@ export const fr: Messages = {
   'files.download': 'Télécharger',
   'files.downloadZip': 'Télécharger ce dossier en .zip',
   'files.zip': 'Dossier .zip',
+  'files.transfer': 'Transférer',
+  'files.fileTitle': 'Que voulez-vous faire de ce fichier ?',
   'password.title': 'Mot de passe',
   'password.open': 'Changer le mot de passe…',
   'files.empty': 'Dossier vide',

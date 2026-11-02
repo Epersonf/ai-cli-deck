@@ -106,6 +106,8 @@ export const ru: Messages = {
   'files.download': 'Скачать',
   'files.downloadZip': 'Скачать эту папку как .zip',
   'files.zip': 'Папка .zip',
+  'files.transfer': 'Передача',
+  'files.fileTitle': 'Что сделать с этим файлом?',
   'password.title': 'Пароль',
   'password.open': 'Сменить пароль…',
   'files.empty': 'Пустая папка',

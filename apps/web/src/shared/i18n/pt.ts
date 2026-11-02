@@ -106,6 +106,8 @@ export const pt: Messages = {
   'files.download': 'Baixar',
   'files.downloadZip': 'Baixar esta pasta em .zip',
   'files.zip': 'Pasta .zip',
+  'files.transfer': 'Transferir',
+  'files.fileTitle': 'O que você quer fazer com este arquivo?',
   'password.title': 'Senha',
   'password.open': 'Alterar senha…',
   'files.empty': 'Pasta vazia',

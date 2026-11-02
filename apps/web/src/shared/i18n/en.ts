@@ -104,6 +104,8 @@ export const en = {
   'files.download': 'Download',
   'files.downloadZip': 'Download this folder as a .zip',
   'files.zip': 'Folder .zip',
+  'files.transfer': 'Transfer',
+  'files.fileTitle': 'What do you want to do with this file?',
   'password.title': 'Password',
   'password.open': 'Change password…',
   'files.empty': 'Empty folder',
