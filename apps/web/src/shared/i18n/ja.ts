@@ -53,6 +53,8 @@ export const ja: Messages = {
   'status.exited': '終了',
   'newSession.title': '新しいセッション',
   'newSession.cli': 'プロファイル',
+  'newSession.noProfiles':
+    '先にプロファイルを作成してください。プロファイルごとに CLI のログインが別になります。',
   'newSession.folder': 'フォルダー',
   'newSession.start': '開始',
   'newSession.command': 'コマンド',

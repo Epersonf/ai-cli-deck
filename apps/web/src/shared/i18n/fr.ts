@@ -53,6 +53,8 @@ export const fr: Messages = {
   'status.exited': 'terminée',
   'newSession.title': 'Nouvelle session',
   'newSession.cli': 'Profil',
+  'newSession.noProfiles':
+    "Créez d'abord un profil : chaque profil a sa propre connexion à la CLI.",
   'newSession.folder': 'Dossier',
   'newSession.start': 'Démarrer',
   'newSession.command': 'Commande',

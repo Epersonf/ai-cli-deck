@@ -9,5 +9,8 @@ unset DECK_SESSION_ID DECK_URL DECK_MCP_URL TMUX TMUX_PANE
 export DECK_TMUX_SOCKET=deck-dev
 export DECK_CONFIG_DIR="$HOME/.config/ai-cli-deck-dev"
 export DECK_STATE_DIR="$HOME/.local/state/ai-cli-deck-dev"
+# Built-in CLIs (and shells) of this instance must not share the main instance's logins.
+export CLAUDE_CONFIG_DIR="$DECK_CONFIG_DIR/claude"
+export CODEX_HOME="$DECK_CONFIG_DIR/codex"
 export DECK_STATIC_DIR="$PWD/apps/web/dist"
 npm run build && exec npm run start

@@ -51,6 +51,7 @@ export const en = {
   'status.exited': 'exited',
   'newSession.title': 'New session',
   'newSession.cli': 'Profile',
+  'newSession.noProfiles': 'Create a profile first: each profile has its own CLI login.',
   'newSession.folder': 'Folder',
   'newSession.start': 'Start',
   'newSession.command': 'Command',

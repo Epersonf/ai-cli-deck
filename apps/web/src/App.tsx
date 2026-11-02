@@ -96,6 +96,7 @@ export function App() {
         <NewSessionDialog
           defaultCwd={config?.defaultCwd ?? null}
           profileId={newFor}
+          onProfile={() => setDialog('profile')}
           onClose={() => setDialog(null)}
         />
       )}

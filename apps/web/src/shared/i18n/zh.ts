@@ -52,6 +52,7 @@ export const zh: Messages = {
   'status.exited': '已结束',
   'newSession.title': '新建会话',
   'newSession.cli': '配置文件',
+  'newSession.noProfiles': '请先创建配置文件：每个配置文件都有独立的 CLI 登录。',
   'newSession.folder': '文件夹',
   'newSession.start': '开始',
   'newSession.command': '命令',

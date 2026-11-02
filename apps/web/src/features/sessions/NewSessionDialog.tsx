@@ -2,6 +2,7 @@ import type { CreateSessionBody, ProviderInfo } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { choices, pickDefault } from './profileChoices';
 import { ProviderPicker } from './ProviderPicker';
 import { loadRecent, rememberFolder } from './recentFolders';
 import { SessionOptions } from './SessionOptions';
@@ -12,25 +13,11 @@ interface Props {
   defaultCwd: string | null;
   /** When set, the session is created inside this profile and the CLI picker is hidden. */
   profileId: string | null;
+  onProfile(): void;
   onClose(): void;
 }
 
-const PREFERRED = ['claude', 'codex', 'shell'];
-
-/** The picker lists the user's profiles; before any exists it falls back to the built-in CLIs. */
-const choices = (list: readonly ProviderInfo[], profileId: string | null): ProviderInfo[] => {
-  if (profileId !== null) return list.filter((p) => p.id === profileId);
-  const profiles = list.filter((p) => p.profile);
-  return profiles.length > 0 ? profiles : [...list];
-};
-
-const pickDefault = (list: readonly ProviderInfo[]): string =>
-  PREFERRED.map((id) => list.find((p) => p.id === id && p.status !== 'missing')).find(Boolean)
-    ?.id ??
-  list[0]?.id ??
-  '';
-
-export function NewSessionDialog({ defaultCwd, profileId, onClose }: Props) {
+export function NewSessionDialog({ defaultCwd, profileId, onProfile, onClose }: Props) {
   const t = useT();
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [provider, setProvider] = useState(profileId ?? '');
@@ -96,6 +83,14 @@ export function NewSessionDialog({ defaultCwd, profileId, onClose }: Props) {
     <div className="modal-backdrop" onClick={onClose}>
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <h2>{t('newSession.title')}</h2>
+        {providers.length > 0 && choices(providers, profileId).length === 0 && (
+          <div className="notice">
+            <p>{t('newSession.noProfiles')}</p>
+            <button type="button" className="primary" onClick={() => (onClose(), onProfile())}>
+              {t('switcher.newProfile')}
+            </button>
+          </div>
+        )}
         <ProviderPicker
           providers={choices(providers, profileId)}
           value={provider}
@@ -124,7 +119,13 @@ export function NewSessionDialog({ defaultCwd, profileId, onClose }: Props) {
         <SessionOptions provider={provider} values={options} onChange={setOptions} />
         {error !== null && <p className="notice error">{error}</p>}
         <div className="row">
-          <button type="submit" className="primary" disabled={busy || provider === '' || missing}>
+          <button
+            type="submit"
+            className="primary"
+            disabled={
+              busy || provider === '' || missing || choices(providers, profileId).length === 0
+            }
+          >
             {t('newSession.start')}
           </button>
           <button type="button" onClick={onClose}>

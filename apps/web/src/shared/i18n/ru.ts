@@ -53,6 +53,7 @@ export const ru: Messages = {
   'status.exited': 'завершён',
   'newSession.title': 'Новый сеанс',
   'newSession.cli': 'Профиль',
+  'newSession.noProfiles': 'Сначала создайте профиль: у каждого профиля свой вход в CLI.',
   'newSession.folder': 'Папка',
   'newSession.start': 'Запустить',
   'newSession.command': 'Команда',
