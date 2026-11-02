@@ -16,15 +16,26 @@ interface Props {
   wide: boolean;
   extraKeys: readonly string[] | null;
   showKeys: boolean;
+  hasProfile: boolean;
   onNew(): void;
+  onProfile(): void;
 }
 
-export function Workspace({ sessions, activeId, wide, extraKeys, showKeys, onNew }: Props) {
+export function Workspace({
+  sessions,
+  activeId,
+  wide,
+  extraKeys,
+  showKeys,
+  hasProfile,
+  onNew,
+  onProfile,
+}: Props) {
   const t = useT();
   const root = useRef<HTMLElement>(null);
   const view = useSessions((s) => s.view);
   const { layout, patch } = useLayout();
-  const split = wide && layout.showRight;
+  const split = wide && layout.showRight && sessions.length > 0;
 
   const showing = (id: string, pane: View): boolean => {
     if (id !== activeId) return false;
@@ -88,8 +99,8 @@ export function Workspace({ sessions, activeId, wide, extraKeys, showKeys, onNew
           <Gear size={96} teeth={14} className="spin" />
           <h1>Deck</h1>
           <p>{t('app.welcome')}</p>
-          <button type="button" className="primary" onClick={onNew}>
-            {t('app.start')}
+          <button type="button" className="primary" onClick={hasProfile ? onNew : onProfile}>
+            {hasProfile ? t('app.start') : t('switcher.newProfile')}
           </button>
         </div>
       )}

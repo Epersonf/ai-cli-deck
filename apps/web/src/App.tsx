@@ -10,6 +10,7 @@ import { ProfileDialog } from './features/sessions/ProfileDialog';
 import { LoginScreen } from './features/auth/LoginScreen';
 import { useLayout } from './features/layout/layoutStore';
 import { useShortcuts } from './features/layout/useShortcuts';
+import { sessionLabel } from './features/sessions/sessionLabel';
 import { NewSessionDialog } from './features/sessions/NewSessionDialog';
 import { SessionSwitcher } from './features/sessions/SessionSwitcher';
 import { useProfiles } from './features/sessions/profilesStore';
@@ -26,6 +27,7 @@ type Dialog = 'new' | 'settings' | 'switcher' | 'profile' | null;
 export function App() {
   const { sessions, activeId, view, select, setView } = useSessions();
   const { layout, patch } = useLayout();
+  const profiles = useProfiles((s) => s.providers);
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [newFor, setNewFor] = useState<string | null>(null);
@@ -50,6 +52,12 @@ export function App() {
       .catch(() => undefined);
   }, []);
 
+  const active = sessions.find((s) => s.id === activeId);
+  const activeLabel = active ? sessionLabel(active, profiles) : null;
+  useEffect(() => {
+    document.title = activeLabel ? `${activeLabel} · Deck` : 'Deck · AI CLI workspace';
+  }, [activeLabel]);
+
   useEffect(() => onUnauthorized(() => setLocked(true)), []);
   useEffect(reload, [reload]);
   useShortcuts(
@@ -72,6 +80,7 @@ export function App() {
       <Topbar
         wide={wide}
         splitOn={layout.showRight}
+        hasSession={sessions.length > 0}
         onSwitcher={() => setDialog('switcher')}
         onSplit={() => patch({ showRight: !layout.showRight })}
         onSettings={() => setDialog('settings')}
@@ -82,7 +91,9 @@ export function App() {
         wide={wide}
         extraKeys={config?.extraKeys ?? null}
         showKeys={keysVisible(keysMode, touch)}
+        hasProfile={profiles.some((p) => p.profile)}
         onNew={() => openNew(null)}
+        onProfile={() => setDialog('profile')}
       />
       {!wide && sessions.length > 0 && (
         <PaneTabs

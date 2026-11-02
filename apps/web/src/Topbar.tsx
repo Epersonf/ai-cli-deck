@@ -9,12 +9,14 @@ import { MenuIcon } from './shared/ui/Icons';
 interface Props {
   wide: boolean;
   splitOn: boolean;
+  /** The files/preview panel only exists once there is a terminal to browse. */
+  hasSession: boolean;
   onSwitcher(): void;
   onSplit(): void;
   onSettings(): void;
 }
 
-export function Topbar({ wide, splitOn, onSwitcher, onSplit, onSettings }: Props) {
+export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSettings }: Props) {
   const t = useT();
   const active = useActiveSession();
   const providers = useProfiles((s) => s.providers);
@@ -35,7 +37,7 @@ export function Topbar({ wide, splitOn, onSwitcher, onSplit, onSettings }: Props
       <strong className="current-name">
         {active ? sessionLabel(active, providers) : t('switcher.empty')}
       </strong>
-      {wide && (
+      {wide && hasSession && (
         <button
           type="button"
           className={`tool${splitOn ? ' on' : ''}`}
