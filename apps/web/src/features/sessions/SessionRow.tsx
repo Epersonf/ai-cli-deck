@@ -2,6 +2,7 @@ import type { Session } from '@deck/shared';
 import { useState, type FormEvent } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { PencilIcon } from '../../shared/ui/Icons';
+import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
 import { useCloseSession } from './useCloseSession';
 import { useSessions } from './sessionsStore';
@@ -17,6 +18,7 @@ interface Props {
 export function SessionRow({ session, index, active, onPick }: Props) {
   const t = useT();
   const close = useCloseSession();
+  const providers = useProfiles((s) => s.providers);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
 
@@ -52,7 +54,7 @@ export function SessionRow({ session, index, active, onPick }: Props) {
       <button type="button" className={`session-row${active ? ' active' : ''}`} onClick={onPick}>
         <span className={`dot ${session.status}`} title={t(`status.${session.status}`)} />
         <span className="session-main">
-          <strong>{sessionLabel(session)}</strong>
+          <strong>{sessionLabel(session, providers)}</strong>
           <small>{session.cwd}</small>
         </span>
         {session.sharedCwdWith.length > 0 && (

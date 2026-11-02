@@ -61,3 +61,17 @@ button.danger {
   white-space: nowrap;
   color: var(--brass-hi);
 }
+
+.profile-form {
+  display: grid;
+  gap: 10px;
+}
+.session-row.static {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  min-height: var(--ctl);
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: var(--ink);
+}

@@ -10,23 +10,21 @@ import { SessionLauncher } from './application/SessionLauncher.js';
 import { SessionManager } from './application/SessionManager.js';
 import { WorkspaceService } from './application/WorkspaceService.js';
 import { EventBus } from './domain/events.js';
-import type { ProviderSecrets } from './domain/provider.js';
 import { LoginThrottle } from './application/LoginThrottle.js';
 import { AuthService } from './application/AuthService.js';
 import { DEFAULT_PASSWORD } from './domain/auth.js';
 import { ScryptHasher } from './infrastructure/auth/ScryptHasher.js';
 import { JsonAuthStore } from './infrastructure/auth/JsonAuthStore.js';
 import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.js';
-import { loadConfig, loadConfigSync } from './infrastructure/config/loadConfig.js';
+import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
-import { secretsFromConfig } from './infrastructure/config/secrets.js';
 import { FileReader } from './infrastructure/fs/FileReader.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
-import { saveProfile } from './infrastructure/config/profileStore.js';
-import { commandOf, createConfiguredProvider } from './infrastructure/providers/configured.js';
+import { createConfiguredProvider } from './infrastructure/providers/configured.js';
+import { createProfileService } from './infrastructure/providers/profileWiring.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
@@ -52,28 +50,26 @@ async function main(): Promise<void> {
   assertSecureBind(config.host, auth.required);
 
   const here = dirname(fileURLToPath(import.meta.url));
-  const profileDeps = { env: process.env, profilesDir: join(paths.configDir, 'profiles') };
   const providers = createProviderRegistry(
     undefined,
-    config.providers.map((def) => createConfiguredProvider(def, profileDeps)),
+    config.providers.map(createConfiguredProvider),
   );
-  const initialSecrets = secretsFromConfig(config, process.env);
-  const secrets = (): ProviderSecrets => {
-    try {
-      return secretsFromConfig(loadConfigSync(process.env), process.env);
-    } catch {
-      return initialSecrets;
-    }
-  };
   const statusResolver = new ProviderStatusResolver(
     SETUP_SPECS,
-    config.providers.map((def) => ({ id: def.id, command: commandOf(def) })),
+    config.providers.map((def) => ({ id: def.id, command: def.command })),
     realStatusDeps(),
   );
   const system = new SystemAdapter();
   const mux = await detectMultiplexer(runCommand);
   const git = new GitCli(runCommand);
   const bus = new EventBus();
+  const shellName = defaultShell(process.env, process.platform);
+  const profiles = await createProfileService({
+    configDir: paths.configDir,
+    providers,
+    status: statusResolver,
+    defaultShell: shellName,
+  });
   const launcher = new SessionLauncher({
     pty: new NodePtyAdapter(),
     mux,
@@ -82,8 +78,7 @@ async function main(): Promise<void> {
     deckUrl: `http://127.0.0.1:${config.port}`,
     binDir: join(here, '..', 'bin'),
     baseEnv: stringEnv(),
-    secrets,
-    defaultShell: defaultShell(process.env, process.platform),
+    defaultShell: shellName,
   });
   const sessions = new SessionManager({
     launcher,
@@ -104,11 +99,7 @@ async function main(): Promise<void> {
     providers: providers,
     bus,
     providerStatus: (id) => statusResolver.resolve(id),
-    addProfile: async (body) => {
-      const def = await saveProfile(paths.configDir, body);
-      providers.add(createConfiguredProvider(def, profileDeps));
-      statusResolver.register({ id: def.id, command: commandOf(def) });
-    },
+    profiles,
     publicConfig: {
       defaultCwd: config.defaultCwd ?? homedir(),
       extraKeys: config.extraKeys,

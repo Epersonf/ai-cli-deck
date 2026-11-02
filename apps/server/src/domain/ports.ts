@@ -1,4 +1,4 @@
-import type { FileContent, FileEntry, GitStatus, Session } from '@deck/shared';
+import type { FileContent, FileEntry, GitStatus, Profile, Session } from '@deck/shared';
 
 export interface LaunchSpec {
   command: string;
@@ -31,6 +31,11 @@ export interface MultiplexerPort {
 export interface SessionStorePort {
   load(): Promise<Session[]>;
   save(sessions: Session[]): Promise<void>;
+}
+
+export interface ProfileStorePort {
+  load(): Promise<Profile[]>;
+  save(profiles: Profile[]): Promise<void>;
 }
 
 export interface WorktreePort {

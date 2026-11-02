@@ -7,6 +7,5 @@ export const providerCtx: ProviderContext = {
   mcpUrl: 'http://127.0.0.1:7842/mcp/s1',
   command: null,
   args: [],
-  secrets: { deepseekApiKey: null },
   defaultShell: 'bash',
 };

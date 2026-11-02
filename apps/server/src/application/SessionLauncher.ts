@@ -3,7 +3,7 @@ import { TMUX_PREFIX, type Session } from '@deck/shared';
 import { invalid } from '../domain/errors.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
 import type { LaunchSpec, MultiplexerPort, PtyHandle, PtyPort } from '../domain/ports.js';
-import type { ProviderRegistry, ProviderSecrets } from '../domain/provider.js';
+import type { ProviderRegistry } from '../domain/provider.js';
 
 export interface LauncherDeps {
   pty: PtyPort;
@@ -15,8 +15,6 @@ export interface LauncherDeps {
   /** Folder holding the `clideck` command; prepended to every session's PATH. */
   binDir: string | null;
   baseEnv: Record<string, string>;
-  /** Read on every launch, so keys saved by `clideck setup` apply without a restart. */
-  secrets: () => ProviderSecrets;
   defaultShell: string;
 }
 
@@ -38,7 +36,6 @@ export class SessionLauncher {
       mcpUrl: `${this.deps.mcpBaseUrl}/${session.id}`,
       command,
       args,
-      secrets: this.deps.secrets(),
       defaultShell: this.deps.defaultShell,
     };
     const parts = provider.buildCommand(ctx);

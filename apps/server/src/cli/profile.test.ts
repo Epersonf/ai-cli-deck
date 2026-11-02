@@ -5,26 +5,28 @@ import { describe, expect, it } from 'vitest';
 import { addProfile, parseProfileArgs } from './profileCommand.js';
 
 describe('clideck profile add', () => {
-  it('parses flags and rejects bad input', () => {
-    expect(
-      parseProfileArgs(['work', 'claude', '--key-env', 'WORK_KEY', '--label', 'Work']),
-    ).toEqual({
-      id: 'work',
-      base: 'claude',
+  it('parses the name and base, and rejects bad input', () => {
+    expect(parseProfileArgs(['Work', 'claude'])).toEqual({
       label: 'Work',
-      keyEnv: 'WORK_KEY',
+      base: 'claude',
+      command: '',
     });
-    expect(typeof parseProfileArgs(['Bad Id', 'claude'])).toBe('string');
+    expect(parseProfileArgs(['Mine', 'custom', '--command', 'aider'])).toMatchObject({
+      command: 'aider',
+    });
     expect(typeof parseProfileArgs(['x', 'gemini'])).toBe('string');
+    expect(typeof parseProfileArgs([])).toBe('string');
   });
 
-  it('writes the entry, replacing one with the same id and keeping other settings', async () => {
+  it('stores a clean profile with a unique id and no credentials', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'deck-profile-'));
     const env = { DECK_CONFIG_DIR: dir };
-    const request = { id: 'work', base: 'claude', label: null, keyEnv: 'WORK_KEY' } as const;
-    await addProfile(request, env);
-    await addProfile({ ...request, keyEnv: null }, env);
-    const saved: unknown = JSON.parse(await readFile(join(dir, 'config.json'), 'utf8'));
-    expect(saved).toEqual({ providers: [{ id: 'work', label: 'work', base: 'claude' }] });
+    await addProfile({ label: 'Work', base: 'claude', command: '' }, env);
+    await addProfile({ label: 'Work', base: 'codex', command: '' }, env);
+    const saved: unknown = JSON.parse(await readFile(join(dir, 'profiles.json'), 'utf8'));
+    expect(saved).toEqual([
+      { id: 'work', label: 'Work', base: 'claude', command: '' },
+      { id: 'work-2', label: 'Work', base: 'codex', command: '' },
+    ]);
   });
 });

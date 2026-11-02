@@ -1,7 +1,3 @@
-export interface ProviderSecrets {
-  readonly deepseekApiKey: string | null;
-}
-
 export interface ProviderContext {
   sessionId: string;
   cwd: string;
@@ -9,7 +5,6 @@ export interface ProviderContext {
   mcpUrl: string;
   command: string | null;
   args: readonly string[];
-  secrets: ProviderSecrets;
   /** The platform's default shell (bash, zsh, cmd.exe, ...). */
   defaultShell: string;
 }

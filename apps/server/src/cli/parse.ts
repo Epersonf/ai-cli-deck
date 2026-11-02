@@ -48,7 +48,7 @@ export function parseArgs(argv: readonly string[]): Parsed {
     case 'profile':
       return rest[0] === 'add'
         ? ok({ name, args: rest.slice(1) })
-        : fail('usage: clideck profile add <id> <claude|codex> [--key-env VAR]');
+        : fail('usage: clideck profile add "<name>" <claude|claude-deepseek|codex|custom>');
     case 'install':
       return ok({ name, force: rest.includes('--force') });
     default:

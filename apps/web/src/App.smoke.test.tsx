@@ -66,7 +66,7 @@ describe('App smoke', () => {
   it('shows the active session name in the top bar, with no tab strip', async () => {
     await mount();
     expect($('.tabs')).toBeNull();
-    expect($('.current-name')?.textContent).toBe('shell · alpha');
+    expect($('.current-name')?.textContent).toBe('Shell · alpha');
   });
 
   it('opens the drawer, jumps to a session and supports Alt+number', async () => {
@@ -76,23 +76,35 @@ describe('App smoke', () => {
     expect(document.querySelectorAll('.session-row')).toHaveLength(2);
     click(document.querySelectorAll('.session-row')[1] ?? null);
     expect($('.drawer')).toBeNull();
-    expect($('.current-name')?.textContent).toBe('shell · beta');
+    expect($('.current-name')?.textContent).toBe('Shell · beta');
     act(
       () =>
         void window.dispatchEvent(
           new KeyboardEvent('keydown', { code: 'Digit1', altKey: true, bubbles: true }),
         ),
     );
-    expect($('.current-name')?.textContent).toBe('shell · alpha');
+    expect($('.current-name')?.textContent).toBe('Shell · alpha');
   });
 
   it('asks with the app dialog (not window.confirm) before ending a session', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
     click($('.session-list button[aria-label="Close session"]'));
-    expect($('[role="alertdialog"]')?.textContent).toContain('shell · alpha');
+    expect($('[role="alertdialog"]')?.textContent).toContain('Shell · alpha');
     click($('[role="alertdialog"] .row button'));
     expect($('[role="alertdialog"]')).toBeNull();
+  });
+
+  it('offers clean profiles: a name and a base, never a key or login', async () => {
+    await mount();
+    click($('button[aria-label="All terminals"]'));
+    const buttons = [...document.querySelectorAll('.drawer > button')];
+    click(buttons.find((b) => b.textContent === 'New profile') ?? null);
+    const fields = [...document.querySelectorAll('.modal input, .modal select')];
+    expect(fields).toHaveLength(2);
+    const options = [...document.querySelectorAll('.modal option')].map((o) => o.textContent);
+    expect(options).toEqual(['Claude Code', 'Claude Code (DeepSeek)', 'Codex', 'Custom']);
+    expect(document.querySelector('.modal')?.textContent).not.toMatch(/api key|password/i);
   });
 
   it('switches the whole interface language', async () => {

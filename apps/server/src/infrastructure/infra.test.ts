@@ -28,14 +28,10 @@ describe('providers', () => {
     expect(args[3]).toContain('clideck help');
   });
 
-  it('claude-deepseek needs a key and sets the Anthropic-compatible env', () => {
-    expect(() => claudeDeepseek.buildCommand(ctx)).toThrow('DEEPSEEK_API_KEY');
-    const env = claudeDeepseek.buildCommand({
-      ...ctx,
-      secrets: { ...ctx.secrets, deepseekApiKey: 'k' },
-    }).env;
+  it('claude-deepseek points Claude Code at DeepSeek and holds no key', () => {
+    const env = claudeDeepseek.buildCommand(ctx).env;
     expect(env['ANTHROPIC_BASE_URL']).toBe('https://api.deepseek.com/anthropic');
-    expect(env['ANTHROPIC_AUTH_TOKEN']).toBe('k');
+    expect(JSON.stringify(env)).not.toMatch(/KEY|TOKEN/);
   });
 
   it('codex overrides mcp_servers and custom requires a command', () => {
@@ -91,7 +87,7 @@ describe('config and bind safety', () => {
   it('merges env over the config file with defaults', () => {
     expect(mergeConfig({ port: 9000 }, {}).port).toBe(9000);
     expect(mergeConfig({ port: 9000 }, { DECK_PORT: 9100 }).port).toBe(9100);
-    expect(mergeConfig(null, {})).toMatchObject({ host: '127.0.0.1', deepseekApiKey: null });
+    expect(mergeConfig(null, {})).toMatchObject({ host: '127.0.0.1' });
   });
 
   it('refuses to listen beyond loopback without a password', () => {

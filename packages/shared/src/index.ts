@@ -9,3 +9,4 @@ export * from './publicConfig.js';
 export * from './auth.js';
 export * from './normalizeUrl.js';
 export * from './providerSetup.js';
+export * from './profile.js';

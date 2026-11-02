@@ -66,7 +66,6 @@ The startup log prints the LAN URLs. Without `DECK_PASSWORD` the built-in defaul
   "port": 7842,
   "password": null,
   "defaultCwd": null,
-  "deepseekApiKey": null,
   "portRange": { "min": 4100, "max": 4199 },
   "providers": [
     {
@@ -82,9 +81,8 @@ The startup log prints the LAN URLs. Without `DECK_PASSWORD` the built-in defaul
 }
 ```
 
-`defaultCwd` defaults to your home directory (`~` is accepted in the folder field). The only key the
-deck ever stores is the DeepSeek one (or set `DEEPSEEK_API_KEY`), because that provider is Claude Code
-pointed at DeepSeek's API. Every other CLI signs in by itself.
+`defaultCwd` defaults to your home directory (`~` is accepted in the folder field). The deck never
+stores or asks for API keys or logins: every CLI signs in by itself, inside its terminal.
 
 Environment overrides: `DECK_HOST`, `DECK_PORT`, `DECK_PASSWORD`, `DECK_CONFIG_DIR`, `DECK_STATE_DIR`,
 `DECK_STATIC_DIR`. `mcpArgs` may contain `{mcpUrl}` to point a CLI at the deck MCP server.
@@ -97,21 +95,18 @@ the CLI shows its own sign-in the first time it starts, in the session terminal,
 uses today or tomorrow. If `npm` is missing (Debian/Ubuntu ship it separately), the setup tells you
 how to get it.
 
-## Several accounts of the same CLI (profiles)
+## Profiles (clean terminals)
 
-Each profile runs the **official** CLI with its own config folder (`CLAUDE_CONFIG_DIR` /
-`CODEX_HOME`, under `~/.config/ai-cli-deck/profiles/<id>`), so every profile keeps its own login
-or API key. The deck never reads or stores credentials.
+A profile is a **named, clean terminal** built on a base: Claude Code, Claude Code (DeepSeek), Codex
+or Custom (any program, or just a shell). It starts with its own empty config folder
+(`CLAUDE_CONFIG_DIR` / `CODEX_HOME` under `~/.config/ai-cli-deck/profiles/<id>`), so **no login and no
+key is linked**. You sign in or export a key yourself inside that terminal, exactly as the CLI
+documents. The deck holds no credentials, so it keeps working if a CLI changes how it logs in.
 
-```sh
-clideck profile add work claude --label "Claude (work)" --key-env WORK_ANTHROPIC_KEY
-clideck profile add personal claude          # no key: sign in inside the CLI itself
-clideck profile add team codex --key-env TEAM_OPENAI_KEY
-```
-
-`--key-env` names a host environment variable that holds the key, so it stays out of
-`config.json`. Restart the deck to see the new profiles in the "new session" list. In
-`config.json` a profile is `{ "id", "label", "base": "claude" | "codex", "envFromHost", "configDir" }`.
+Create profiles from the terminals menu (☰ > New profile) or with
+`clideck profile add "Work" claude`. Profiles can be renamed; the base and the id never change, and
+each session stays bound to the profile it was started with. They are stored in
+`~/.config/ai-cli-deck/profiles.json`.
 
 ## Talking back to the deck
 

@@ -74,7 +74,7 @@ One `Provider` interface: `id`, `label`, `buildCommand(ctx)` returning command, 
 
 - `claude` (Claude Code CLI; pass MCP config via `--mcp-config`)
 - `codex` (OpenAI Codex CLI; MCP via its config)
-- `claude-deepseek`: claude with env `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic` and `ANTHROPIC_AUTH_TOKEN` read from the app config
+- `claude-deepseek`: claude with env `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic` (the key is set by the user inside the terminal; the deck stores none)
 - `custom`: any user-defined command
   Providers are registered in one registry file. Adding a provider must be a single new file plus one registry line. Secrets live in a config file outside the repo (`~/.config/ai-cli-deck/config.json`), never committed, never sent to the browser.
 
@@ -163,3 +163,5 @@ Mobile first (narrow viewport, touch friendly), but works on desktop. Layout: to
   removable only while localhost-only. The extra keys bar is hidden on non-touch devices.
 - `clideck` command (and `/clideck help` slash commands) lets agents and users operate the deck.
 - Visual style: retro-futuristic steampunk (brass, copper, leather, glowing lamps).
+- Profiles are clean, named terminals on a base (claude, claude-deepseek, codex, custom). No keys or logins are
+  ever stored or requested by the deck. A session is bound to one profile for life; profiles can be renamed.

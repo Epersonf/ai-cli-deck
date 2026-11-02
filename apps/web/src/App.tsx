@@ -12,6 +12,7 @@ import { useLayout } from './features/layout/layoutStore';
 import { useShortcuts } from './features/layout/useShortcuts';
 import { NewSessionDialog } from './features/sessions/NewSessionDialog';
 import { SessionSwitcher } from './features/sessions/SessionSwitcher';
+import { useProfiles } from './features/sessions/profilesStore';
 import { useSessions } from './features/sessions/sessionsStore';
 import { SettingsDialog } from './features/settings/SettingsDialog';
 import { keysVisible, loadMode, saveMode, type KeysMode } from './features/terminal/keysPreference';
@@ -38,6 +39,10 @@ export function App() {
       .then((c) => (setConfig(c), setLocked(false)))
       .catch(() => undefined);
     void useSessions
+      .getState()
+      .refresh()
+      .catch(() => undefined);
+    void useProfiles
       .getState()
       .refresh()
       .catch(() => undefined);

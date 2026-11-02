@@ -1,6 +1,7 @@
 import type { Session } from '@deck/shared';
 import { useT } from '../../shared/i18n/store';
 import { useConfirm } from '../confirm/confirmStore';
+import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
 import { useSessions } from './sessionsStore';
 
@@ -11,7 +12,9 @@ export function useCloseSession(): (session: Session) => void {
   return (session) =>
     ask({
       title: t('confirm.closeTitle'),
-      message: t('tabs.closeConfirm', { name: sessionLabel(session) }),
+      message: t('tabs.closeConfirm', {
+        name: sessionLabel(session, useProfiles.getState().providers),
+      }),
       confirmLabel: t('confirm.closeAction'),
       cancelLabel: t('confirm.keep'),
       onConfirm: () => {

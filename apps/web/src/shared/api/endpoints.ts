@@ -4,6 +4,7 @@ import {
   LoginResponseSchema,
   FileContentSchema,
   GitStatusSchema,
+  ProfileSchema,
   ProviderInfoSchema,
   PublicConfigSchema,
   SessionSchema,
@@ -30,8 +31,9 @@ export const api = {
     request(SessionSchema, 'POST', '/api/sessions', body),
   renameSession: (id: string, name: string | null) =>
     request(SessionSchema, 'PATCH', session(id), { name }),
-  createProfile: (body: CreateProfileBody) =>
-    request(z.object({ ok: z.boolean() }), 'POST', '/api/profiles', body),
+  createProfile: (body: CreateProfileBody) => request(ProfileSchema, 'POST', '/api/profiles', body),
+  renameProfile: (id: string, label: string) =>
+    request(ProfileSchema, 'PATCH', `/api/profiles/${enc(id)}`, { label }),
   deleteSession: (id: string) => request(z.void(), 'DELETE', session(id)),
   setPreview: (id: string, url: string) =>
     request(z.object({ url: z.string() }), 'PUT', `${session(id)}/preview`, { url }),

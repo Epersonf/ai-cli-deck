@@ -1,5 +1,6 @@
 import { ApprovalsBadge } from './features/approvals/ApprovalsBadge';
 import { sessionLabel } from './features/sessions/sessionLabel';
+import { useProfiles } from './features/sessions/profilesStore';
 import { useActiveSession } from './features/sessions/sessionsStore';
 import { useT } from './shared/i18n/store';
 import { Gear } from './shared/ui/Gear';
@@ -16,6 +17,7 @@ interface Props {
 export function Topbar({ wide, splitOn, onSwitcher, onSplit, onSettings }: Props) {
   const t = useT();
   const active = useActiveSession();
+  const providers = useProfiles((s) => s.providers);
   return (
     <header className="topbar">
       <button
@@ -31,7 +33,7 @@ export function Topbar({ wide, splitOn, onSwitcher, onSplit, onSettings }: Props
         <Gear size={22} className="spin" />
       </span>
       <strong className="current-name">
-        {active ? sessionLabel(active) : t('switcher.empty')}
+        {active ? sessionLabel(active, providers) : t('switcher.empty')}
       </strong>
       {wide && (
         <button

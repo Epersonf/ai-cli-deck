@@ -1,25 +1,34 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { PROFILE_BASES } from '../infrastructure/config/schema.js';
-import { saveProfile, type ProfileRequest } from '../infrastructure/config/profileStore.js';
+import { PROFILE_BASES, profileIdFor, ProfileBaseSchema, type Profile } from '@deck/shared';
+import { JsonProfileStore } from '../infrastructure/store/JsonProfileStore.js';
 
-export type { ProfileRequest };
-
-/** Parses `<id> <claude|codex> [--label "..."] [--key-env VAR]`. */
-export function parseProfileArgs(args: readonly string[]): ProfileRequest | string {
-  const [id, base] = args;
-  const known = PROFILE_BASES.find((b) => b === base);
-  if (!id || !/^[a-z0-9][a-z0-9-]*$/.test(id) || !known)
-    return `usage: clideck profile add <id> <${PROFILE_BASES.join('|')}> [--label "Name"] [--key-env HOST_VAR]`;
-  const flagged = (flag: string): string | null =>
-    args.includes(flag) ? (args[args.indexOf(flag) + 1] ?? null) : null;
-  return { id, base: known, label: flagged('--label'), keyEnv: flagged('--key-env') };
+export interface ProfileRequest {
+  label: string;
+  base: Profile['base'];
+  command: string;
 }
 
-/** Saves the profile to config.json; the server picks it up on next start (or via the UI). */
+const USAGE = `usage: clideck profile add "<name>" <${PROFILE_BASES.join('|')}> [--command <program>]`;
+
+/** Parses `"<name>" <base> [--command program]`. */
+export function parseProfileArgs(args: readonly string[]): ProfileRequest | string {
+  const [label, base] = args;
+  const parsed = ProfileBaseSchema.safeParse(base);
+  if (!label?.trim() || !parsed.success) return USAGE;
+  const at = args.indexOf('--command');
+  return { label: label.trim(), base: parsed.data, command: at >= 0 ? (args[at + 1] ?? '') : '' };
+}
+
+/** Saves a clean profile; a running deck picks it up on next start (the UI adds it live). */
 export async function addProfile(request: ProfileRequest, env = process.env): Promise<string> {
   const dir = env['DECK_CONFIG_DIR'] ?? join(homedir(), '.config', 'ai-cli-deck');
-  await saveProfile(dir, request);
-  const login = request.keyEnv ? `key from $${request.keyEnv}` : 'sign in with the CLI itself';
-  return `Profile "${request.id}" saved (${login}). Restart the deck to use it.`;
+  const store = new JsonProfileStore(join(dir, 'profiles.json'));
+  const all = await store.load();
+  const id = profileIdFor(
+    request.label,
+    all.map((p) => p.id),
+  );
+  await store.save([...all, { ...request, id }]);
+  return `Profile "${request.label}" (${id}) saved: a clean terminal, no login linked. Restart the deck to use it.`;
 }

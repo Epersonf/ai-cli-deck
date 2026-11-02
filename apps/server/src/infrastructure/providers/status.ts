@@ -48,6 +48,13 @@ export class ProviderStatusResolver {
     private readonly deps: StatusDeps,
   ) {}
 
+  private readonly aliases = new Map<string, string>();
+
+  /** Profiles of a built-in CLI are installed/missing exactly like that CLI. */
+  alias(id: string, baseId: string): void {
+    this.aliases.set(id, baseId);
+  }
+
   register(entry: { id: string; command: string }): void {
     const at = this.configured.findIndex((d) => d.id === entry.id);
     if (at >= 0) this.configured.splice(at, 1);
@@ -61,7 +68,7 @@ export class ProviderStatusResolver {
         ? READY
         : { status: 'missing', hint: `"${def.command}" was not found in PATH`, canInstall: false };
     }
-    const spec = this.specs.find((s) => s.id === id);
+    const spec = this.specs.find((s) => s.id === (this.aliases.get(id) ?? id));
     if (!spec || (await findExecutable(spec.binary, this.deps))) return READY;
     return {
       status: 'missing',

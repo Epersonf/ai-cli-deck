@@ -1,6 +1,7 @@
 import {
   CreateProfileBodySchema,
   CreateSessionBodySchema,
+  RenameProfileBodySchema,
   RenameSessionBodySchema,
 } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
@@ -16,9 +17,12 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
 
   app.get('/api/providers', () =>
     Promise.all(
-      c.providers
-        .list()
-        .map(async ({ id, label }) => ({ id, label, ...(await c.providerStatus(id)) })),
+      c.providers.list().map(async ({ id, label }) => ({
+        id,
+        label,
+        profile: c.profiles.has(id),
+        ...(await c.providerStatus(id)),
+      })),
     ),
   );
 
@@ -42,8 +46,14 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
   });
 
   app.post('/api/profiles', async (request, reply) => {
-    await c.addProfile(parseWith(CreateProfileBodySchema, request.body));
-    return reply.code(201).send({ ok: true });
+    const body = parseWith(CreateProfileBodySchema, request.body);
+    return reply.code(201).send(await c.profiles.create(body));
+  });
+
+  app.patch('/api/profiles/:id', async (request) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { label } = parseWith(RenameProfileBodySchema, request.body);
+    return c.profiles.rename(id, label);
   });
 
   app.put('/api/sessions/:id/preview', (request) => {

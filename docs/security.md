@@ -16,8 +16,8 @@
   Changing or removing the password rotates the token, which logs everyone else out.
 - Comparisons are constant time. Login and password changes are limited to 5 failures per minute
   per client (HTTP 429 afterwards).
-- Provider secrets (for example the DeepSeek key) stay in the config file, are never logged and
-  never sent to the browser.
+- The deck stores no provider credentials at all (no API keys, no logins). Profiles start as
+  clean terminals and the user signs in inside them.
 
 ## Request checks
 

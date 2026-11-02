@@ -46,6 +46,8 @@ export const ProviderInfoSchema = z.object({
   hint: z.string().nullable(),
   /** True when `clideck setup <id>` can download the CLI for the user. */
   canInstall: z.boolean(),
+  /** True for user-made profiles, which can be renamed. Built-in entries cannot. */
+  profile: z.boolean().default(false),
 });
 export type ProviderInfo = z.infer<typeof ProviderInfoSchema>;
 
@@ -57,16 +59,3 @@ export const RenameSessionBodySchema = z.object({
     .transform((value) => (value === '' ? null : value))
     .nullable(),
 });
-
-export const CreateProfileBodySchema = z.object({
-  id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'use lowercase letters, digits and dashes'),
-  base: z.enum(['claude', 'codex']),
-  label: z.string().trim().min(1).max(60).nullable().default(null),
-  /** Name of a host environment variable holding the API key (never the key itself). */
-  keyEnv: z
-    .string()
-    .regex(/^[A-Za-z_][A-Za-z0-9_]*$/)
-    .nullable()
-    .default(null),
-});
-export type CreateProfileBody = z.infer<typeof CreateProfileBodySchema>;

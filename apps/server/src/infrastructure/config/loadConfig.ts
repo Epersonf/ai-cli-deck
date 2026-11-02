@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -44,16 +43,4 @@ export async function loadConfig(
   const paths = resolvePaths(env);
   const file = await readJson(join(paths.configDir, 'config.json'));
   return { config: mergeConfig(file, env), paths };
-}
-
-/** Synchronous re-read, used to pick up keys saved by `clideck setup` without a restart. */
-export function loadConfigSync(processEnv: NodeJS.ProcessEnv): AppConfig {
-  const env = EnvSchema.parse(processEnv);
-  let file: unknown = null;
-  try {
-    file = JSON.parse(readFileSync(join(resolvePaths(env).configDir, 'config.json'), 'utf8'));
-  } catch {
-    // missing or unreadable config means defaults
-  }
-  return mergeConfig(file, env);
 }

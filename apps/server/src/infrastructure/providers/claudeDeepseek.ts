@@ -1,20 +1,12 @@
-import { invalid } from '../../domain/errors.js';
 import { createClaudeLike } from './claudeLike.js';
 
-export const claudeDeepseek = createClaudeLike(
-  'claude-deepseek',
-  'Claude Code (DeepSeek)',
-  (ctx) => {
-    const key = ctx.secrets.deepseekApiKey;
-    if (key === null)
-      throw invalid(
-        'Set DEEPSEEK_API_KEY in the environment, or deepseekApiKey in ~/.config/ai-cli-deck/config.json',
-      );
-    return {
-      ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic',
-      ANTHROPIC_AUTH_TOKEN: key,
-      ANTHROPIC_MODEL: 'deepseek-chat',
-      ANTHROPIC_SMALL_FAST_MODEL: 'deepseek-chat',
-    };
-  },
-);
+export const DEEPSEEK_ENV = {
+  ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic',
+  ANTHROPIC_MODEL: 'deepseek-chat',
+  ANTHROPIC_SMALL_FAST_MODEL: 'deepseek-chat',
+} as const;
+
+/** Claude Code pointed at DeepSeek. The key is yours to set inside the terminal (the deck holds none). */
+export const claudeDeepseek = createClaudeLike('claude-deepseek', 'Claude Code (DeepSeek)', () => ({
+  ...DEEPSEEK_ENV,
+}));
