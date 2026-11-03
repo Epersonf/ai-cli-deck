@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tagline">Рабочее пространство для ИИ CLI</string>
+    <string name="state_stopped">Остановлен</string>
+    <string name="state_installing">Установка…</string>
+    <string name="state_starting">Запуск…</string>
+    <string name="state_running">Работает на порту %1$d</string>
+    <string name="state_restarting">Перезапуск через %1$d с</string>
+    <string name="open_deck">Открыть Deck</string>
+    <string name="start">Запустить</string>
+    <string name="stop">Остановить</string>
+    <string name="battery">Исключить из оптимизации батареи</string>
+    <string name="autostart">Запускать автоматически при включении телефона</string>
+    <string name="password_hint">Пароль Deck (для доступа по сети)</string>
+    <string name="section_status">Состояние</string>
+    <string name="section_settings">Настройки</string>
+    <string name="section_log">Журнал</string>
+    <string name="notif_stop">Остановить</string>
+    <string name="waiting_deck">Ожидание запуска deck…</string>
+    <string name="log_installing">Установка/обновление deck внутри Ubuntu (первый раз может занять несколько минут)…</string>
+    <string name="log_bootstrap_failed">Сбой bootstrap (rc=%1$d). Повторная попытка.</string>
+    <string name="log_downloading">Загрузка базы Ubuntu (~30 МБ)…</string>
+    <string name="log_extracting">Распаковка…</string>
+    <string name="log_rootfs_failed">Не удалось подготовить rootfs: %1$s</string>
+    <string name="log_starting">[deck] запуск %1$s</string>
+    <string name="log_exited">[deck] завершён rc=%1$d через %2$d с</string>
+    <string name="log_error">[deck] ошибка: %1$s</string>
+    <string name="setting_port">Порт</string>
+    <string name="setting_host">Хост</string>
+    <string name="setting_host_hint">127.0.0.1 = только этот телефон · 0.0.0.0 = вся сеть (нужен пароль)</string>
+    <string name="setting_language">Язык</string>
+    <string name="language_system">Как в системе</string>
+    <string name="setting_save">Сохранить</string>
+    <string name="setting_saved">Сохранено. «Остановить → Запустить» для применения.</string>
+    <string name="err_port">Порт должен быть от 1024 до 65535</string>
+    <string name="err_host_password">Для доступа по сети нужен пароль</string>
+    <string name="section_network">Сеть</string>
+    <string name="section_behavior">Поведение</string>
+    <string name="settings_open">Настройки</string>
+</resources>

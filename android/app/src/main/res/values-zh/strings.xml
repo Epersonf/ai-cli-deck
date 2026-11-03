@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tagline">AI CLI 工作区</string>
+    <string name="state_stopped">已停止</string>
+    <string name="state_installing">正在安装…</string>
+    <string name="state_starting">正在启动…</string>
+    <string name="state_running">运行于端口 %1$d</string>
+    <string name="state_restarting">%1$d 秒后重启</string>
+    <string name="open_deck">打开 Deck</string>
+    <string name="start">启动</string>
+    <string name="stop">停止</string>
+    <string name="battery">忽略电池优化</string>
+    <string name="autostart">手机开机时自动启动</string>
+    <string name="password_hint">Deck 密码（用于网络访问）</string>
+    <string name="section_status">状态</string>
+    <string name="section_settings">设置</string>
+    <string name="section_log">日志</string>
+    <string name="notif_stop">停止</string>
+    <string name="waiting_deck">正在等待 Deck 启动…</string>
+    <string name="log_installing">正在 Ubuntu 中安装/更新 Deck（首次可能需要几分钟）…</string>
+    <string name="log_bootstrap_failed">引导失败 (rc=%1$d)，将重试。</string>
+    <string name="log_downloading">正在下载 Ubuntu 基础系统（约 30 MB）…</string>
+    <string name="log_extracting">正在解压…</string>
+    <string name="log_rootfs_failed">准备 rootfs 失败：%1$s</string>
+    <string name="log_starting">[deck] 正在启动 %1$s</string>
+    <string name="log_exited">[deck] 已退出 rc=%1$d，运行 %2$d 秒</string>
+    <string name="log_error">[deck] 错误：%1$s</string>
+    <string name="setting_port">端口</string>
+    <string name="setting_host">主机</string>
+    <string name="setting_host_hint">127.0.0.1 = 仅本机 · 0.0.0.0 = 整个网络（需要密码）</string>
+    <string name="setting_language">语言</string>
+    <string name="language_system">系统默认</string>
+    <string name="setting_save">保存</string>
+    <string name="setting_saved">已保存。“停止 → 启动”后生效。</string>
+    <string name="err_port">端口必须介于 1024 和 65535 之间</string>
+    <string name="err_host_password">在网络上开放 Deck 需要设置密码</string>
+    <string name="section_network">网络</string>
+    <string name="section_behavior">行为</string>
+    <string name="settings_open">设置</string>
+</resources>

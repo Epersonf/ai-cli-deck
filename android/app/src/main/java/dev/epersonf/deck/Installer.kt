@@ -33,13 +33,13 @@ class Installer(private val ctx: Context, private val env: Env, private val log:
             if (!downloadAndExtractRootfs()) return false
         }
         if (isCurrent()) return true
-        log("Instalando/atualizando o deck dentro do Ubuntu (pode demorar vários minutos na primeira vez)...")
+        log(env.en.getString(R.string.log_installing))
         installAssets()
         val p = env.prootCommand("bash /opt/bootstrap.sh").start()
         p.inputStream.bufferedReader().forEachLine { log(it) }
         val rc = p.waitFor()
         if (rc != 0) {
-            log("bootstrap falhou (rc=$rc). Vai tentar de novo.")
+            log(env.en.getString(R.string.log_bootstrap_failed, rc))
             return false
         }
         marker.writeText(assetVersion())
@@ -48,9 +48,17 @@ class Installer(private val ctx: Context, private val env: Env, private val log:
 
     private fun installAssets() {
         File(env.rootfs, "opt").mkdirs()
-        for (name in listOf("bootstrap.sh", "run.sh", "epoll_shim.c", "deck-src.tar.gz")) {
+        for (name in listOf("bootstrap.sh", "run.sh", "epoll_shim.c", "deck-src.bin")) {
+            // AGP strips ".gz" from assets, so the source tarball ships as .bin and is unpacked under its real name.
+            val dest = if (name == "deck-src.bin") "deck-src.tar.gz" else name
+            val out = File(env.rootfs, "opt/$dest")
             ctx.assets.open(name).use { input ->
-                FileOutputStream(File(env.rootfs, "opt/$name")).use { input.copyTo(it) }
+                if (name.endsWith(".bin")) {
+                    FileOutputStream(out).use { input.copyTo(it) }
+                } else {
+                    // Scripts run under Linux: a checkout with CRLF line endings would break them.
+                    out.writeText(input.readBytes().decodeToString().replace("\r\n", "\n"))
+                }
             }
         }
         File(env.rootfs, "etc").mkdirs()
@@ -60,18 +68,18 @@ class Installer(private val ctx: Context, private val env: Env, private val log:
     private fun downloadAndExtractRootfs(): Boolean {
         val tarball = File(env.base, "rootfs.tar.gz")
         try {
-            log("Baixando o Ubuntu base (~30 MB)...")
+            log(env.en.getString(R.string.log_downloading))
             val c = URL(ROOTFS_URL).openConnection() as HttpURLConnection
             c.connectTimeout = 20000; c.readTimeout = 30000
             c.inputStream.use { i -> FileOutputStream(tarball).use { i.copyTo(it) } }
-            log("Extraindo...")
+            log(env.en.getString(R.string.log_extracting))
             env.rootfs.deleteRecursively()
             env.rootfs.mkdirs()
             extract(tarball.inputStream().buffered(), env.rootfs)
             tarball.delete()
             return true
         } catch (e: Exception) {
-            log("Falha ao preparar o rootfs: $e")
+            log(env.en.getString(R.string.log_rootfs_failed, e.toString()))
             env.rootfs.deleteRecursively()
             return false
         }

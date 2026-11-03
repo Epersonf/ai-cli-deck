@@ -1,0 +1,4 @@
+# Scripts run inside Linux (proot); CRLF breaks them.
+android/app/src/main/assets/*.sh text eol=lf
+android/app/src/main/assets/*.c text eol=lf
+android/scripts/*.sh text eol=lf

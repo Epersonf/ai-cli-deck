@@ -14,12 +14,15 @@ import android.os.PowerManager
 import java.io.File
 import java.io.FileWriter
 
+enum class DeckState { STOPPED, INSTALLING, STARTING, RUNNING, RESTARTING }
+
 /** Foreground service: keeps the deck (Node inside proot) alive, restarts it when it exits. */
 class DeckService : Service() {
 
     companion object {
         const val ACTION_STOP = "dev.epersonf.deck.STOP"
-        @Volatile var status: String = "parado"
+        @Volatile var state = DeckState.STOPPED
+        @Volatile var status: String = ""
         @Volatile var running = false
     }
 
@@ -41,8 +44,9 @@ class DeckService : Service() {
             shutdown()
             return START_NOT_STICKY
         }
-        startForeground(1, notification("iniciando..."))
+        startForeground(1, notification(getString(R.string.state_starting)))
         if (worker == null) {
+            runCatching { env.logFile.delete() }
             acquireLocks()
             running = true
             worker = Thread({ loop() }, "deck-supervisor").also { it.start() }
@@ -60,7 +64,8 @@ class DeckService : Service() {
         } catch (_: Exception) {}
     }
 
-    private fun setStatus(s: String) {
+    private fun setStatus(st: DeckState, s: String) {
+        state = st
         status = s
         (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(1, notification(s))
     }
@@ -70,43 +75,50 @@ class DeckService : Service() {
         val installer = Installer(this, env, ::log)
         while (running) {
             try {
-                setStatus("instalando...")
-                if (!installer.ensure()) { sleepInterruptibly(20_000); continue }
+                setStatus(DeckState.INSTALLING, getString(R.string.state_installing))
+                if (!installer.ensure()) { fails++; countdown(20); continue }
                 val extra = mutableMapOf("DECK_PORT" to env.port.toString())
-                if (env.exposeLan && env.password.isNotEmpty()) {
-                    extra["DECK_HOST"] = "0.0.0.0"
+                if (env.exposed && env.password.isNotEmpty()) {
+                    extra["DECK_HOST"] = env.host
                     extra["DECK_PASSWORD"] = env.password
+                } else {
+                    extra["DECK_HOST"] = Env.LOOPBACK
                 }
-                setStatus("ligando...")
+                setStatus(DeckState.STARTING, getString(R.string.state_starting))
                 val started = System.currentTimeMillis()
-                log("[deck] iniciando ${java.util.Date()}")
+                log(env.en.getString(R.string.log_starting, java.util.Date().toString()))
                 val p = env.prootCommand("bash /opt/run.sh", extra).start()
                 proc = p
                 Thread {
                     p.inputStream.bufferedReader().forEachLine { l ->
                         log(l)
-                        if (l.contains("Server listening")) setStatus("rodando na porta ${env.port}")
+                        if (l.contains("Server listening")) setStatus(DeckState.RUNNING, getString(R.string.state_running, env.port))
                     }
                 }.start()
                 val rc = p.waitFor()
                 proc = null
                 val up = (System.currentTimeMillis() - started) / 1000
-                log("[deck] saiu rc=$rc após ${up}s")
+                log(env.en.getString(R.string.log_exited, rc, up))
                 fails = if (up < 30) fails + 1 else 0
             } catch (e: Exception) {
-                log("[deck] erro: $e")
+                log(env.en.getString(R.string.log_error, e.toString()))
                 fails++
             }
             if (!running) break
-            val wait = minOf(30, 3 * (fails + 1))
-            setStatus("reiniciando em ${wait}s")
-            sleepInterruptibly(wait * 1000L)
+            countdown(minOf(30, 3 * (fails + 1)))
         }
-        setStatus("parado")
+        setStatus(DeckState.STOPPED, getString(R.string.state_stopped))
     }
 
-    private fun sleepInterruptibly(ms: Long) {
-        try { Thread.sleep(ms) } catch (_: InterruptedException) {}
+    /** Live "restarting in Ns" status, updated every second. */
+    private fun countdown(seconds: Int) {
+        try {
+            for (left in seconds downTo 1) {
+                if (!running) return
+                setStatus(DeckState.RESTARTING, getString(R.string.state_restarting, left))
+                Thread.sleep(1000)
+            }
+        } catch (_: InterruptedException) {}
     }
 
     private fun shutdown() {
@@ -115,7 +127,8 @@ class DeckService : Service() {
         worker?.interrupt()
         worker = null
         releaseLocks()
-        status = "parado"
+        state = DeckState.STOPPED
+        status = getString(R.string.state_stopped)
         stopForeground(true)
         stopSelf()
     }
@@ -143,16 +156,16 @@ class DeckService : Service() {
     private fun notification(text: String): Notification {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= 26) {
-            nm.createNotificationChannel(NotificationChannel("deck", "Deck Server", NotificationManager.IMPORTANCE_LOW))
+            nm.createNotificationChannel(NotificationChannel("deck", getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW))
         }
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val stop = PendingIntent.getService(
             this, 1, Intent(this, DeckService::class.java).setAction(ACTION_STOP), PendingIntent.FLAG_IMMUTABLE,
         )
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, "deck") else @Suppress("DEPRECATION") Notification.Builder(this)
-        return b.setContentTitle("Deck Server").setContentText(text)
-            .setSmallIcon(android.R.drawable.ic_menu_manage).setContentIntent(open)
-            .addAction(Notification.Action.Builder(null, "Parar", stop).build())
+        return b.setContentTitle(getString(R.string.app_name)).setContentText(text)
+            .setSmallIcon(R.drawable.ic_gear).setContentIntent(open)
+            .addAction(Notification.Action.Builder(null, getString(R.string.notif_stop), stop).build())
             .setOngoing(true).build()
     }
 }

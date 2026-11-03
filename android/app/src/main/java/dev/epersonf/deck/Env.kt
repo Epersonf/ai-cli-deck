@@ -5,16 +5,25 @@ import java.io.File
 
 /** Paths and the proot command line for the Ubuntu rootfs that hosts the deck. */
 class Env(ctx: Context) {
+    companion object { const val LOOPBACK = "127.0.0.1" }
+
     val nativeDir: String = ctx.applicationInfo.nativeLibraryDir
     val base: File = ctx.filesDir
     val rootfs = File(base, "rootfs")
     val libDir = File(base, "lib")
     val tmpDir = File(base, "tmp")
     val logFile = File(base, "deck.log")
+    /** Logs stay in English whatever the UI language (they are technical output). */
+    val en: Context = ctx.createConfigurationContext(
+        android.content.res.Configuration(ctx.resources.configuration).apply { setLocale(java.util.Locale.ENGLISH) },
+    )
     val prefs = ctx.getSharedPreferences("deck", Context.MODE_PRIVATE)
 
     val port: Int get() = prefs.getInt("port", 7842)
-    val exposeLan: Boolean get() = prefs.getBoolean("lan", false)
+    /** Bind address; migrates the old "accept LAN" switch. */
+    val host: String get() = prefs.getString("host", null)
+        ?: if (prefs.getBoolean("lan", false)) "0.0.0.0" else LOOPBACK
+    val exposed: Boolean get() = host != LOOPBACK && host != "localhost"
     val password: String get() = prefs.getString("password", "") ?: ""
 
     /** libtalloc & friends ship as lib*.so (APK rule); the linker wants their real sonames. */
@@ -23,7 +32,10 @@ class Env(ctx: Context) {
         tmpDir.mkdirs()
         for ((src, soname) in listOf("libtalloc2.so" to "libtalloc.so.2", "libandroid-shmem.so" to "libandroid-shmem.so")) {
             val link = File(libDir, soname)
-            if (!link.exists()) android.system.Os.symlink("$nativeDir/$src", link.path)
+            // After an in-place update nativeLibraryDir changes, leaving a dangling link that File.exists() reports
+            // as missing; always replace it (delete() removes the link itself, never its target).
+            link.delete()
+            android.system.Os.symlink("$nativeDir/$src", link.path)
         }
     }
 

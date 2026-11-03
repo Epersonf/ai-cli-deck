@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tagline">AI CLI ワークスペース</string>
+    <string name="state_stopped">停止中</string>
+    <string name="state_installing">インストール中…</string>
+    <string name="state_starting">起動中…</string>
+    <string name="state_running">ポート %1$d で実行中</string>
+    <string name="state_restarting">%1$d 秒後に再起動</string>
+    <string name="open_deck">Deck を開く</string>
+    <string name="start">開始</string>
+    <string name="stop">停止</string>
+    <string name="battery">バッテリー最適化の対象外にする</string>
+    <string name="autostart">端末の起動時に自動で開始</string>
+    <string name="password_hint">Deck のパスワード（ネットワークアクセス用）</string>
+    <string name="section_status">状態</string>
+    <string name="section_settings">設定</string>
+    <string name="section_log">ログ</string>
+    <string name="notif_stop">停止</string>
+    <string name="waiting_deck">Deck の起動を待っています…</string>
+    <string name="log_installing">Ubuntu 内に Deck をインストール/更新中（初回は数分かかることがあります）…</string>
+    <string name="log_bootstrap_failed">ブートストラップに失敗しました (rc=%1$d)。再試行します。</string>
+    <string name="log_downloading">Ubuntu ベースをダウンロード中（約 30 MB）…</string>
+    <string name="log_extracting">展開中…</string>
+    <string name="log_rootfs_failed">rootfs の準備に失敗しました：%1$s</string>
+    <string name="log_starting">[deck] %1$s に起動</string>
+    <string name="log_exited">[deck] 終了 rc=%1$d（%2$d 秒後）</string>
+    <string name="log_error">[deck] エラー：%1$s</string>
+    <string name="setting_port">ポート</string>
+    <string name="setting_host">ホスト</string>
+    <string name="setting_host_hint">127.0.0.1 = この端末のみ · 0.0.0.0 = ネットワーク全体（パスワードが必要）</string>
+    <string name="setting_language">言語</string>
+    <string name="language_system">システムの既定</string>
+    <string name="setting_save">保存</string>
+    <string name="setting_saved">保存しました。「停止 → 開始」で反映されます。</string>
+    <string name="err_port">ポートは 1024〜65535 の範囲で指定してください</string>
+    <string name="err_host_password">ネットワークに公開するにはパスワードが必要です</string>
+    <string name="section_network">ネットワーク</string>
+    <string name="section_behavior">動作</string>
+    <string name="settings_open">設定</string>
+</resources>

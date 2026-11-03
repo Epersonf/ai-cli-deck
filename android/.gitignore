@@ -3,5 +3,5 @@ build/
 app/build/
 local.properties
 app/src/main/jniLibs/
-app/src/main/assets/deck-src.tar.gz
+app/src/main/assets/deck-src.bin
 app/src/main/assets/deck-version.txt

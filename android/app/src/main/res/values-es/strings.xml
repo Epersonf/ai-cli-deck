@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tagline">Espacio de trabajo de CLIs de IA</string>
+    <string name="state_stopped">Detenido</string>
+    <string name="state_installing">Instalando…</string>
+    <string name="state_starting">Iniciando…</string>
+    <string name="state_running">En ejecución en el puerto %1$d</string>
+    <string name="state_restarting">Reiniciando en %1$ds</string>
+    <string name="open_deck">Abrir Deck</string>
+    <string name="start">Iniciar</string>
+    <string name="stop">Detener</string>
+    <string name="battery">Excluir de la optimización de batería</string>
+    <string name="autostart">Iniciar automáticamente al encender el teléfono</string>
+    <string name="password_hint">Contraseña del deck (para acceso por red)</string>
+    <string name="section_status">Estado</string>
+    <string name="section_settings">Ajustes</string>
+    <string name="section_log">Registro</string>
+    <string name="notif_stop">Detener</string>
+    <string name="waiting_deck">Esperando a que el deck se inicie…</string>
+    <string name="log_installing">Instalando/actualizando el deck dentro de Ubuntu (la primera vez puede tardar varios minutos)…</string>
+    <string name="log_bootstrap_failed">Falló el bootstrap (rc=%1$d). Se reintentará.</string>
+    <string name="log_downloading">Descargando la base de Ubuntu (~30 MB)…</string>
+    <string name="log_extracting">Extrayendo…</string>
+    <string name="log_rootfs_failed">No se pudo preparar el rootfs: %1$s</string>
+    <string name="log_starting">[deck] iniciando %1$s</string>
+    <string name="log_exited">[deck] terminó rc=%1$d tras %2$ds</string>
+    <string name="log_error">[deck] error: %1$s</string>
+    <string name="setting_port">Puerto</string>
+    <string name="setting_host">Host</string>
+    <string name="setting_host_hint">127.0.0.1 = solo este teléfono · 0.0.0.0 = toda la red (requiere contraseña)</string>
+    <string name="setting_language">Idioma</string>
+    <string name="language_system">Predeterminado del sistema</string>
+    <string name="setting_save">Guardar</string>
+    <string name="setting_saved">Guardado. Detén → Inicia para aplicar.</string>
+    <string name="err_port">El puerto debe estar entre 1024 y 65535</string>
+    <string name="err_host_password">Se necesita una contraseña para exponer el deck en la red</string>
+    <string name="section_network">Red</string>
+    <string name="section_behavior">Comportamiento</string>
+    <string name="settings_open">Ajustes</string>
+</resources>

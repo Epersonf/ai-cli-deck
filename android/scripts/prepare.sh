@@ -26,8 +26,8 @@ cp "$(ls "$WORK"/libandroid-shmem/$P/lib/libandroid-shmem.so* | head -1)" "$JNI/
 chmod 755 "$JNI"/*.so
 
 # deck source: server + shared + prebuilt web, no node_modules
-tar -czf "$APP/assets/deck-src.tar.gz" -C "$ROOT" \
+tar -czf "$APP/assets/deck-src.bin" -C "$ROOT" \
   --exclude=node_modules --exclude=.git --exclude=android --exclude='*.log' \
   package.json package-lock.json tsconfig.base.json apps packages
 echo "$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo dev)-$(date +%s)" > "$APP/assets/deck-version.txt"
-echo "prepared: $(ls "$JNI") ; $(du -h "$APP/assets/deck-src.tar.gz" | cut -f1)"
+echo "prepared: $(ls "$JNI") ; $(du -h "$APP/assets/deck-src.bin" | cut -f1)"

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">CLI Deck</string>
+    <string name="tagline">AI CLI workspace</string>
+    <string name="state_stopped">Stopped</string>
+    <string name="state_installing">Installing…</string>
+    <string name="state_starting">Starting…</string>
+    <string name="state_running">Running on port %1$d</string>
+    <string name="state_restarting">Restarting in %1$ds</string>
+    <string name="open_deck">Open Deck</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="battery">Exempt from battery optimization</string>
+    <string name="autostart">Start automatically when the phone boots</string>
+    <string name="password_hint">Deck password (for network access)</string>
+    <string name="section_status">Status</string>
+    <string name="section_settings">Settings</string>
+    <string name="section_log">Log</string>
+    <string name="notif_stop">Stop</string>
+    <string name="waiting_deck">Waiting for the deck to start…</string>
+    <string name="log_installing">Installing/updating the deck inside Ubuntu (the first run can take several minutes)…</string>
+    <string name="log_bootstrap_failed">Bootstrap failed (rc=%1$d). Will retry.</string>
+    <string name="log_downloading">Downloading Ubuntu base (~30 MB)…</string>
+    <string name="log_extracting">Extracting…</string>
+    <string name="log_rootfs_failed">Failed to prepare the rootfs: %1$s</string>
+    <string name="log_starting">[deck] starting %1$s</string>
+    <string name="log_exited">[deck] exited rc=%1$d after %2$ds</string>
+    <string name="log_error">[deck] error: %1$s</string>
+    <string name="setting_port">Port</string>
+    <string name="setting_host">Host</string>
+    <string name="setting_host_hint">127.0.0.1 = this phone only · 0.0.0.0 = whole network (requires a password)</string>
+    <string name="setting_language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="setting_save">Save</string>
+    <string name="setting_saved">Saved. Stop → Start to apply.</string>
+    <string name="err_port">Port must be between 1024 and 65535</string>
+    <string name="err_host_password">A password is required to expose the deck on the network</string>
+    <string name="section_network">Network</string>
+    <string name="section_behavior">Behavior</string>
+    <string name="settings_open">Settings</string>
+</resources>

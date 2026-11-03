@@ -30,6 +30,6 @@ for a stable key (needed for in-place updates). Without them the debug key is us
 ## Notes
 
 - `targetSdk` is 28 on purpose (as in Termux) so exec from app storage keeps working. Sideload only.
-- Android may still kill background apps: use "Isentar da otimização de bateria" in the app and, on
+- Android may still kill background apps: use "Exempt from battery optimization" in the app and, on
   Android 12+, enable *Developer options → Disable child process restrictions*.
 - arm64 only.

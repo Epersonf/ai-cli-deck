@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Steampunk palette, mirrors apps/web/src/styles/base.css -->
+<resources>
+    <color name="ink">#0E0A06</color>
+    <color name="bg">#17100A</color>
+    <color name="leather">#241810</color>
+    <color name="leather2">#2F2015</color>
+    <color name="brass">#B98A3E</color>
+    <color name="brass_hi">#F0CF85</color>
+    <color name="brass_lo">#6E4A17</color>
+    <color name="copper">#C0703C</color>
+    <color name="verdigris">#5FB3A1</color>
+    <color name="parchment">#ECDCB8</color>
+    <color name="muted">#A8946F</color>
+    <color name="amber">#FFB43A</color>
+    <color name="danger">#E0614F</color>
+</resources>
