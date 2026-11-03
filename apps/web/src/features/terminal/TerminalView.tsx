@@ -10,6 +10,7 @@ import { showSidePane } from '../layout/layoutStore';
 import { dispatchMessage } from './dispatch';
 import { attachImagePaste } from './pasteImage';
 import { createLatencyMeter, type Latency } from './latencyMeter';
+import { attachLocalEcho } from './localEcho';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { TERMINAL_THEME } from './theme';
 import type { ModifiersApi } from './useModifiers';
@@ -66,6 +67,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     fitRef.current = fit;
 
     const meter = createLatencyMeter();
+    const echo = attachLocalEcho(term, meter.get);
     const socket = openTerminalSocket(sessionId, {
       onOpen: () => {
         setOnline(true);
@@ -77,7 +79,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
         if (message.type === 'pong') meter.pong();
         if (message.type === 'output' && !message.replay) meter.output();
         dispatchMessage(sessionId, message, {
-          write: (bytes) => term.write(bytes),
+          write: (bytes) => term.write(bytes, echo.written),
           reset: () => term.reset(),
           note: (text) => term.write(`\r\n\x1b[2m[${text}]\x1b[0m\r\n`),
         });
@@ -95,6 +97,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     }, 3000);
     term.onData((data) => {
       meter.key();
+      echo.input(data);
       send(applyModifiersToText(data, data.length === 1 ? modsRef.current.take() : NO_MODS));
     });
     term.onResize(({ cols, rows }) => socket.send({ type: 'resize', cols, rows }));
@@ -111,6 +114,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     return () => {
       detachPaste();
       window.clearInterval(probe);
+      echo.dispose();
       observer.disconnect();
       cancelAnimationFrame(frame);
       socket.close();

@@ -15,6 +15,8 @@ export interface TerminalSocket {
 
 const NOT_FOUND_CLOSE = 4404;
 const PING_MS = 25_000;
+/** Typed input older than this is not replayed after a reconnect (it would surprise the user). */
+const OUTBOX_MAX_AGE_MS = 15_000;
 
 function socketUrl(sessionId: string): string {
   const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -29,12 +31,17 @@ export function openTerminalSocket(sessionId: string, handlers: SocketHandlers):
   let stopped = false;
   let attempt = 0;
   let pingTimer: number | undefined;
+  /** Keys typed while the link is down, sent in order once it is back. */
+  let outbox: { at: number; data: string }[] = [];
 
   const connect = (): void => {
     const ws = new WebSocket(socketUrl(sessionId));
     socket = ws;
     ws.onopen = () => {
       attempt = 0;
+      const fresh = outbox.filter((item) => Date.now() - item.at <= OUTBOX_MAX_AGE_MS);
+      outbox = [];
+      if (fresh.length > 0) send({ type: 'input', data: fresh.map((item) => item.data).join('') });
       handlers.onOpen();
       pingTimer = window.setInterval(() => send({ type: 'ping' }), PING_MS);
     };
@@ -58,6 +65,7 @@ export function openTerminalSocket(sessionId: string, handlers: SocketHandlers):
 
   const send = (message: ClientMessage): void => {
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message));
+    else if (message.type === 'input') outbox.push({ at: Date.now(), data: message.data });
   };
 
   connect();

@@ -122,3 +122,21 @@
   pointer-events: none;
   opacity: 0.75;
 }
+
+/* Local echo: guessed characters drawn over the terminal until the server confirms them. */
+.prediction-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.prediction-layer span {
+  position: absolute;
+  overflow: hidden;
+  background: #120d08;
+  color: #ecdcb8;
+  white-space: pre;
+}
+.prediction-layer .prediction-cursor {
+  opacity: 0.55;
+}
