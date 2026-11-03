@@ -21,7 +21,9 @@ export function KebabMenu({ items }: Props) {
 
   useEffect(() => {
     if (!pos) return;
-    const onKey = (e: KeyboardEvent): void => e.key === 'Escape' && close();
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') close();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [pos]);

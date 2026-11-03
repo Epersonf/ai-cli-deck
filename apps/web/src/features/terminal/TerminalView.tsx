@@ -4,13 +4,13 @@ import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { openTerminalSocket } from '../../shared/ws/terminalSocket';
-import { usePreview, previewable } from '../preview/previewStore';
 import { useT } from '../../shared/i18n/store';
-import { showSidePane } from '../layout/layoutStore';
 import { dispatchMessage } from './dispatch';
 import { attachImagePaste } from './pasteImage';
 import { createLatencyMeter, type Latency } from './latencyMeter';
 import { attachLocalEcho } from './localEcho';
+import { openLink } from './openLink';
+import { tameMobileKeyboard } from './mobileKeyboard';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { TERMINAL_THEME } from './theme';
 import type { ModifiersApi } from './useModifiers';
@@ -28,15 +28,6 @@ interface Props {
 }
 
 const hasFinePointer = (): boolean => window.matchMedia('(pointer: fine)').matches;
-
-function openLink(sessionId: string, uri: string): void {
-  if (previewable(uri, window.location.origin) !== null) {
-    usePreview.getState().open(sessionId, uri);
-    showSidePane('preview');
-  } else {
-    window.open(uri, '_blank', 'noopener,noreferrer');
-  }
-}
 
 export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   const t = useT();
@@ -63,6 +54,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     term.loadAddon(fit);
     term.loadAddon(new WebLinksAddon((_event, uri) => openLink(sessionId, uri)));
     term.open(element);
+    tameMobileKeyboard(term);
     termRef.current = term;
     fitRef.current = fit;
 
@@ -72,7 +64,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
       onOpen: () => {
         setOnline(true);
         term.reset();
-        socket.send({ type: 'resize', cols: term.cols, rows: term.rows });
+        claimSize();
       },
       onClose: () => setOnline(false),
       onMessage: (message) => {
@@ -100,7 +92,12 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
       echo.input(data);
       send(applyModifiersToText(data, data.length === 1 ? modsRef.current.take() : NO_MODS));
     });
-    term.onResize(({ cols, rows }) => socket.send({ type: 'resize', cols, rows }));
+    // Several devices on one session: only the focused one sets the size.
+    const claimSize = (): void => {
+      if (document.hasFocus()) socket.send({ type: 'resize', cols: term.cols, rows: term.rows });
+    };
+    term.onResize(claimSize);
+    window.addEventListener('focus', claimSize);
 
     const detachPaste = attachImagePaste(element, term, sessionId);
 
@@ -114,6 +111,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     return () => {
       detachPaste();
       window.clearInterval(probe);
+      window.removeEventListener('focus', claimSize);
       echo.dispose();
       observer.disconnect();
       cancelAnimationFrame(frame);

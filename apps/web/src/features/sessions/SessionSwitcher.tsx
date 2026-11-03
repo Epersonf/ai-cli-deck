@@ -44,9 +44,6 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
             ))}
           </ProfileGroup>
         ))}
-        <button type="button" onClick={() => (onClose(), onNew(null))}>
-          {t('topbar.newSession')}
-        </button>
         <button type="button" onClick={onClose}>
           {t('common.close')}
         </button>

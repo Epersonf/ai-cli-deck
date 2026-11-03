@@ -27,11 +27,13 @@
   mix-blend-mode: multiply;
 }
 .terminal-host {
+  touch-action: pan-y;
   position: absolute;
   inset: 6px;
 }
 .terminal-host .xterm-viewport {
   background: transparent !important;
+  overscroll-behavior: contain; /* dragging down scrolls the terminal, not the page */
 }
 
 .terminal-offline {

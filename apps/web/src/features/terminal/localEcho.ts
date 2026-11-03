@@ -21,10 +21,17 @@ export function attachLocalEcho(term: Terminal, latency: () => Latency) {
       expiry = window.setTimeout(() => (predictor.tick(), paint()), 150);
     }
   };
+  // While an IME is composing, the keyboard rewrites text itself: predicting on top of it duplicates letters.
+  let composing = false;
+  const textarea = term.textarea;
+  const start = (): void => ((composing = true), predictor.reset(), paint());
+  const end = (): void => void (composing = false);
+  textarea?.addEventListener('compositionstart', start);
+  textarea?.addEventListener('compositionend', end);
   return {
     /** Call with every chunk the user types. */
     input(data: string): void {
-      if (predictor.input(data)) paint();
+      if (!composing && predictor.input(data)) paint();
     },
     /** Call once server output has been written to the terminal. */
     written(): void {
@@ -32,6 +39,8 @@ export function attachLocalEcho(term: Terminal, latency: () => Latency) {
     },
     dispose(): void {
       window.clearTimeout(expiry);
+      textarea?.removeEventListener('compositionstart', start);
+      textarea?.removeEventListener('compositionend', end);
       overlay.clear();
     },
   };
