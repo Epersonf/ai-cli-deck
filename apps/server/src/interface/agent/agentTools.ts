@@ -2,7 +2,7 @@ import { normalizeUrl } from '@deck/shared';
 import { notFound } from '../../domain/errors.js';
 import type { Container } from '../container.js';
 
-export type AgentDeps = Pick<Container, 'sessions' | 'approvals' | 'preview'>;
+export type AgentDeps = Pick<Container, 'sessions' | 'approvals' | 'preview' | 'browser'>;
 
 /**
  * Everything an agent may do, scoped to ONE session. Shared by the MCP tools and the `clideck`
@@ -46,6 +46,15 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     suggestNewTab: (url: string) => ({
       url: deps.preview.suggestNewTab(self().id, normalizeUrl(url)),
     }),
+
+    browserNavigate: (url: string) => deps.browser.navigate(sessionId, url),
+    browserOutline: () => deps.browser.outline(sessionId),
+    browserScreenshot: () => deps.browser.screenshot(sessionId),
+    browserClick: (target: string) => deps.browser.click(sessionId, target),
+    browserFill: (target: string, text: string) => deps.browser.fill(sessionId, target, text),
+    browserType: (text: string) => deps.browser.input(sessionId, { kind: 'type', text }),
+    browserPress: (key: string) => deps.browser.input(sessionId, { kind: 'key', key }),
+    browserScroll: (dy: number) => deps.browser.input(sessionId, { kind: 'scroll', dy }),
 
     requestStatus: (requestId: string) => {
       const request = deps.approvals.get(requestId);

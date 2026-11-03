@@ -33,3 +33,4 @@ export const notFound = (what: string): DeckError =>
 export const invalid = (message: string): DeckError => new DeckError('invalid', message);
 export const forbidden = (message: string): DeckError => new DeckError('forbidden', message);
 export const conflict = (message: string): DeckError => new DeckError('conflict', message);
+export const unavailable = (message: string): DeckError => new DeckError('unavailable', message);

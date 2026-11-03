@@ -137,6 +137,10 @@ export const es: Messages = {
   'preview.suggested': 'Un agente sugiere abrir',
   'preview.dismiss': 'descartar',
   'preview.empty': 'Toca un enlace localhost en el terminal o escribe una dirección arriba.',
+  'preview.noBrowser': 'El navegador real aún no está instalado.',
+  'preview.installing': 'Instalando el navegador… (unos minutos)',
+  'preview.install': 'Instalar navegador',
+  'preview.typeHere': 'Escribir en la página…',
   'preview.blankHint':
     '¿Página en blanco? Puede prohibir ser incrustada. Usa «Abrir en una pestaña nueva».',
   'approvals.title': 'Aprobaciones pendientes',

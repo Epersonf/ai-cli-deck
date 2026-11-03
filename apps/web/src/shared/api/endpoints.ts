@@ -16,6 +16,22 @@ import {
 import { z } from 'zod';
 import { extensionOf, request, sendRaw, withToken } from './client';
 
+const BrowserStatusSchema = z.object({
+  installed: z.boolean(),
+  installing: z.boolean(),
+  error: z.string().nullable(),
+});
+const PageInfoSchema = z.object({ url: z.string(), title: z.string() });
+
+export type BrowserStatus = z.infer<typeof BrowserStatusSchema>;
+export type PageInfo = z.infer<typeof PageInfoSchema>;
+export type BrowserInput =
+  | { kind: 'click'; x: number; y: number }
+  | { kind: 'type'; text: string }
+  | { kind: 'key'; key: string }
+  | { kind: 'scroll'; dy: number }
+  | { kind: 'back' | 'forward' | 'reload' };
+
 const enc = encodeURIComponent;
 const session = (id: string): string => `/api/sessions/${enc(id)}`;
 
@@ -54,6 +70,13 @@ export const api = {
     sendRaw(`${session(id)}/upload?dir=${enc(dir)}&name=${enc(file.name)}`, file),
   paste: (id: string, blob: Blob) =>
     sendRaw(`${session(id)}/paste?ext=${enc(extensionOf(blob.type))}`, blob),
+  browserStatus: () => request(BrowserStatusSchema, 'GET', '/api/browser'),
+  browserInstall: () => request(BrowserStatusSchema, 'POST', '/api/browser/install'),
+  browserState: (id: string) => request(PageInfoSchema, 'GET', `${session(id)}/browser`),
+  browserNavigate: (id: string, url: string) =>
+    request(PageInfoSchema, 'POST', `${session(id)}/browser/navigate`, { url }),
+  browserInput: (id: string, input: BrowserInput) =>
+    request(PageInfoSchema, 'POST', `${session(id)}/browser/input`, input),
   approvals: () => request(z.array(ApprovalRequestSchema), 'GET', '/api/approvals?status=pending'),
   decide: (id: string, decision: ApprovalDecision) =>
     request(ApprovalRequestSchema, 'POST', `/api/approvals/${enc(id)}/decision`, { decision }),
@@ -70,3 +93,7 @@ export const downloadUrl = (id: string, path: string): string =>
 /** A session folder as a .zip download. */
 export const zipUrl = (id: string, path: string): string =>
   withToken(`${session(id)}/zip?path=${enc(path)}`);
+
+/** Current screenshot of the session's browser; `stamp` defeats caching. */
+export const browserShotUrl = (id: string, stamp: number): string =>
+  withToken(`${session(id)}/browser/screenshot?t=${stamp}`);

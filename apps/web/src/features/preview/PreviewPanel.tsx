@@ -1,6 +1,8 @@
 import { normalizeUrl } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
+import { api, type BrowserStatus } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { BrowserView } from './BrowserView';
 import { currentUrl, usePreview } from './previewStore';
 
 const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals';
@@ -19,6 +21,23 @@ export function PreviewPanel({ sessionId, visible }: Props) {
   const url = currentUrl(state);
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [browser, setBrowser] = useState<BrowserStatus | null>(null);
+
+  useEffect(() => {
+    if (browser?.installed) return;
+    let live = true;
+    const load = (): void =>
+      void api
+        .browserStatus()
+        .then((status) => live && setBrowser(status))
+        .catch(() => undefined);
+    load();
+    const timer = setInterval(load, browser?.installing ? 3000 : 30000);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, [browser?.installed, browser?.installing]);
 
   useEffect(() => setDraft(url ?? ''), [url]);
 
@@ -28,8 +47,35 @@ export function PreviewPanel({ sessionId, visible }: Props) {
     setError(ok ? null : t('preview.onlyLocal'));
   };
 
+  if (browser?.installed) {
+    return (
+      <section className={`pane preview-pane${visible ? '' : ' hidden'}`}>
+        <BrowserView sessionId={sessionId} visible={visible} requested={url} />
+      </section>
+    );
+  }
+
   return (
     <section className={`pane preview-pane${visible ? '' : ' hidden'}`}>
+      {browser !== null && (
+        <p className="notice">
+          {browser.installing ? t('preview.installing') : t('preview.noBrowser')}{' '}
+          {!browser.installing && (
+            <button
+              type="button"
+              onClick={() =>
+                void api
+                  .browserInstall()
+                  .then(setBrowser)
+                  .catch(() => undefined)
+              }
+            >
+              {t('preview.install')}
+            </button>
+          )}
+          {browser.error !== null && <span className="error"> {browser.error}</span>}
+        </p>
+      )}
       <form className="preview-bar" onSubmit={submit}>
         <button type="button" onClick={() => back(sessionId)} disabled={!state || state.index <= 0}>
           ←

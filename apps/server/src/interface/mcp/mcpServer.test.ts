@@ -2,7 +2,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, expect, it } from 'vitest';
 import { ApprovalService } from '../../application/ApprovalService.js';
+import { BrowserService } from '../../application/BrowserService.js';
 import { PreviewService } from '../../application/PreviewService.js';
+import { FakeBrowserEngine } from '../../testing/fakeBrowser.js';
 import { createHarness, customBody } from '../../testing/harness.js';
 import { createAgentTools } from '../agent/agentTools.js';
 import { buildMcpServer } from './mcpServer.js';
@@ -17,7 +19,12 @@ async function connect() {
     bus: h.bus,
   });
   const tools = createAgentTools(
-    { sessions: h.sessions, approvals, preview: new PreviewService(h.sessions, h.bus) },
+    {
+      sessions: h.sessions,
+      approvals,
+      preview: new PreviewService(h.sessions, h.bus),
+      browser: new BrowserService(new FakeBrowserEngine()),
+    },
     session.id,
   );
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
@@ -31,16 +38,33 @@ const textOf = (result: unknown): string =>
   (result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
 
 describe('MCP server', () => {
-  it('exposes exactly the five session tools', async () => {
+  it('exposes exactly the session and browser tools', async () => {
     const client = await connect();
     const names = (await client.listTools()).tools.map((t) => t.name).sort();
     expect(names).toEqual([
+      'browser_click',
+      'browser_fill',
+      'browser_navigate',
+      'browser_press',
+      'browser_screenshot',
+      'browser_scroll',
+      'browser_snapshot',
+      'browser_type',
       'get_request_status',
       'list_sessions',
       'open_preview',
       'propose_worktree',
       'suggest_new_tab',
     ]);
+  });
+
+  it('drives the browser through the same page the user sees', async () => {
+    const client = await connect();
+    await client.callTool({ name: 'browser_navigate', arguments: { url: '3000' } });
+    const snapshot = await client.callTool({ name: 'browser_snapshot', arguments: {} });
+    expect(textOf(snapshot)).toContain('Hello');
+    const shot = await client.callTool({ name: 'browser_screenshot', arguments: {} });
+    expect((shot as { content: Array<{ type: string }> }).content[0]?.type).toBe('image');
   });
 
   it('proposes a worktree, then reports it as pending', async () => {

@@ -17,3 +17,31 @@
   background: #fff;
   min-height: 0;
 }
+.browser-screen {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: #fff;
+  outline: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.browser-screen img {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+  user-select: none;
+}
+.browser-type {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--leather-2);
+  border-top: 1px solid var(--brass-lo);
+}
+.browser-type input {
+  flex: 1;
+  min-width: 0;
+}

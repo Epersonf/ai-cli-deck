@@ -141,6 +141,10 @@ export const fr: Messages = {
   'preview.suggested': 'Un agent suggère d’ouvrir',
   'preview.dismiss': 'ignorer',
   'preview.empty': 'Touchez un lien localhost dans le terminal ou saisissez une adresse ci-dessus.',
+  'preview.noBrowser': "Le vrai navigateur n'est pas encore installé.",
+  'preview.installing': 'Installation du navigateur… (quelques minutes)',
+  'preview.install': 'Installer le navigateur',
+  'preview.typeHere': 'Saisir dans la page…',
   'preview.blankHint':
     'Page vide ? Elle interdit peut-être l’intégration. Utilisez « Ouvrir dans un nouvel onglet ».',
   'approvals.title': 'Approbations en attente',

@@ -134,6 +134,10 @@ export const ja: Messages = {
   'preview.openTab': '新しいタブで開く',
   'preview.onlyLocal': 'プレビューできるのは http(s)://localhost または 127.0.0.1 のページだけです',
   'preview.suggested': 'エージェントが次を開くよう提案しています',
+  'preview.noBrowser': '実際のブラウザーはまだインストールされていません。',
+  'preview.installing': 'ブラウザーをインストール中…（数分）',
+  'preview.install': 'ブラウザーをインストール',
+  'preview.typeHere': 'ページに入力…',
   'preview.dismiss': '閉じる',
   'preview.empty':
     'ターミナル内の localhost リンクをタップするか、上にアドレスを入力してください。',

@@ -133,6 +133,10 @@ export const ru: Messages = {
   'preview.openTab': 'Открыть в новой вкладке',
   'preview.onlyLocal': 'Можно просматривать только страницы http(s)://localhost или 127.0.0.1',
   'preview.suggested': 'Агент предлагает открыть',
+  'preview.noBrowser': 'Настоящий браузер ещё не установлен.',
+  'preview.installing': 'Установка браузера… (несколько минут)',
+  'preview.install': 'Установить браузер',
+  'preview.typeHere': 'Ввод на странице…',
   'preview.dismiss': 'скрыть',
   'preview.empty': 'Нажмите ссылку localhost в терминале или введите адрес выше.',
   'preview.blankHint':

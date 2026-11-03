@@ -6,6 +6,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { Container } from '../container.js';
 import { mcpRoutes } from '../mcp/mcpRoute.js';
 import { terminalSocket } from '../ws/terminalSocket.js';
+import { browserRoutes } from './routes/browser.js';
 import { registerErrorHandler } from './errors.js';
 import { agentRoutes } from './routes/agent.js';
 import { approvalRoutes } from './routes/approvals.js';
@@ -39,6 +40,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   approvalRoutes(app, c);
   mcpRoutes(app, c);
   agentRoutes(app, c);
+  browserRoutes(app, c);
   terminalSocket(app, c);
   if (c.staticDir !== null && existsSync(c.staticDir)) await serveStatic(app, c.staticDir);
   return app;

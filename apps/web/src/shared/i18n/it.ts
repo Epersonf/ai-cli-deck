@@ -135,6 +135,10 @@ export const it: Messages = {
   'preview.suggested': 'Un agente suggerisce di aprire',
   'preview.dismiss': 'ignora',
   'preview.empty': 'Tocca un link localhost nel terminale o scrivi un indirizzo qui sopra.',
+  'preview.noBrowser': 'Il browser reale non è ancora installato.',
+  'preview.installing': 'Installazione del browser… (qualche minuto)',
+  'preview.install': 'Installa browser',
+  'preview.typeHere': 'Scrivi nella pagina…',
   'preview.blankHint':
     'Pagina vuota? Potrebbe vietare l’incorporamento. Usa «Apri in una nuova scheda».',
   'approvals.title': 'Approvazioni in sospeso',

@@ -21,6 +21,8 @@ export function buildTmuxArgs(name: string, spec: LaunchSpec): string[] {
     ...SOCKET_ARGS,
     ...['set-option', '-g', 'status', 'off', ';'],
     ...['set-option', '-g', 'escape-time', '10', ';'],
+    // Stay on the browser terminal's normal screen so xterm keeps scrollback and the wheel scrolls locally.
+    ...['set-option', '-ga', 'terminal-overrides', ',*:smcup@:rmcup@', ';'],
     ...['new-session', '-A', '-s', name, '-c', spec.cwd, ...envFlags],
     spec.command,
     ...spec.args,

@@ -5,6 +5,7 @@ export const AGENT_GUIDE = [
   "Useful: `clideck preview <port|url>` shows a localhost app in the user's preview pane,",
   '`clideck newtab <url>` offers an "open in new tab" button, `clideck sessions` lists other terminals,',
   '`clideck worktree "<reason>"` asks the user to approve a git worktree (never create one yourself).',
-  'The same actions exist as MCP tools on the "deck" server.',
+  'The same actions exist as MCP tools on the "deck" server, including browser_* tools',
+  "(navigate, snapshot, click, fill, type, press, screenshot) that drive a real Chromium shown in the user's preview pane.",
   'Start dev servers on $PORT so sessions do not collide.',
 ].join(' ');
