@@ -23,6 +23,8 @@ export const ru: Messages = {
   'switcher.title': 'Терминалы',
   'switcher.empty': 'Сеансов пока нет.',
   'switcher.rename': 'Переименовать',
+  'menu.more': 'Ещё действия',
+  'profile.toggle': 'Показать или скрыть профиль',
   'switcher.namePlaceholder': 'Название сессии',
   'switcher.save': 'Сохранить',
   'switcher.newProfile': 'Новый профиль',

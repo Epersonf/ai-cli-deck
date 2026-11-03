@@ -23,6 +23,8 @@ export const pt: Messages = {
   'switcher.title': 'Terminais',
   'switcher.empty': 'Nenhuma sessão ainda.',
   'switcher.rename': 'Renomear',
+  'menu.more': 'Mais ações',
+  'profile.toggle': 'Mostrar ou ocultar este perfil',
   'switcher.namePlaceholder': 'Nome da sessão',
   'switcher.save': 'Salvar',
   'switcher.newProfile': 'Novo perfil',

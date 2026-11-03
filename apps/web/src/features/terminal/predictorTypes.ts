@@ -38,7 +38,8 @@ export interface PredictorOptions {
 }
 
 /** Prompts whose input is not echoed: never guess there. */
-export const SECRET_PROMPT = /(pass(word|phrase|code)?|senha|secret|token|pin|otp|2fa|verification code)[^\w]*[:?>]?\s*$/i;
+export const SECRET_PROMPT =
+  /(pass(word|phrase|code)?|senha|secret|token|pin|otp|2fa|verification code)[^\w]*[:?>]?\s*$/i;
 
 /** A plain, single-width character that a shell or CLI input box echoes in place. */
 export const isPredictable = (data: string): boolean => /^[ -~¡-ɏ]$/.test(data);

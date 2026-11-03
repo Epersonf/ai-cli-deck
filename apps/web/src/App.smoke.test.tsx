@@ -60,12 +60,25 @@ describe('App smoke', () => {
     expect(heads).toEqual(['Work', 'Shell']);
     const work = document.querySelectorAll('.profile-group')[0];
     expect(work?.textContent).toContain('No terminals yet.');
-    expect(work?.querySelector('button[aria-label="Delete profile"]')).not.toBeNull();
+    const menuLabels = (group: Element | undefined): string[] => {
+      click(group?.querySelector('.profile-head button[aria-label="More actions"]') ?? null);
+      const labels = [...document.querySelectorAll('.menu-pop button')].map((b) => b.textContent);
+      click($('.menu-backdrop'));
+      return labels as string[];
+    };
+    expect(menuLabels(work)).toEqual(['New terminal in this profile', 'Rename', 'Delete profile']);
     const shell = document.querySelectorAll('.profile-group')[1];
     expect(shell?.querySelectorAll('.session-row')).toHaveLength(2);
-    expect(shell?.querySelector('button[aria-label="Delete profile"]')).toBeNull();
-    expect(
-      shell?.querySelector('button[aria-label="New terminal in this profile"]'),
-    ).not.toBeNull();
+    expect(menuLabels(shell)).toEqual(['New terminal in this profile']);
+  });
+
+  it('collapses a profile with its header', async () => {
+    await mount();
+    click($('button[aria-label="All terminals"]'));
+    const shell = document.querySelectorAll('.profile-group')[1];
+    click(shell?.querySelector('.profile-toggle') ?? null);
+    expect(shell?.querySelectorAll('.session-row')).toHaveLength(0);
+    click(shell?.querySelector('.profile-toggle') ?? null);
+    expect(shell?.querySelectorAll('.session-row')).toHaveLength(2);
   });
 });

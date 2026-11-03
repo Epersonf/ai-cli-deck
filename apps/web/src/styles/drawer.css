@@ -123,3 +123,59 @@ button.danger {
   font-size: 22px;
   flex: none;
 }
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+.menu-pop {
+  position: fixed;
+  display: grid;
+  min-width: 180px;
+  padding: 4px;
+  gap: 2px;
+  background: var(--leather-2);
+  border: 1px solid var(--brass);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px #000;
+}
+.menu-pop button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  border-color: transparent;
+  text-align: left;
+}
+.kebab {
+  width: var(--ctl);
+  padding: 0;
+  flex: none;
+}
+.profile-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  border-color: transparent;
+  background: transparent;
+  justify-content: flex-start;
+}
+.profile-toggle h3 {
+  flex: 1;
+  text-align: left;
+}
+.profile-toggle .chev {
+  flex: none;
+  transition: transform 0.15s;
+}
+.profile-group.collapsed .chev {
+  transform: rotate(-90deg);
+}
+.profile-count {
+  font-size: 11px;
+  color: var(--muted);
+}

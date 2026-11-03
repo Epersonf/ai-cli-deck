@@ -23,6 +23,8 @@ export const fr: Messages = {
   'switcher.title': 'Terminaux',
   'switcher.empty': 'Aucune session pour le moment.',
   'switcher.rename': 'Renommer',
+  'menu.more': 'Plus d’actions',
+  'profile.toggle': 'Afficher ou masquer ce profil',
   'switcher.namePlaceholder': 'Nom de la session',
   'switcher.save': 'Enregistrer',
   'switcher.newProfile': 'Nouveau profil',

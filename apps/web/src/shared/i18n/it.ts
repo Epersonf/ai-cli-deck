@@ -22,6 +22,8 @@ export const it: Messages = {
   'switcher.title': 'Terminali',
   'switcher.empty': 'Nessuna sessione.',
   'switcher.rename': 'Rinomina',
+  'menu.more': 'Altre azioni',
+  'profile.toggle': 'Mostra o nascondi questo profilo',
   'switcher.namePlaceholder': 'Nome della sessione',
   'switcher.save': 'Salva',
   'switcher.newProfile': 'Nuovo profilo',

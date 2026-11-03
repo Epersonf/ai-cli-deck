@@ -23,6 +23,8 @@ export const ja: Messages = {
   'switcher.title': 'ターミナル',
   'switcher.empty': 'セッションはまだありません。',
   'switcher.rename': '名前を変更',
+  'menu.more': 'その他の操作',
+  'profile.toggle': 'このプロファイルを表示/非表示',
   'switcher.namePlaceholder': 'セッション名',
   'switcher.save': '保存',
   'switcher.newProfile': '新しいプロファイル',

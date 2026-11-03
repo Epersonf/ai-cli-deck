@@ -50,7 +50,8 @@ export function createPredictor(options: PredictorOptions) {
         const base = next();
         if (pending.length === 0) {
           // typing in the middle of a line makes the shell shift the text: not predictable
-          if ((screen.cell(base.x, base.y) || ' ') !== ' ' || secretPrompt(base.x, base.y)) return false;
+          if ((screen.cell(base.x, base.y) || ' ') !== ' ' || secretPrompt(base.x, base.y))
+            return false;
         }
         if (base.x >= screen.cols - 1) {
           pending = []; // line wrap behaviour is app-specific: stop guessing
@@ -85,7 +86,8 @@ export function createPredictor(options: PredictorOptions) {
       let changed = false;
       const cursor = screen.cursor();
       for (let front = pending[0]; front !== undefined; front = pending[0]) {
-        const moved = cursor.y !== front.y || (front.erase ? cursor.x <= front.x : cursor.x > front.x);
+        const moved =
+          cursor.y !== front.y || (front.erase ? cursor.x <= front.x : cursor.x > front.x);
         if (!moved) break;
         if ((screen.cell(front.x, front.y) || ' ') === front.ch) {
           pending.shift();

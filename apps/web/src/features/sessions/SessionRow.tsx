@@ -2,6 +2,7 @@ import type { Session } from '@deck/shared';
 import { useState, type FormEvent } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { PencilIcon } from '../../shared/ui/Icons';
+import { KebabMenu } from '../../shared/ui/KebabMenu';
 import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
 import { useCloseSession } from './useCloseSession';
@@ -64,23 +65,16 @@ export function SessionRow({ session, index, active, onPick }: Props) {
         )}
         {index < 9 && <kbd>{index + 1}</kbd>}
       </button>
-      <button
-        type="button"
-        className="close"
-        title={t('switcher.rename')}
-        aria-label={t('switcher.rename')}
-        onClick={() => (setName(session.name ?? ''), setEditing(true))}
-      >
-        <PencilIcon />
-      </button>
-      <button
-        type="button"
-        className="close"
-        aria-label={t('tabs.closeAria')}
-        onClick={() => close(session)}
-      >
-        ×
-      </button>
+      <KebabMenu
+        items={[
+          {
+            label: t('switcher.rename'),
+            icon: <PencilIcon size={16} />,
+            onSelect: () => (setName(session.name ?? ''), setEditing(true)),
+          },
+          { label: t('tabs.closeAria'), danger: true, onSelect: () => close(session) },
+        ]}
+      />
     </>
   );
 }

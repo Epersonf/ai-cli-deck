@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { PencilIcon, PlusIcon, TrashIcon } from '../../shared/ui/Icons';
+import { KebabMenu, type MenuItem } from '../../shared/ui/KebabMenu';
 import { useConfirm } from '../confirm/confirmStore';
 import type { SessionGroup } from './groupSessions';
 import { useProfiles } from './profilesStore';
@@ -13,12 +14,36 @@ interface Props {
   children: ReactNode;
 }
 
+const KEY = 'deck.collapsedProfiles';
+function readCollapsed(id: string): boolean {
+  try {
+    return (JSON.parse(localStorage.getItem(KEY) ?? '[]') as string[]).includes(id);
+  } catch {
+    return false;
+  }
+}
+function writeCollapsed(id: string, on: boolean): void {
+  try {
+    const set = new Set(JSON.parse(localStorage.getItem(KEY) ?? '[]') as string[]);
+    if (on) set.add(id);
+    else set.delete(id);
+    localStorage.setItem(KEY, JSON.stringify([...set]));
+  } catch {
+    /* storage unavailable: collapse state just isn't remembered */
+  }
+}
+
 /** A profile with its terminals: add a terminal, rename or delete the profile. */
 export function ProfileGroup({ group, onNewSession, children }: Props) {
   const t = useT();
   const ask = useConfirm((s) => s.ask);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
+  const [collapsed, setCollapsed] = useState(() => readCollapsed(group.id));
+  const toggle = (): void => {
+    setCollapsed(!collapsed);
+    writeCollapsed(group.id, !collapsed);
+  };
   const refresh = (): void => void useProfiles.getState().refresh();
 
   const save = (event: FormEvent): void => {
@@ -45,8 +70,21 @@ export function ProfileGroup({ group, onNewSession, children }: Props) {
           .catch(() => undefined),
     });
 
+  const items: MenuItem[] = [
+    { label: t('profile.newTerminal'), icon: <PlusIcon size={16} />, onSelect: onNewSession },
+  ];
+  if (group.profile)
+    items.push(
+      {
+        label: t('switcher.rename'),
+        icon: <PencilIcon size={16} />,
+        onSelect: () => (setName(group.label), setEditing(true)),
+      },
+      { label: t('profile.delete'), icon: <TrashIcon size={16} />, danger: true, onSelect: remove },
+    );
+
   return (
-    <section className="profile-group">
+    <section className={`profile-group${collapsed ? ' collapsed' : ''}`}>
       <header className="profile-head">
         {editing ? (
           <form className="session-rename" onSubmit={save}>
@@ -62,43 +100,28 @@ export function ProfileGroup({ group, onNewSession, children }: Props) {
           </form>
         ) : (
           <>
-            <h3 title={group.label}>{group.label}</h3>
             <button
               type="button"
-              className="close"
-              title={t('profile.newTerminal')}
-              aria-label={t('profile.newTerminal')}
-              onClick={onNewSession}
+              className="profile-toggle"
+              aria-expanded={!collapsed}
+              title={t('profile.toggle')}
+              aria-label={`${t('profile.toggle')}: ${group.label}`}
+              onClick={toggle}
             >
-              <PlusIcon />
+              <svg className="chev" width="14" height="14" viewBox="0 0 100 100" aria-hidden>
+                <path d="M22 36l28 28 28-28" fill="none" stroke="currentColor" strokeWidth="12" />
+              </svg>
+              <h3 title={group.label}>{group.label}</h3>
+              <span className="profile-count">{group.sessions.length}</span>
             </button>
-            {group.profile && (
-              <>
-                <button
-                  type="button"
-                  className="close"
-                  title={t('switcher.rename')}
-                  aria-label={t('switcher.rename')}
-                  onClick={() => (setName(group.label), setEditing(true))}
-                >
-                  <PencilIcon />
-                </button>
-                <button
-                  type="button"
-                  className="close"
-                  title={t('profile.delete')}
-                  aria-label={t('profile.delete')}
-                  onClick={remove}
-                >
-                  <TrashIcon />
-                </button>
-              </>
-            )}
+            <KebabMenu items={items} />
           </>
         )}
       </header>
-      {group.sessions.length === 0 && <p className="hint">{t('profile.noTerminals')}</p>}
-      <ul className="session-list">{children}</ul>
+      {!collapsed && group.sessions.length === 0 && (
+        <p className="hint">{t('profile.noTerminals')}</p>
+      )}
+      {!collapsed && <ul className="session-list">{children}</ul>}
     </section>
   );
 }

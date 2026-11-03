@@ -22,6 +22,8 @@ export const zh: Messages = {
   'switcher.title': '终端',
   'switcher.empty': '还没有会话。',
   'switcher.rename': '重命名',
+  'menu.more': '更多操作',
+  'profile.toggle': '显示或隐藏此配置文件',
   'switcher.namePlaceholder': '会话名称',
   'switcher.save': '保存',
   'switcher.newProfile': '新建配置',

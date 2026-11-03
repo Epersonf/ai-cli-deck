@@ -21,6 +21,8 @@ export const en = {
   'switcher.title': 'Terminals',
   'switcher.empty': 'No sessions yet.',
   'switcher.rename': 'Rename',
+  'menu.more': 'More actions',
+  'profile.toggle': 'Show or hide this profile',
   'switcher.namePlaceholder': 'Session name',
   'switcher.save': 'Save',
   'switcher.newProfile': 'New profile',

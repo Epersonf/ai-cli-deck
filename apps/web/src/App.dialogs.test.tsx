@@ -33,7 +33,8 @@ describe('App dialogs', () => {
   it('asks with the app dialog (not window.confirm) before ending a session', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
-    click($('.session-list button[aria-label="Close session"]'));
+    click($('.session-list button[aria-label="More actions"]'));
+    click([...document.querySelectorAll('.menu-pop button')].pop() ?? null);
     expect($('[role="alertdialog"]')?.textContent).toContain('Shell · alpha');
     click($('[role="alertdialog"] .row button'));
     expect($('[role="alertdialog"]')).toBeNull();
