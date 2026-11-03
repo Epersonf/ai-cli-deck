@@ -30,7 +30,7 @@ export interface WorkspaceDeps {
   git: GitPort;
 }
 
-/** Read-only view of a session's working directory. */
+/** A session's working directory: browsing, reading and deleting files. */
 export class WorkspaceService {
   constructor(private readonly deps: WorkspaceDeps) {}
 
@@ -59,6 +59,10 @@ export class WorkspaceService {
 
   resolveFile(sessionId: string, relative: string): Promise<{ path: string; size: number }> {
     return this.deps.files.resolveFile(this.root(sessionId), relative);
+  }
+
+  remove(sessionId: string, relative: string): Promise<void> {
+    return this.deps.files.remove(this.root(sessionId), relative);
   }
 
   gitStatus(sessionId: string): Promise<GitStatus> {

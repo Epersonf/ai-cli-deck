@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { ConfirmDelete } from './ConfirmDelete';
 import { ExplorerOptions } from './ExplorerOptions';
 import { loadPrefs, savePrefs, type ExplorerPrefs } from './explorerPrefs';
 import { FileList } from './FileList';
@@ -24,6 +25,7 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
   const [prefs, setPrefs] = useState<ExplorerPrefs>(loadPrefs);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
@@ -73,6 +75,16 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
         <button type="button" onClick={() => setOptionsOpen(true)}>
           ⚙ {t('files.options')}
         </button>
+        <button
+          type="button"
+          className="icon-danger"
+          title={t('files.delete')}
+          aria-label={t('files.delete')}
+          disabled={dir === ''}
+          onClick={() => setDeleteOpen(true)}
+        >
+          🗑
+        </button>
       </div>
       {transferOpen && (
         <TransferDialog
@@ -81,6 +93,15 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
           busy={busy}
           onFiles={(files) => void upload(files)}
           onClose={() => setTransferOpen(false)}
+        />
+      )}
+      {deleteOpen && (
+        <ConfirmDelete
+          sessionId={sessionId}
+          path={dir}
+          kind="dir"
+          onDeleted={() => onDir(parentOf(dir))}
+          onClose={() => setDeleteOpen(false)}
         />
       )}
       {optionsOpen && (
@@ -100,6 +121,7 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
         selected={selected}
         onOpenDir={onDir}
         onOpenFile={onOpen}
+        onChanged={() => setReloadKey((k) => k + 1)}
       />
     </div>
   );

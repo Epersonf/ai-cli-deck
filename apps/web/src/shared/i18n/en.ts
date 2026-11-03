@@ -102,6 +102,10 @@ export const en = {
   'files.showIgnored': 'Show files ignored by git (node_modules, build output…)',
   'files.showExtensions': 'Show file extensions',
   'files.download': 'Download',
+  'files.delete': 'Delete',
+  'files.deleteFile': 'Delete “{name}”? This cannot be undone.',
+  'files.deleteFolder':
+    'Delete the folder “{name}” and everything inside it? This cannot be undone.',
   'files.downloadZip': 'Download this folder as a .zip',
   'files.zip': 'Folder .zip',
   'files.transfer': 'Transfer',

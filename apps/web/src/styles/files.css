@@ -102,9 +102,26 @@
   font-size: 13px;
 }
 .git-code {
+  margin-left: auto;
+  flex: 0 0 auto;
+  padding-left: 6px;
   color: var(--amber);
   font-family: var(--mono);
   font-size: 11px;
+  font-weight: 700;
+}
+/* Git state: yellow modified (and folders holding changes), green new, red deleted. */
+.tree-row.git-modified .tree-name,
+.tree-row.git-modified .git-code {
+  color: #e6c04d;
+}
+.tree-row.git-added .tree-name,
+.tree-row.git-added .git-code {
+  color: #7fc46b;
+}
+.tree-row.git-deleted .tree-name,
+.tree-row.git-deleted .git-code {
+  color: var(--danger);
 }
 
 .file-tree.drop-target {
@@ -125,4 +142,24 @@
   gap: 8px;
   font-variant: normal;
   letter-spacing: 0;
+}
+
+/* Trash button next to "Options": icon-only, so the toolbar stays within the pane. */
+.tree-tools > button {
+  min-width: 0;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+.tree-tools .icon-danger {
+  padding-inline: 8px;
+}
+.tree-tools .icon-danger:not(:disabled):hover {
+  border-color: var(--danger);
+}
+.tree-tools .icon-danger:disabled {
+  opacity: 0.35;
+}
+.confirm-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

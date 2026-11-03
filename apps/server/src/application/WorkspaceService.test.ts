@@ -15,6 +15,7 @@ function setup(ignoredByGit: string[]) {
       ]),
     read: () => Promise.reject(new Error('unused')),
     resolveFile: () => Promise.reject(new Error('unused')),
+    remove: () => Promise.reject(new Error('unused')),
   };
   const git: GitPort = {
     status: () => Promise.reject(new Error('unused')),

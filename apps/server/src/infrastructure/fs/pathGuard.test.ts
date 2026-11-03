@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -71,5 +71,40 @@ describe('FileReader.resolveFile', () => {
     expect(await reader.resolveFile(root, 'sub/a.txt')).toMatchObject({ size: 5 });
     await expect(reader.resolveFile(root, 'sub')).rejects.toThrow('not a file');
     await expect(reader.resolveFile(root, 'escape/secret.txt')).rejects.toThrow('escapes');
+  });
+});
+
+describe('FileReader.remove', () => {
+  const reader = new FileReader();
+  const exists = (p: string) =>
+    lstat(p).then(
+      () => true,
+      () => false,
+    );
+
+  it('deletes a file and refuses the root and escapes', async () => {
+    await writeFile(join(root, 'sub', 'del.txt'), 'x');
+    await reader.remove(root, 'sub/del.txt');
+    expect(await exists(join(root, 'sub', 'del.txt'))).toBe(false);
+    await expect(reader.remove(root, '')).rejects.toThrow('Invalid path');
+    await expect(reader.remove(root, '../outside/secret.txt')).rejects.toThrow('escapes');
+    await expect(reader.remove(root, 'escape/secret.txt')).rejects.toThrow('escapes');
+    await expect(reader.remove(root, 'missing.txt')).rejects.toThrow('not found');
+    expect(await exists(join(outside, 'secret.txt'))).toBe(true);
+  });
+
+  it('deletes a folder with its contents', async () => {
+    await mkdir(join(root, 'tmpdir', 'deep'), { recursive: true });
+    await writeFile(join(root, 'tmpdir', 'deep', 'f.txt'), 'x');
+    await reader.remove(root, 'tmpdir');
+    expect(await exists(join(root, 'tmpdir'))).toBe(false);
+  });
+
+  it('deletes a symlink without touching its target', async () => {
+    await writeFile(join(outside, 'keep.txt'), 'k');
+    await symlink(join(outside, 'keep.txt'), join(root, 'link.txt'));
+    await reader.remove(root, 'link.txt');
+    expect(await exists(join(root, 'link.txt'))).toBe(false);
+    expect(await exists(join(outside, 'keep.txt'))).toBe(true);
   });
 });

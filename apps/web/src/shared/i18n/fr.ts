@@ -108,6 +108,10 @@ export const fr: Messages = {
   'files.showIgnored': 'Afficher les fichiers ignorés par git (node_modules, build…)',
   'files.showExtensions': 'Afficher les extensions de fichier',
   'files.download': 'Télécharger',
+  'files.delete': 'Supprimer',
+  'files.deleteFile': 'Supprimer « {name} » ? Cette action est irréversible.',
+  'files.deleteFolder':
+    'Supprimer le dossier « {name} » et tout son contenu ? Cette action est irréversible.',
   'files.downloadZip': 'Télécharger ce dossier en .zip',
   'files.zip': 'Dossier .zip',
   'files.transfer': 'Transférer',

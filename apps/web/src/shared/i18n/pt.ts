@@ -104,6 +104,10 @@ export const pt: Messages = {
   'files.showIgnored': 'Mostrar arquivos ignorados pelo git (node_modules, build…)',
   'files.showExtensions': 'Mostrar extensões dos arquivos',
   'files.download': 'Baixar',
+  'files.delete': 'Excluir',
+  'files.deleteFile': 'Excluir “{name}”? Isso não pode ser desfeito.',
+  'files.deleteFolder':
+    'Excluir a pasta “{name}” e tudo o que há nela? Isso não pode ser desfeito.',
   'files.downloadZip': 'Baixar esta pasta em .zip',
   'files.zip': 'Pasta .zip',
   'files.transfer': 'Transferir',

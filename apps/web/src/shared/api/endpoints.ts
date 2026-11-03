@@ -47,6 +47,8 @@ export const api = {
     ),
   file: (id: string, path: string) =>
     request(FileContentSchema, 'GET', `${session(id)}/file?path=${enc(path)}`),
+  deleteEntry: (id: string, path: string) =>
+    request(z.void(), 'DELETE', `${session(id)}/file?path=${enc(path)}`),
   git: (id: string) => request(GitStatusSchema, 'GET', `${session(id)}/git`),
   upload: (id: string, dir: string, file: File) =>
     sendRaw(`${session(id)}/upload?dir=${enc(dir)}&name=${enc(file.name)}`, file),

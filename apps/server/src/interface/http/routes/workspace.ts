@@ -45,6 +45,13 @@ export function workspaceRoutes(app: FastifyInstance, c: Container): void {
     return c.workspace.read(id, path);
   });
 
+  app.delete('/api/sessions/:id/file', async (request, reply) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { path } = parseWith(FileQuery, request.query);
+    await c.workspace.remove(id, path);
+    return reply.code(204).send();
+  });
+
   app.get('/api/sessions/:id/git', (request) => {
     const { id } = parseWith(IdParams, request.params);
     return c.workspace.gitStatus(id);

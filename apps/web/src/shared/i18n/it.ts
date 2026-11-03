@@ -103,6 +103,10 @@ export const it: Messages = {
   'files.showIgnored': 'Mostra i file ignorati da git (node_modules, build…)',
   'files.showExtensions': 'Mostra le estensioni dei file',
   'files.download': 'Scarica',
+  'files.delete': 'Elimina',
+  'files.deleteFile': "Eliminare «{name}»? L'azione non può essere annullata.",
+  'files.deleteFolder':
+    "Eliminare la cartella «{name}» e tutto il suo contenuto? L'azione non può essere annullata.",
   'files.downloadZip': 'Scarica questa cartella come .zip',
   'files.zip': 'Cartella .zip',
   'files.transfer': 'Trasferisci',

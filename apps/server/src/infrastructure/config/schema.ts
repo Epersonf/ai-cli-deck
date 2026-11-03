@@ -29,6 +29,8 @@ export type AppConfig = z.infer<typeof AppConfigSchema>;
 export const EnvSchema = z.object({
   DECK_HOST: z.string().optional(),
   DECK_PASSWORD: z.string().min(4).optional(),
+  /** Base folder for new sessions and the file explorer; defaults to the home directory. */
+  DECK_ROOT: z.string().min(1).optional(),
   DECK_PORT: z.coerce.number().int().min(1).max(65535).optional(),
   DECK_CONFIG_DIR: z.string().optional(),
   DECK_STATE_DIR: z.string().optional(),

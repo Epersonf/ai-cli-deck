@@ -17,3 +17,18 @@ describe('git ignore marking', () => {
     expect([...(await ok.ignoredPaths('/w', ['dist', 'src']))]).toEqual(['dist']);
   });
 });
+
+describe('relativeTo', () => {
+  it('re-bases repo-root paths onto a sub-folder and keeps outside ones', async () => {
+    const { relativeTo } = await import('./GitCli.js');
+    const changes = [
+      { code: 'M', path: 'apps/web/a.ts' },
+      { code: 'M', path: 'README.md' },
+    ];
+    expect(relativeTo('', changes)).toEqual(changes);
+    expect(relativeTo('apps/web/', changes)).toEqual([
+      { code: 'M', path: 'a.ts' },
+      { code: 'M', path: 'README.md' },
+    ]);
+  });
+});

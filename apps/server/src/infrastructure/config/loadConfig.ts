@@ -25,6 +25,7 @@ export function mergeConfig(file: unknown, env: Env): AppConfig {
     host: env.DECK_HOST ?? parsed.host,
     port: env.DECK_PORT ?? parsed.port,
     password: env.DECK_PASSWORD ?? parsed.password,
+    defaultCwd: env.DECK_ROOT ?? parsed.defaultCwd,
   };
 }
 

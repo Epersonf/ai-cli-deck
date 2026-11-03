@@ -1,7 +1,7 @@
-import { open, readdir, stat } from 'node:fs/promises';
-import { posix } from 'node:path';
+import { lstat, open, readdir, rm, stat } from 'node:fs/promises';
+import { basename, dirname, join, posix } from 'node:path';
 import type { FileContent } from '@deck/shared';
-import { invalid } from '../../domain/errors.js';
+import { invalid, notFound } from '../../domain/errors.js';
 import type { FilesPort, RawFileEntry } from '../../domain/ports.js';
 import { resolveInside } from './pathGuard.js';
 
@@ -35,6 +35,18 @@ export class FileReader implements FilesPort {
     const info = await stat(real);
     if (!info.isFile()) throw invalid('Path is not a file');
     return { path: real, size: info.size };
+  }
+
+  async remove(root: string, relative: string): Promise<void> {
+    if (relative.replace(/[\\/]+/g, '') === '' || relative.includes('\0'))
+      throw invalid('Invalid path');
+    // Resolve the parent only: a symlink is deleted itself, its target is left alone.
+    const parent = await resolveInside(root, dirname(relative));
+    const target = join(parent, basename(relative));
+    const info = await lstat(target).catch(() => null);
+    if (info === null) throw notFound(`Path ${relative}`);
+    // A real folder goes recursively; a symlink (even to a folder) is only unlinked.
+    await rm(target, { recursive: info.isDirectory(), force: false });
   }
 
   async read(root: string, relative: string, maxBytes: number): Promise<FileContent> {

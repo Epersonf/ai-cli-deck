@@ -13,6 +13,14 @@ export function parseGitStatus(output: string): GitStatus {
   return { isRepo: true, branch, changes };
 }
 
+/** Re-bases repo-root paths onto a sub-folder; changes outside it are left untouched. */
+export function relativeTo(prefix: string, changes: GitStatus['changes']): GitStatus['changes'] {
+  if (prefix === '') return changes;
+  return changes.map((c) =>
+    c.path.startsWith(prefix) ? { ...c, path: c.path.slice(prefix.length) } : c,
+  );
+}
+
 const CHUNK = 200;
 const exitCodeOf = (error: unknown): unknown => (error as { code?: unknown }).code;
 
@@ -24,7 +32,12 @@ export class GitCli implements GitPort, WorktreePort {
 
   async status(cwd: string): Promise<GitStatus> {
     try {
-      return parseGitStatus(await this.run('git', ['status', '--porcelain=v1', '-b'], cwd));
+      const status = parseGitStatus(
+        await this.run('git', ['status', '--porcelain=v1', '-b', '--untracked-files=all'], cwd),
+      );
+      // Porcelain paths are relative to the repo root; the explorer works from `cwd`.
+      const prefix = (await this.run('git', ['rev-parse', '--show-prefix'], cwd)).trim();
+      return { ...status, changes: relativeTo(prefix, status.changes) };
     } catch {
       return { isRepo: false, branch: null, changes: [] };
     }

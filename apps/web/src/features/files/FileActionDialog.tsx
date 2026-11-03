@@ -1,17 +1,31 @@
+import { useState } from 'react';
 import { downloadUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
+import { ConfirmDelete } from './ConfirmDelete';
 
 interface Props {
   sessionId: string;
   path: string;
   onOpen(): void;
+  onDeleted(): void;
   onClose(): void;
 }
 
 /** Asked when a file is clicked: view it here, or save it to the device. */
-export function FileActionDialog({ sessionId, path, onOpen, onClose }: Props) {
+export function FileActionDialog({ sessionId, path, onOpen, onDeleted, onClose }: Props) {
   const t = useT();
+  const [confirming, setConfirming] = useState(false);
+  if (confirming)
+    return (
+      <ConfirmDelete
+        sessionId={sessionId}
+        path={path}
+        kind="file"
+        onDeleted={onDeleted}
+        onClose={onClose}
+      />
+    );
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()}>
@@ -29,6 +43,9 @@ export function FileActionDialog({ sessionId, path, onOpen, onClose }: Props) {
         <a className="btn" href={downloadUrl(sessionId, path)} download onClick={onClose}>
           ⬇ {t('files.download')}
         </a>
+        <button type="button" className="danger" onClick={() => setConfirming(true)}>
+          🗑 {t('files.delete')}
+        </button>
       </div>
     </div>
   );
