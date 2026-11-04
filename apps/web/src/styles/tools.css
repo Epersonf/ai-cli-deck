@@ -1,13 +1,15 @@
 /* Explorer toolbar: one joined group of icon-only buttons with a hover/focus tooltip. */
 .tool-group {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  max-width: 100%; /* never wider than the pane: the buttons shrink instead */
   border-radius: 8px;
   box-shadow: 0 2px 0 var(--brass-lo);
 }
 .tool-group .tool-btn {
   position: relative;
-  width: 40px;
-  min-width: 0;
+  flex: 0 1 40px;
+  min-width: 26px;
   min-height: 36px;
   padding: 0;
   border-radius: 0;
