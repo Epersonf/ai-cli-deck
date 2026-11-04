@@ -117,6 +117,15 @@ button.danger {
   flex: 1;
   margin: 0;
 }
+/* In the side drawer the heading with its X stays pinned while the list scrolls. */
+.drawer > .modal-title {
+  position: sticky;
+  top: -16px;
+  z-index: 1;
+  margin: -16px -16px 0;
+  padding: 16px 16px 8px;
+  background: #33231a;
+}
 .modal-x {
   width: var(--ctl);
   padding: 0;

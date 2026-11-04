@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { groupSessions } from './groupSessions';
 import { ProfileGroup } from './ProfileGroup';
 import { useProfiles } from './profilesStore';
@@ -21,7 +22,7 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   return (
     <div className="drawer-backdrop" onClick={onClose}>
       <aside className="drawer" onClick={(event) => event.stopPropagation()}>
-        <h2>{t('switcher.title')}</h2>
+        <ModalTitle title={t('switcher.title')} onClose={onClose} />
         <button type="button" className="primary" onClick={() => (onClose(), onProfile())}>
           {t('switcher.newProfile')}
         </button>
@@ -44,9 +45,6 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
             ))}
           </ProfileGroup>
         ))}
-        <button type="button" onClick={onClose}>
-          {t('common.close')}
-        </button>
       </aside>
     </div>
   );
