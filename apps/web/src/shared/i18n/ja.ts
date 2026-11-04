@@ -182,6 +182,7 @@ export const ja: Messages = {
   'fork.skip': 'メモをスキップ',
   'fork.go': 'フォーク',
   'fork.move': '移動',
+  'terminal.following': '別の端末を表示中。タップして切り替え。',
   'terminal.exited': 'プロセスが終了しました',
   'terminal.exitedCode': 'プロセスが終了しました（コード {code}）',
   'layout.closePanel': 'パネルを閉じる',

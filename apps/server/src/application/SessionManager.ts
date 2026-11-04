@@ -47,6 +47,7 @@ export class SessionManager {
 
   readonly list = (): Session[] => this.reg.list();
   readonly get = (id: string): Session | undefined => this.reg.get(id);
+  readonly sizeOf = (id: string) => this.reg.require(id).size;
 
   async create(body: CreateSessionBody): Promise<Session> {
     const { system, ports, mux } = this.deps;
@@ -92,7 +93,7 @@ export class SessionManager {
   }
 
   resize(id: string, cols: number, rows: number): void {
-    this.reg.require(id).pty?.resize(cols, rows);
+    if (this.reg.setSize(id, cols, rows)) this.reg.require(id).pty?.resize(cols, rows);
   }
 
   async replay(id: string): Promise<Uint8Array> {

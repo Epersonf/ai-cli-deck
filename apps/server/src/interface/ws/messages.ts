@@ -18,6 +18,10 @@ export function eventToMessage(event: DeckEvent, sessionId: string): ServerMessa
         : null;
     case 'preview':
       return event.sessionId === sessionId ? { type: 'preview-open', url: event.url } : null;
+    case 'size':
+      return event.sessionId === sessionId
+        ? { type: 'size', cols: event.cols, rows: event.rows }
+        : null;
     case 'new-tab':
       return event.sessionId === sessionId ? { type: 'new-tab', url: event.url } : null;
   }

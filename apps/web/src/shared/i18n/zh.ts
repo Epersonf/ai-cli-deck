@@ -174,6 +174,7 @@ export const zh: Messages = {
   'fork.skip': '跳过说明',
   'fork.go': '分叉',
   'fork.move': '迁移',
+  'terminal.following': '正在镜像另一台设备。点按接管。',
   'terminal.exited': '进程已结束',
   'terminal.exitedCode': '进程已结束（退出码 {code}）',
   'layout.closePanel': '关闭面板',

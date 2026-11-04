@@ -180,6 +180,7 @@ export const pt: Messages = {
   'fork.skip': 'Pular as notas',
   'fork.go': 'Bifurcar',
   'fork.move': 'Mover',
+  'terminal.following': 'Espelhando outro dispositivo. Toque para assumir.',
   'terminal.exited': 'processo encerrado',
   'terminal.exitedCode': 'processo encerrado (código {code})',
   'layout.closePanel': 'Fechar painel',

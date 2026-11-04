@@ -186,6 +186,7 @@ export const fr: Messages = {
   'fork.skip': 'Ignorer les notes',
   'fork.go': 'Dupliquer',
   'fork.move': 'Déplacer',
+  'terminal.following': 'Reflète un autre appareil. Touchez pour prendre la main.',
   'terminal.exited': 'processus terminé',
   'terminal.exitedCode': 'processus terminé (code {code})',
   'layout.closePanel': 'Fermer le panneau',

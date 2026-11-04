@@ -1,21 +1,16 @@
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
+import type { Terminal } from '@xterm/xterm';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { openTerminalSocket } from '../../shared/ws/terminalSocket';
 import { useT } from '../../shared/i18n/store';
+import { createTerminal } from './createTerminal';
 import { dispatchMessage } from './dispatch';
 import { attachImagePaste } from './pasteImage';
-import { isPasteShortcut } from './pasteShortcut';
-import { attachClipboardOsc } from './clipboardOsc';
 import { createLatencyMeter, type Latency } from './latencyMeter';
 import { attachLocalEcho } from './localEcho';
-import { openLink } from './openLink';
 import { RestartBar } from './RestartBar';
-import { tameMobileKeyboard } from './mobileKeyboard';
 import { NO_MODS, applyModifiersToText } from './keymap';
-import { TERMINAL_THEME } from './theme';
+import { createSizeSync, type SizeSync } from './sizeSync';
 import type { ModifiersApi } from './useModifiers';
 
 export interface TerminalApi {
@@ -35,47 +30,38 @@ const hasFinePointer = (): boolean => window.matchMedia('(pointer: fine)').match
 export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   const t = useT();
   const host = useRef<HTMLDivElement>(null);
-  const fitRef = useRef<FitAddon | null>(null);
+  const syncRef = useRef<SizeSync | null>(null);
   const termRef = useRef<Terminal | null>(null);
   const modsRef = useRef(mods);
   modsRef.current = mods;
   const [online, setOnline] = useState(false);
+  const [following, setFollowing] = useState(false);
   const [latency, setLatency] = useState<Latency>({ net: null, echo: null });
 
   useEffect(() => {
     const element = host.current;
     if (!element) return;
-    const term = new Terminal({
-      fontSize: 13,
-      fontFamily:
-        'ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", "Noto Sans Mono", monospace',
-      cursorBlink: true,
-      scrollback: 3000,
-      theme: TERMINAL_THEME,
-    });
-    const fit = new FitAddon();
-    term.loadAddon(fit);
-    term.loadAddon(new WebLinksAddon((_event, uri) => openLink(sessionId, uri)));
-    term.open(element);
-    // Let the browser paste (text, or an image that is uploaded) instead of sending ^V to the CLI.
-    term.attachCustomKeyEventHandler((event) => !isPasteShortcut(event));
-    attachClipboardOsc(term);
-    tameMobileKeyboard(term);
+    const { term, fit } = createTerminal(element, sessionId);
     termRef.current = term;
-    fitRef.current = fit;
 
     const meter = createLatencyMeter();
     const echo = attachLocalEcho(term, meter.get);
+    const claimIfActive = (): void => {
+      if (document.hasFocus()) sync.claim();
+    };
     const socket = openTerminalSocket(sessionId, {
       onOpen: () => {
         setOnline(true);
         term.reset();
-        claimSize();
+        claimIfActive();
       },
       onClose: () => setOnline(false),
       onMessage: (message) => {
         if (message.type === 'pong') meter.pong();
-        if (message.type === 'status' && message.session.status === 'running') claimSize(); // restarted
+        if (message.type === 'size') sync.onServerSize(message.cols, message.rows);
+        if (message.type === 'status' && message.session.status === 'running') {
+          if (document.hasFocus()) sync.sendIfOwner(); // restarted: the new process needs our size
+        }
         if (message.type === 'output' && !message.replay) meter.output();
         dispatchMessage(sessionId, message, {
           write: (bytes) => term.write(bytes, echo.written),
@@ -84,6 +70,13 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
         });
       },
     });
+    const sync = createSizeSync(
+      term,
+      fit,
+      (cols, rows) => socket.send({ type: 'resize', cols, rows }),
+      setFollowing,
+    );
+    syncRef.current = sync;
     const send = (data: string): void => socket.send({ type: 'input', data });
     apiRef.current = {
       send,
@@ -97,28 +90,25 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     term.onData((data) => {
       meter.key();
       echo.input(data);
+      if (sync.following) sync.claim(); // typing here means this is the device in use
       send(applyModifiersToText(data, data.length === 1 ? modsRef.current.take() : NO_MODS));
     });
-    // Several devices on one session: only the focused one sets the size.
-    const claimSize = (): void => {
-      if (document.hasFocus()) socket.send({ type: 'resize', cols: term.cols, rows: term.rows });
-    };
-    term.onResize(claimSize);
-    window.addEventListener('focus', claimSize);
+    term.onResize(() => sync.sendIfOwner());
+    window.addEventListener('focus', claimIfActive);
 
     const detachPaste = attachImagePaste(element, term, sessionId);
 
     let frame = 0;
     const observer = new ResizeObserver(() => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => element.clientWidth > 0 && fit.fit());
+      frame = requestAnimationFrame(() => element.clientWidth > 0 && sync.fit());
     });
     observer.observe(element);
 
     return () => {
       detachPaste();
       window.clearInterval(probe);
-      window.removeEventListener('focus', claimSize);
+      window.removeEventListener('focus', claimIfActive);
       echo.dispose();
       observer.disconnect();
       cancelAnimationFrame(frame);
@@ -130,14 +120,19 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
 
   useEffect(() => {
     if (!visible) return;
-    fitRef.current?.fit();
+    syncRef.current?.fit();
     if (hasFinePointer()) termRef.current?.focus();
   }, [visible]);
 
   return (
     <div className="terminal-wrap">
-      <div ref={host} className="terminal-host" />
+      <div ref={host} className={`terminal-host${following ? ' following' : ''}`} />
       <RestartBar sessionId={sessionId} />
+      {following && (
+        <button type="button" className="terminal-follow" onClick={() => syncRef.current?.claim()}>
+          {t('terminal.following')}
+        </button>
+      )}
       {online && latency.net !== null && (
         <div className="terminal-latency" title={t('terminal.latencyTip')}>
           {`${Math.round(latency.net)} ms`}

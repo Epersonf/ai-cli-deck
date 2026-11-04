@@ -180,6 +180,7 @@ export const ru: Messages = {
   'fork.skip': 'Пропустить заметки',
   'fork.go': 'Ответвить',
   'fork.move': 'Перенести',
+  'terminal.following': 'Отображение с другого устройства. Нажмите, чтобы взять управление.',
   'terminal.exited': 'процесс завершён',
   'terminal.exitedCode': 'процесс завершён (код {code})',
   'layout.closePanel': 'Закрыть панель',

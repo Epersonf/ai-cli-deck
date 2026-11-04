@@ -154,3 +154,16 @@
   max-width: calc(100% - 24px);
   transform: translateX(-50%);
 }
+
+/* Another device sets the size: show it as it is, scrolling if it does not fit. */
+.terminal-host.following {
+  overflow: auto;
+}
+.terminal-follow {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  z-index: 3;
+  max-width: calc(100% - 24px);
+  transform: translateX(-50%);
+}

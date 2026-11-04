@@ -35,6 +35,8 @@ export function terminalSocket(app: FastifyInstance, c: Container): void {
 
     void (async () => {
       const first: ServerMessage[] = [{ type: 'status', session }];
+      const size = c.sessions.sizeOf(id);
+      if (size) first.push({ type: 'size', ...size });
       const replay = await c.sessions.replay(id).catch(() => new Uint8Array());
       if (replay.byteLength > 0) first.push(replayMessage(replay));
       for (const pending of c.approvals.list('pending')) {

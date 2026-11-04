@@ -20,6 +20,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('approval-request'), request: ApprovalRequestSchema }),
   z.object({ type: z.literal('preview-open'), url: z.string() }),
   z.object({ type: z.literal('new-tab'), url: z.string() }),
+  z.object({ type: z.literal('size'), cols: z.number().int(), rows: z.number().int() }),
   z.object({ type: z.literal('pong') }),
 ]);
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;

@@ -178,6 +178,7 @@ export const en = {
   'fork.skip': 'Skip the notes',
   'fork.go': 'Fork',
   'fork.move': 'Move',
+  'terminal.following': 'Mirroring another device. Tap to take over.',
   'terminal.exited': 'process exited',
   'terminal.exitedCode': 'process exited (code {code})',
   'layout.closePanel': 'Close panel',

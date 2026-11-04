@@ -182,6 +182,7 @@ export const es: Messages = {
   'fork.skip': 'Omitir las notas',
   'fork.go': 'Bifurcar',
   'fork.move': 'Mover',
+  'terminal.following': 'Reflejando otro dispositivo. Toca para tomar el control.',
   'terminal.exited': 'proceso terminado',
   'terminal.exitedCode': 'proceso terminado (código {code})',
   'layout.closePanel': 'Cerrar panel',

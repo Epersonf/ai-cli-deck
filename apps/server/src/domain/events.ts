@@ -6,7 +6,8 @@ export type DeckEvent =
   | { kind: 'exit'; sessionId: string; code: number | null }
   | { kind: 'approval'; request: ApprovalRequest }
   | { kind: 'preview'; sessionId: string; url: string }
-  | { kind: 'new-tab'; sessionId: string; url: string };
+  | { kind: 'new-tab'; sessionId: string; url: string }
+  | { kind: 'size'; sessionId: string; cols: number; rows: number };
 
 export type EventListener = (event: DeckEvent) => void;
 

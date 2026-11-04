@@ -9,6 +9,8 @@ export interface Runtime {
   session: Session;
   pty: PtyHandle | null;
   ring: RingBuffer;
+  /** The size the program was last given (null until a device sets one). */
+  size: { cols: number; rows: number } | null;
 }
 
 /** Every known session with its pty and replay buffer; changes are persisted and published. */
@@ -45,7 +47,16 @@ export class SessionRegistry {
   }
 
   runtimeOf(session: Session): Runtime {
-    return { session, pty: null, ring: new RingBuffer(this.replayBytes) };
+    return { session, pty: null, ring: new RingBuffer(this.replayBytes), size: null };
+  }
+
+  /** Records a new terminal size and tells every device; false when it is the size already in use. */
+  setSize(id: string, cols: number, rows: number): boolean {
+    const runtime = this.require(id);
+    if (runtime.size?.cols === cols && runtime.size.rows === rows) return false;
+    runtime.size = { cols, rows };
+    this.bus.publish({ kind: 'size', sessionId: id, cols, rows });
+    return true;
   }
 
   update(id: string, patch: Partial<Session>): void {
