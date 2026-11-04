@@ -35,9 +35,11 @@ npm install --no-audit --no-fund
 # install can leave the package present but unbuilt (npm then skips its scripts): verify and rebuild.
 if ! node -e "require('/opt/deck/node_modules/node-pty')" 2>/dev/null; then
   echo "node-pty native module missing, building from source..."
-  npm rebuild node-pty --build-from-source --foreground-scripts --no-audit --no-fund
-  # proot --link2symlink turns make's hardlink (COPY Release/pty.node) into a dangling symlink to a hidden
-  # .l2s.* file; replace it with a real copy of the freshly linked module.
+  # Run node-gyp directly: npm's postinstall script ("Cleaning release folder") deletes obj.target/ afterwards,
+  # and it only matters on Windows (conpty.dll).
+  (cd /opt/deck/node_modules/node-pty && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild)
+  # proot --link2symlink turns make's hardlink (COPY Release/pty.node) into a symlink to a hidden
+  # .l2s.* file inside obj.target; replace it with a real copy of the freshly linked module.
   R=/opt/deck/node_modules/node-pty/build/Release
   built=""
   for c in "$R/obj.target/pty.node" "$R"/obj.target/.l2s.pty.node*; do
