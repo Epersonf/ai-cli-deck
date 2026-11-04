@@ -11,6 +11,7 @@ vi.mock('@xterm/xterm', () => ({
     rows = 24;
     modes = { applicationCursorKeysMode: false };
     loadAddon() {}
+    attachCustomKeyEventHandler() {}
     open() {}
     write() {}
     reset() {}
@@ -33,6 +34,7 @@ describe('App dialogs', () => {
   it('asks with the app dialog (not window.confirm) before ending a session', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
+    click([...document.querySelectorAll('.profile-row')].pop() ?? null); // the Shell profile
     click($('.session-list button[aria-label="More actions"]'));
     click([...document.querySelectorAll('.menu-pop button')].pop() ?? null);
     expect($('[role="alertdialog"]')?.textContent).toContain('Shell · alpha');

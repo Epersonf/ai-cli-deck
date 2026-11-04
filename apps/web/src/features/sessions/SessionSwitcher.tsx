@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { groupSessions } from './groupSessions';
-import { ProfileGroup } from './ProfileGroup';
+import { ProfileList } from './ProfileList';
+import { ProfileView } from './ProfileView';
 import { useProfiles } from './profilesStore';
-import { SessionRow } from './SessionRow';
 import { useSessions } from './sessionsStore';
 
 interface Props {
@@ -13,38 +13,45 @@ interface Props {
   onClose(): void;
 }
 
-/** Side drawer: terminals grouped by profile, with add/rename/delete per profile. */
+/**
+ * Side drawer in two levels: the profiles first (searchable), then the terminals of the one you open.
+ * Keeping them apart stops the list from turning into one long mix of every terminal ever started.
+ */
 export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   const t = useT();
-  const { sessions, activeId, select } = useSessions();
+  const { sessions, select } = useSessions();
   const providers = useProfiles((s) => s.providers);
   const groups = useMemo(() => groupSessions(providers, sessions), [providers, sessions]);
+  const [openId, setOpenId] = useState<string | null>(null);
+  // A profile that was deleted while open drops back to the list.
+  const open = groups.find((g) => g.id === openId) ?? null;
+  const newIn = (id: string): void => (onClose(), onNew(id));
+  const pick = (id: string): void => (select(id), onClose());
+
   return (
     <div className="drawer-backdrop" onClick={onClose}>
       <aside className="drawer" onClick={(event) => event.stopPropagation()}>
-        <ModalTitle title={t('switcher.title')} onClose={onClose} />
-        <button type="button" className="primary" onClick={() => (onClose(), onProfile())}>
-          {t('switcher.newProfile')}
-        </button>
-        {groups.length === 0 && <p className="empty">{t('switcher.empty')}</p>}
-        {groups.map((group) => (
-          <ProfileGroup
-            key={group.id}
-            group={group}
-            onNewSession={() => (onClose(), onNew(group.id))}
-          >
-            {group.sessions.map((session) => (
-              <li key={session.id}>
-                <SessionRow
-                  session={session}
-                  index={sessions.indexOf(session)}
-                  active={session.id === activeId}
-                  onPick={() => (select(session.id), onClose())}
-                />
-              </li>
-            ))}
-          </ProfileGroup>
-        ))}
+        <ModalTitle title={t('switcher.profiles')} onClose={onClose} />
+        {open ? (
+          <ProfileView
+            group={open}
+            onBack={() => setOpenId(null)}
+            onNewSession={() => newIn(open.id)}
+            onPick={(session) => pick(session.id)}
+          />
+        ) : (
+          <>
+            <button type="button" className="primary" onClick={() => (onClose(), onProfile())}>
+              {t('switcher.newProfile')}
+            </button>
+            <ProfileList
+              groups={groups}
+              onOpen={setOpenId}
+              onNewSession={newIn}
+              onPick={(session) => pick(session.id)}
+            />
+          </>
+        )}
       </aside>
     </div>
   );

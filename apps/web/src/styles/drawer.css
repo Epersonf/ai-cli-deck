@@ -76,38 +76,6 @@ button.danger {
   background: var(--ink);
 }
 
-.profile-group {
-  display: grid;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--brass-lo);
-}
-.profile-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.profile-head h3 {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 15px;
-  font-variant: small-caps;
-  letter-spacing: 0.08em;
-  color: var(--brass-hi);
-}
-.profile-head .close {
-  width: var(--ctl);
-  padding: 0;
-  flex: none;
-}
-.profile-group .hint {
-  margin: 0;
-}
-
 .modal-title {
   display: flex;
   align-items: center;
@@ -162,29 +130,60 @@ button.danger {
   padding: 0;
   flex: none;
 }
-.profile-toggle {
+.profile-count {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Drawer, level 1: profiles; level 2: the terminals of one profile. */
+.drawer-search {
+  width: 100%;
+  min-height: var(--ctl);
+  padding: 0 12px;
+  background: var(--ink);
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+}
+.drawer-heading {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.profile-row {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 6px;
-  border-color: transparent;
-  background: transparent;
+  gap: 10px;
   justify-content: flex-start;
-}
-.profile-toggle h3 {
-  flex: 1;
   text-align: left;
 }
-.profile-toggle .chev {
+.profile-row h3 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+}
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.profile-head h3 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+}
+.drawer-back {
+  width: var(--ctl);
+  padding: 0;
   flex: none;
-  transition: transform 0.15s;
-}
-.profile-group.collapsed .chev {
-  transform: rotate(-90deg);
-}
-.profile-count {
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 18px;
 }
