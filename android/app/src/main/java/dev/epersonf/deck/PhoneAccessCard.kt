@@ -36,6 +36,8 @@ class PhoneAccessCard(private val act: Activity, env: Env) {
         text = act.getString(R.string.setting_phone); isChecked = env.phoneAccess
         setTextColor(act.getColor(R.color.parchment)); layoutParams = Ui.lp(top = 6)
     }
+    /** The files mode already accepted (saved earlier, or confirmed in this screen). */
+    private var confirmedFiles = filesModes.indexOf(env.phoneFiles).coerceAtLeast(0)
     private val files = Spinner(act).apply {
         adapter = ArrayAdapter(act, android.R.layout.simple_spinner_dropdown_item,
             listOf(R.string.files_off, R.string.files_shared, R.string.files_all).map { act.getString(it) })
@@ -71,16 +73,19 @@ class PhoneAccessCard(private val act: Activity, env: Env) {
         }
         files.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                if (reverting || pos == 0) { reverting = false; return }
+                // Android also calls this when the saved choice is first shown; only a real change warns.
+                if (reverting) { reverting = false; return }
+                if (pos == confirmedFiles) return
+                if (pos == 0) { confirmedFiles = 0; return }
                 val body = if (pos == 1) R.string.phone_files_shared_body else R.string.phone_files_all_body
                 Ui.dialog(act, act.getString(R.string.phone_files_warn_title), act.getString(body), act.getString(R.string.phone_enable), act.getString(android.R.string.cancel),
-                    { ask(FILES, listOf(android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) }, { revertFiles() })
+                    { confirmedFiles = pos; ask(FILES, listOf(android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) }, { revertFiles() })
             }
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
     }
 
-    private fun revertFiles() { reverting = true; files.setSelection(0) }
+    private fun revertFiles() { reverting = true; confirmedFiles = 0; files.setSelection(0) }
 
     private fun confirmAgain() {
         Ui.dialog(act, act.getString(R.string.phone_confirm_title), act.getString(R.string.phone_confirm_body), act.getString(R.string.phone_enable), act.getString(android.R.string.cancel),
