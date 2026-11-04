@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { usePolling } from '../../shared/ui/usePolling';
+import { useTasks } from '../tasks/tasksStore';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { groupSessions } from './groupSessions';
 import { ProfileList } from './ProfileList';
@@ -23,6 +25,7 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   const providers = useProfiles((s) => s.providers);
   const groups = useMemo(() => groupSessions(providers, sessions), [providers, sessions]);
   // Reopening the drawer lands on the profile of the terminal you are in; "back" shows all profiles.
+  usePolling(() => useTasks.getState().refresh(), 4000); // tasks change while the drawer is open
   const [openId, setOpenId] = useState<string | null>(() => {
     const active = sessions.find((s) => s.id === activeId);
     // A sub-terminal belongs to its main session's profile.

@@ -10,6 +10,8 @@ Commands:
   resume "<args>"          Save how to continue this chat, e.g. resume "--resume <chat id>" (ids only)
   fork "<args>"            Save the arguments that make your CLI fork this chat (same profile)
   handoff "<text>"|-       Leave notes for whoever continues this chat; only when the deck asks ("-" reads stdin)
+  task run "<cmd>" | battery --below N | list | stop <id> | log <id>
+                           Background jobs: a command that keeps running, or a watcher that notifies the phone
   phone battery|device|notify "<text>"
                            The phone running the deck (only when enabled in the Android app settings)
   meta [get|set|del ...]   Notes kept with this terminal (no argument: list them)

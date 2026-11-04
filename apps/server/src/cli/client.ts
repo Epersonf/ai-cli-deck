@@ -14,7 +14,7 @@ export function readEnv(env: NodeJS.ProcessEnv): Env | null {
 /** Calls the loopback-only agent API of the deck for this session. */
 export async function call(
   env: Env,
-  method: 'GET' | 'POST' | 'PUT',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   path: string,
   body?: unknown,
 ): Promise<unknown> {

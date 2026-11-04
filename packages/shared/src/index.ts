@@ -13,3 +13,4 @@ export * from './profile.js';
 export * from './jsonc.js';
 export * from './template.js';
 export * from './templateFill.js';
+export * from './task.js';

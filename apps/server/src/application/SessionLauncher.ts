@@ -81,6 +81,11 @@ export class SessionLauncher {
     return { [key]: value };
   }
 
+  /** The environment a plain command run for this session's profile gets (see `inheritFrom`). */
+  envFor(session: Session): Record<string, string> {
+    return this.buildSpec({ ...session, provider: 'shell' }, null, [], session.provider).env;
+  }
+
   reattach(session: Session): PtyHandle {
     const env = {
       ...this.deps.baseEnv,

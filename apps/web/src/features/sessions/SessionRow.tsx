@@ -3,6 +3,9 @@ import { useState, type FormEvent } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { PencilIcon, TransferIcon } from '../../shared/ui/Icons';
 import { KebabMenu } from '../../shared/ui/KebabMenu';
+import { api } from '../../shared/api/endpoints';
+import { useConfirm } from '../confirm/confirmStore';
+import { idleWatcher, useTasks } from '../tasks/tasksStore';
 import { useFork } from './forkStore';
 import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
@@ -20,6 +23,21 @@ interface Props {
 export function SessionRow({ session, index, active, onPick }: Props) {
   const t = useT();
   const close = useCloseSession();
+  const ask = useConfirm((x) => x.ask);
+  const watching = useTasks((x) => idleWatcher(x.tasks, session.id)) !== undefined;
+  const toggleQuiet = (): void =>
+    void api
+      .notifyIdle(session.id, !watching)
+      .then(() => useTasks.getState().refresh())
+      .catch((e: unknown) =>
+        ask({
+          title: t('tasks.notifyTitle'),
+          message: e instanceof Error ? e.message : 'failed',
+          confirmLabel: t('common.close'),
+          cancelLabel: t('common.cancel'),
+          onConfirm: () => undefined,
+        }),
+      );
   const providers = useProfiles((s) => s.providers);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -79,6 +97,14 @@ export function SessionRow({ session, index, active, onPick }: Props) {
                   label: t('fork.menu'),
                   icon: <TransferIcon size={16} />,
                   onSelect: () => useFork.getState().open(session),
+                },
+              ]
+            : []),
+          ...(session.parentId === null
+            ? [
+                {
+                  label: watching ? t('tasks.notifyOff') : t('tasks.notifyOn'),
+                  onSelect: toggleQuiet,
                 },
               ]
             : []),

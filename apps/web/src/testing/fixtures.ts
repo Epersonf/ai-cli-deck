@@ -45,6 +45,7 @@ const ROUTES: Record<string, unknown> = {
       fields: [{ key: 'command', label: 'Program', required: false }],
     },
   ],
+  '/api/tasks': [],
   '/api/auth': { required: false, canDisable: true, isDefault: false },
 };
 

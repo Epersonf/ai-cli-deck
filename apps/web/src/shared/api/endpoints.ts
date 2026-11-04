@@ -9,6 +9,8 @@ import {
   ProviderInfoSchema,
   PublicConfigSchema,
   SessionSchema,
+  TaskLogSchema,
+  TaskSchema,
   TemplateInfoSchema,
   TreeResponseSchema,
   type ApprovalDecision,
@@ -71,6 +73,19 @@ export const api = {
   importTemplate: (text: string) => request(TemplateInfoSchema, 'POST', '/api/templates', { text }),
   removeTemplate: (id: string) =>
     request(z.void(), 'DELETE', `/api/templates/${encodeURIComponent(id)}`),
+  tasks: () => request(z.array(TaskSchema), 'GET', '/api/tasks'),
+  taskLog: (id: string) =>
+    request(TaskLogSchema, 'GET', `/api/tasks/${encodeURIComponent(id)}/log`).then((r) => r.text),
+  removeTask: (id: string) => request(z.void(), 'DELETE', `/api/tasks/${encodeURIComponent(id)}`),
+  notifyIdle: (sessionId: string, on: boolean) =>
+    request(
+      z.object({ task: TaskSchema.nullable() }),
+      'POST',
+      `${session(sessionId)}/notify-idle`,
+      {
+        on,
+      },
+    ),
   createProfile: (body: CreateProfileBody) => request(ProfileSchema, 'POST', '/api/profiles', body),
   deleteProfile: (id: string) =>
     request(z.object({ ended: z.number() }), 'DELETE', `/api/profiles/${enc(id)}`),

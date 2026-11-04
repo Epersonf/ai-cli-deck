@@ -1,11 +1,13 @@
 import { AGENT_PATH } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
+import { RunTaskBodySchema, WatchBatteryBodySchema } from '@deck/shared';
 import { z } from 'zod';
 import { createAgentTools } from '../../agent/agentTools.js';
 import type { Container } from '../../container.js';
 import { parseWith } from '../errors.js';
 
 const Params = z.object({ sessionId: z.string().min(1) });
+const TaskParams = Params.extend({ taskId: z.string().min(1) });
 const RequestParams = Params.extend({ requestId: z.string().min(1) });
 const UrlBody = z.object({ url: z.string().min(1) });
 const TitleBody = z.object({ title: z.string().max(200) });
@@ -47,6 +49,21 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
     const { text, title } = parseWith(NotifyBody, request.body);
     return tools(request.params).phoneNotify(text, title);
   });
+  app.get(`${base}/tasks`, (request) => tools(request.params).taskList());
+  app.post(`${base}/tasks`, (request) => {
+    const { command, name } = parseWith(RunTaskBodySchema, request.body);
+    return tools(request.params).taskRun(command, name);
+  });
+  app.post(`${base}/tasks/battery`, (request) => {
+    const { name, ...rule } = parseWith(WatchBatteryBodySchema, request.body);
+    return tools(request.params).taskWatchBattery(rule, name);
+  });
+  app.delete(`${base}/tasks/:taskId`, (request) =>
+    tools(request.params).taskStop(parseWith(TaskParams, request.params).taskId),
+  );
+  app.get(`${base}/tasks/:taskId/log`, (request) =>
+    tools(request.params).taskLog(parseWith(TaskParams, request.params).taskId),
+  );
   app.post(`${base}/preview`, (request) =>
     tools(request.params).openPreview(parseWith(UrlBody, request.body).url),
   );

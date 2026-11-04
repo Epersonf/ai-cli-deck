@@ -23,6 +23,7 @@ async function connect() {
       sessions: h.sessions,
       handoffs: h.handoffs,
       phone: null,
+      tasks: h.tasks,
       approvals,
       preview: new PreviewService(h.sessions, h.bus),
       browser: new BrowserService(new FakeBrowserEngine()),
@@ -60,6 +61,7 @@ describe('MCP server', () => {
       'session_meta',
       'session_title',
       'suggest_new_tab',
+      'task',
     ]);
   });
 

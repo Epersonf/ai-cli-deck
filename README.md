@@ -158,6 +158,12 @@ To fork a chat or move it to another profile, use ⋮ > Fork or move. In the sam
 how its CLI forks (`clideck fork "<args>"`), the CLI copies the chat itself. Otherwise the running agent is
 asked once, by a `[deck]` message, to leave handoff notes (`clideck handoff`, a file under the deck state
 folder, never in your repo) and the new chat starts from them. Agents never write handoffs on their own.
+**Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
+under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs
+Phone access, see android/README.md); `clideck task list|stop|log`. The terminal menu has "Notify me when it goes
+quiet": when the terminal prints something and then stays silent for 30 seconds (typing echoes do not count), the
+phone gets a notification, with no tokens spent and no agent involved. Tasks live in memory (they end when the deck
+stops), belong to the profile of the terminal that started them, and end with that terminal.
 Run `clideck install` once to get `/clideck help` as a slash command in Claude Code and Codex.
 Claude sessions also get the MCP server automatically. See [docs/protocol.md](docs/protocol.md).
 

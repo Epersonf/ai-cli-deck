@@ -17,7 +17,6 @@ import { EventBus } from './domain/events.js';
 const SCROLLBACK_SAVE_MS = 5_000;
 import { LoginThrottle } from './application/LoginThrottle.js';
 import { AuthService } from './application/AuthService.js';
-import { DEFAULT_PASSWORD } from './domain/auth.js';
 import { ScryptHasher } from './infrastructure/auth/ScryptHasher.js';
 import { JsonAuthStore } from './infrastructure/auth/JsonAuthStore.js';
 import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.js';
@@ -25,14 +24,13 @@ import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
 import { FileReader } from './infrastructure/fs/FileReader.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
-import { acquireWakeLock } from './infrastructure/net/wakeLock.js';
-import { lanUrls } from './infrastructure/net/lanUrls.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
 import { createConfiguredProvider } from './infrastructure/providers/configured.js';
 import { createProfileService } from './infrastructure/providers/profileWiring.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
+import { createTaskService } from './infrastructure/tasks/taskWiring.js';
 import { HandoffService } from './application/HandoffService.js';
 import { stringEnv } from './infrastructure/config/stringEnv.js';
 import { phoneFromEnv } from './infrastructure/phone/HttpPhoneBridge.js';
@@ -42,6 +40,7 @@ import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
 import { runCommand } from './infrastructure/tmux/exec.js';
 import { detectMultiplexer } from './infrastructure/tmux/NoMultiplexer.js';
 import { createApp } from './interface/http/createApp.js';
+import { listen } from './interface/http/listen.js';
 
 async function main(): Promise<void> {
   const phone = phoneFromEnv(process.env); // before sessions copy the environment
@@ -97,6 +96,14 @@ async function main(): Promise<void> {
     replayBytes: 64 * 1024,
   });
   await sessions.restore();
+  const tasks = createTaskService({
+    sessions,
+    launcher,
+    bus,
+    phone,
+    shellName,
+    newId: () => system.newId(),
+  });
   sessions.screens.start(SCROLLBACK_SAVE_MS);
 
   const app = await createApp({
@@ -112,6 +119,7 @@ async function main(): Promise<void> {
     providerStatus: (id) => statusResolver.resolve(id),
     profiles,
     templates,
+    tasks,
     publicConfig: {
       defaultCwd: config.defaultCwd ?? homedir(),
       extraKeys: config.extraKeys,
@@ -127,17 +135,12 @@ async function main(): Promise<void> {
     staticDir: paths.staticDir ?? join(here, '..', '..', 'web', 'dist'),
   });
 
-  if (!mux.available) app.log.warn('tmux not found: sessions will not survive a server restart');
-  await app.listen({ host: config.host, port: config.port });
-  if (await acquireWakeLock(runCommand, process.env)) {
-    app.log.info('Termux wake lock requested (CPU + Wi-Fi stay awake with the screen off)');
-  }
-  for (const url of lanUrls(config.host, config.port)) app.log.info(`Open ${url}`);
-  if (auth.isDefault) {
-    app.log.warn(
-      `Using the DEFAULT password "${DEFAULT_PASSWORD}". Set DECK_PASSWORD or "password" in config.json.`,
-    );
-  }
+  await listen(app, {
+    host: config.host,
+    port: config.port,
+    persistent: mux.available,
+    defaultPassword: auth.isDefault,
+  });
 }
 
 main().catch((error: unknown) => {

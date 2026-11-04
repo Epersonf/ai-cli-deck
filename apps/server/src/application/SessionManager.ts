@@ -89,6 +89,7 @@ export class SessionManager {
 
   sendInput(id: string, data: string): void {
     this.reg.require(id).pty?.write(data);
+    this.deps.bus.publish({ kind: 'input', sessionId: id });
   }
 
   resize(id: string, cols: number, rows: number): void {

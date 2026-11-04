@@ -1,12 +1,13 @@
 import { normalizeUrl } from '@deck/shared';
 import { forbidden, notFound } from '../../domain/errors.js';
+import type { BatteryRule } from '../../application/batteryRule.js';
 import type { Container } from '../container.js';
 
 const TITLE_MAX = 60;
 
 export type AgentDeps = Pick<
   Container,
-  'sessions' | 'handoffs' | 'phone' | 'approvals' | 'preview' | 'browser'
+  'sessions' | 'handoffs' | 'phone' | 'tasks' | 'approvals' | 'preview' | 'browser'
 >;
 
 /**
@@ -76,6 +77,14 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     phoneBattery: () => phone().request('GET', '/battery'),
     phoneDevice: () => phone().request('GET', '/device'),
     phoneNotify: (text: string, title = '') => phone().request('POST', '/notify', { title, text }),
+
+    /** Background jobs of this terminal's profile: a command that keeps running, or a watcher that notifies the phone. */
+    taskList: () => deps.tasks.board.list(self().provider),
+    taskRun: (command: string, name?: string) => deps.tasks.runProcess(self(), command, name),
+    taskWatchBattery: (rule: BatteryRule, name?: string) =>
+      deps.tasks.watchBattery(self(), rule, name),
+    taskStop: (id: string) => deps.tasks.board.stop(id, self().provider),
+    taskLog: (id: string) => ({ text: deps.tasks.log(id, self().provider) }),
 
     proposeWorktree: (reason: string) => {
       const request = deps.approvals.propose(self().id, reason);

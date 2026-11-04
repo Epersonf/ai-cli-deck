@@ -264,3 +264,59 @@ button.danger {
   margin: 0;
   font-size: 12px;
 }
+
+/* Background tasks under a profile's terminals. */
+.tasks h4 {
+  margin: 14px 0 6px;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.task-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.task-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: var(--ink);
+}
+.task-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.task-main small {
+  color: var(--muted);
+}
+.dot.done {
+  background: var(--brass);
+}
+.dot.failed {
+  background: #c0533a;
+}
+.dot.stopped {
+  background: var(--muted);
+}
+.task-output {
+  margin: 0;
+  max-height: 60dvh;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--parchment);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

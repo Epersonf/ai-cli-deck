@@ -1,5 +1,6 @@
 import type { Session } from '@deck/shared';
 import { HandoffService } from '../application/HandoffService.js';
+import { TaskService } from '../application/TaskService.js';
 import { PortAllocator } from '../application/PortAllocator.js';
 import { SessionLauncher } from '../application/SessionLauncher.js';
 import { SessionManager } from '../application/SessionManager.js';
@@ -53,7 +54,18 @@ export function createHarness(options: HarnessOptions = {}) {
   });
   const handoffStore = new FakeHandoffs();
   const handoffs = new HandoffService(sessions, handoffStore, () => Promise.resolve());
+  const tasks = new TaskService({
+    sessions,
+    bus,
+    phone: null,
+    pty: ptyPort,
+    envFor: () => ({}),
+    shell: (line) => ({ command: 'sh', args: ['-c', line] }),
+    now: () => 0,
+    newId: () => system.newId(),
+  });
   return {
+    tasks,
     providers,
     sessions,
     handoffs,

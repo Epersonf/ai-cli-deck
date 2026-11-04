@@ -22,6 +22,7 @@ async function setup() {
     sessions: h.sessions,
     handoffs: h.handoffs,
     phone: null,
+    tasks: h.tasks,
     approvals,
     preview,
     browser: new BrowserService(new FakeBrowserEngine()),

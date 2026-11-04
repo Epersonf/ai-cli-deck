@@ -4,6 +4,7 @@ import { useT } from '../../shared/i18n/store';
 import { PlusIcon } from '../../shared/ui/Icons';
 import { KebabMenu } from '../../shared/ui/KebabMenu';
 import type { SessionGroup } from './groupSessions';
+import { TasksSection } from '../tasks/TasksSection';
 import { ProfileRename } from './ProfileRename';
 import { useProfiles } from './profilesStore';
 import { SessionRow } from './SessionRow';
@@ -75,6 +76,7 @@ export function ProfileView({ group, onBack, onNewSession, onPick }: Props) {
           </li>
         ))}
       </ul>
+      <TasksSection profileId={group.id} />
     </>
   );
 }

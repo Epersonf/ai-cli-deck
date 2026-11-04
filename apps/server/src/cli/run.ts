@@ -7,6 +7,7 @@ import { addProfile, knownTemplates, parseProfileArgs } from './profileCommand.j
 import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
 import { readStdin } from './stdin.js';
+import { runTask } from './taskCommand.js';
 
 const show = (value: unknown): string => JSON.stringify(value, null, 2);
 
@@ -33,6 +34,8 @@ async function execute(
       return show(await call(deck, 'GET', '/whoami'));
     case 'sessions':
       return show(await call(deck, 'GET', '/sessions'));
+    case 'task':
+      return runTask(deck, command.action, command.args);
     case 'phone':
       return show(
         command.action === 'notify'
