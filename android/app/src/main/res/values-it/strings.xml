@@ -39,4 +39,6 @@
     <string name="settings_open">Impostazioni</string>
     <string name="copy_log">Copia registro</string>
     <string name="log_copied">Registro copiato negli appunti</string>
+    <string name="setting_verbose">Log dettagliati</string>
+    <string name="setting_verbose_hint">Aggiunge info di sistema, autotest del terminale e log del server a livello debug. Valido dopo Ferma → Avvia.</string>
 </resources>

@@ -39,4 +39,6 @@
     <string name="settings_open">Ajustes</string>
     <string name="copy_log">Copiar registro</string>
     <string name="log_copied">Registro copiado al portapapeles</string>
+    <string name="setting_verbose">Registros detallados</string>
+    <string name="setting_verbose_hint">Añade información del sistema, autopruebas del terminal y registros del servidor en nivel debug. Se aplica tras Detener → Iniciar.</string>
 </resources>

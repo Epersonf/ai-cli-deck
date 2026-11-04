@@ -63,11 +63,13 @@ class DeckService : Service() {
     private fun loop(gen: Int) {
         var fails = 0
         val installer = Installer(this, env, ::log)
+        DeckDiagnostics.header(ui, env, ::log)
         while (alive(gen)) {
             try {
                 setStatus(gen, DeckState.INSTALLING)
                 if (!installer.ensure()) { fails++; countdown(gen, 20); continue }
                 val extra = mutableMapOf("DECK_PORT" to env.port.toString(), "DECK_HOST" to Env.LOOPBACK)
+                if (env.verbose) { extra["DECK_VERBOSE"] = "1"; extra["DECK_LOG_LEVEL"] = "debug" }
                 if (env.exposed && env.password.isNotEmpty()) {
                     extra["DECK_HOST"] = env.host
                     extra["DECK_PASSWORD"] = env.password

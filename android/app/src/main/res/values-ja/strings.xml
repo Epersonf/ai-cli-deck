@@ -39,4 +39,6 @@
     <string name="settings_open">設定</string>
     <string name="copy_log">ログをコピー</string>
     <string name="log_copied">ログをクリップボードにコピーしました</string>
+    <string name="setting_verbose">詳細ログ</string>
+    <string name="setting_verbose_hint">システム情報、ターミナルのセルフテスト、debug レベルのサーバーログをログに追加します。「停止 → 開始」後に反映されます。</string>
 </resources>

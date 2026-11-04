@@ -39,4 +39,6 @@
     <string name="settings_open">设置</string>
     <string name="copy_log">复制日志</string>
     <string name="log_copied">日志已复制到剪贴板</string>
+    <string name="setting_verbose">详细日志</string>
+    <string name="setting_verbose_hint">在日志中加入系统信息、终端自检和 debug 级别的服务器日志。“停止 → 启动”后生效。</string>
 </resources>

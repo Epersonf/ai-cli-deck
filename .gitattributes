@@ -2,3 +2,7 @@
 android/app/src/main/assets/*.sh text eol=lf
 android/app/src/main/assets/*.c text eol=lf
 android/scripts/*.sh text eol=lf
+# Scripts executed on Linux/Android: CRLF corrupts their last argument and shebang.
+apps/server/bin/clideck text eol=lf
+dev.sh text eol=lf
+*.sh text eol=lf

@@ -64,10 +64,11 @@ export function ProfileGroup({ group, onNewSession, children }: Props) {
       onConfirm: () =>
         void api
           .deleteProfile(group.id)
+          .catch(() => undefined)
+          // refresh either way: the list must reflect what the server really ended up doing
           .then(() =>
             Promise.all([useSessions.getState().refresh(), useProfiles.getState().refresh()]),
-          )
-          .catch(() => undefined),
+          ),
     });
 
   const items: MenuItem[] = [

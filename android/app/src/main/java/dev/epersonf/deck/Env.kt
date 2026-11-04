@@ -24,6 +24,8 @@ class Env(ctx: Context) {
     val host: String get() = prefs.getString("host", null)
         ?: if (prefs.getBoolean("lan", false)) "0.0.0.0" else LOOPBACK
     val exposed: Boolean get() = host != LOOPBACK && host != "localhost"
+    /** Extra diagnostics in the log (system info, terminal self-tests, debug-level server log). */
+    val verbose: Boolean get() = prefs.getBoolean("verbose", false)
     val password: String get() = prefs.getString("password", "") ?: ""
 
     /** libtalloc & friends ship as lib*.so (APK rule); the linker wants their real sonames. */

@@ -80,9 +80,13 @@ export class SessionManager {
 
   async remove(id: string): Promise<void> {
     const runtime = this.reg.require(id);
-    runtime.pty?.kill();
+    try {
+      runtime.pty?.kill();
+    } catch {
+      // already exited: nothing left to kill
+    }
     await this.deps.mux.kill(tmuxNameFor(id));
-    await this.screens.forget(id);
+    await this.screens.forget(id).catch(() => undefined);
     this.deps.ports.release(runtime.session.port);
     this.reg.runtimes.delete(id);
     await this.reg.persist();

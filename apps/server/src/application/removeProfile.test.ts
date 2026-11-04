@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { customBody, createHarness } from '../testing/harness.js';
 import { ProfileService } from './ProfileService.js';
+import type { SessionManager } from './SessionManager.js';
 import { removeProfile } from './removeProfile.js';
 
 describe('removeProfile', () => {
@@ -21,6 +22,29 @@ describe('removeProfile', () => {
     expect(result.ended).toBe(1);
     expect(h.sessions.get(mine.id)).toBeUndefined();
     expect(h.sessions.get(other.id)).toBeDefined();
+    expect(profiles.has('custom')).toBe(false);
+    expect(wiped).toContain('custom');
+  });
+
+  it('still deletes the profile when a terminal refuses to end', async () => {
+    const wiped: string[] = [];
+    const profiles = new ProfileService({
+      store: { load: () => Promise.resolve([]), save: () => Promise.resolve() },
+      register: () => undefined,
+      unregister: () => undefined,
+      reservedIds: () => [],
+      wipeData: (id) => (wiped.push(id), Promise.resolve()),
+    });
+    await profiles.create({ label: 'Custom', base: 'custom', command: '' });
+    const stuck = {
+      list: () => [
+        { id: 'a', provider: 'custom' },
+        { id: 'b', provider: 'custom' },
+      ],
+      remove: (id: string) => (id === 'a' ? Promise.reject(new Error('boom')) : Promise.resolve()),
+    } as unknown as SessionManager;
+    const result = await removeProfile({ profiles, sessions: stuck }, 'custom');
+    expect(result.ended).toBe(1);
     expect(profiles.has('custom')).toBe(false);
     expect(wiped).toContain('custom');
   });

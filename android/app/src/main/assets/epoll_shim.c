@@ -1,16 +1,21 @@
-// LD_PRELOAD shim: proot às vezes faz epoll_pwait falhar com errno != EINTR,
-// o que dispara `assert(errno == EINTR)` no libuv (uv__io_poll) e aborta o node.
-// Aqui convertemos esses erros espúrios em EINTR (o libuv simplesmente repete).
+// LD_PRELOAD shim: proot sometimes makes epoll_pwait fail with an errno other than EINTR,
+// which trips `assert(errno == EINTR)` in libuv (uv__io_poll) and aborts node.
+// Here those spurious errors become EINTR (libuv simply retries).
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
+
+// Only node needs this shim: drop it from the environment so the shells, tmux and CLIs that node
+// starts do not inherit LD_PRELOAD.
+__attribute__((constructor)) static void shim_init(void) { unsetenv("LD_PRELOAD"); }
 
 typedef int (*pwait_fn)(int, struct epoll_event *, int, int, const sigset_t *);
 static __thread int streak;

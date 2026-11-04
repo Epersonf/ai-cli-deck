@@ -39,4 +39,6 @@
     <string name="settings_open">Configurações</string>
     <string name="copy_log">Copiar log</string>
     <string name="log_copied">Log copiado para a área de transferência</string>
+    <string name="setting_verbose">Logs detalhados</string>
+    <string name="setting_verbose_hint">Inclui informações do sistema, autotestes do terminal e logs do servidor em nível debug. Vale após Parar → Iniciar.</string>
 </resources>

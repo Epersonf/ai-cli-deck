@@ -27,8 +27,16 @@ async function serveStatic(app: FastifyInstance, dir: string): Promise<void> {
   });
 }
 
+const LEVELS = ['trace', 'debug', 'info', 'warn', 'error'];
+
+/** `DECK_LOG_LEVEL=debug` turns on verbose server logs (the Android app does it from its Settings). */
+function logLevel(): string {
+  const wanted = process.env['DECK_LOG_LEVEL'] ?? '';
+  return LEVELS.includes(wanted) ? wanted : 'info';
+}
+
 export async function createApp(c: Container): Promise<FastifyInstance> {
-  const app = Fastify({ logger: { level: 'info', redact: ['req.headers.authorization'] } });
+  const app = Fastify({ logger: { level: logLevel(), redact: ['req.headers.authorization'] } });
   registerErrorHandler(app);
   registerSecurity(app, c.security);
   await app.register(fastifyWebsocket);

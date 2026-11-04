@@ -40,4 +40,6 @@
     <string name="settings_open">Settings</string>
     <string name="copy_log">Copy log</string>
     <string name="log_copied">Log copied to the clipboard</string>
+    <string name="setting_verbose">Verbose logs</string>
+    <string name="setting_verbose_hint">Adds system info, terminal self-tests and debug-level server logs to the log. Applies after Stop → Start.</string>
 </resources>

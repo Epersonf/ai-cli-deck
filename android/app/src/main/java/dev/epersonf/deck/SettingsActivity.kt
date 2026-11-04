@@ -24,6 +24,7 @@ class SettingsActivity : Activity() {
     private lateinit var host: EditText
     private lateinit var password: EditText
     private lateinit var auto: Switch
+    private lateinit var verbose: Switch
     private lateinit var lang: Spinner
     private val codes = listOf<String?>(null) + Lang.ALL.map { it.first }
 
@@ -70,6 +71,12 @@ class SettingsActivity : Activity() {
             setTextColor(getColor(R.color.parchment)); layoutParams = Ui.lp(top = 6)
         }
         card.addView(auto)
+        verbose = Switch(this).apply {
+            text = getString(R.string.setting_verbose); isChecked = env.verbose
+            setTextColor(getColor(R.color.parchment)); layoutParams = Ui.lp(top = 6)
+        }
+        card.addView(verbose)
+        card.addView(Ui.body(this, getString(R.string.setting_verbose_hint), muted = true).apply { textSize = 12f })
         card.addView(label(R.string.setting_language))
         val names = listOf(getString(R.string.language_system)) + Lang.ALL.map { it.second }
         lang = Spinner(this).apply {
@@ -93,6 +100,7 @@ class SettingsActivity : Activity() {
         env.prefs.edit().putInt("port", p).putString("host", h)
             .putString("password", password.text.toString())
             .putBoolean("autostart", auto.isChecked)
+            .putBoolean("verbose", verbose.isChecked)
             .also { if (newLang == null) it.remove("lang") else it.putString("lang", newLang) }
             .apply()
         toast(R.string.setting_saved)

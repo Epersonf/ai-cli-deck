@@ -26,6 +26,10 @@ gcc -O2 -fPIC -shared -o /opt/epoll_shim.so /opt/epoll_shim.c -ldl
 
 rm -rf /opt/deck.new && mkdir -p /opt/deck.new
 tar -xzf /opt/deck-src.tar.gz -C /opt/deck.new
+# A tarball built from a Windows checkout can carry CRLF; shell scripts must be LF (the "\r" would
+# end up in their last argument and the shebang).
+find /opt/deck.new -type f \( -name '*.sh' -o -path '*/apps/server/bin/clideck' \) -exec sed -i 's/\r$//' {} +
+chmod +x /opt/deck.new/apps/server/bin/clideck
 if [ -d /opt/deck/node_modules ]; then mv /opt/deck/node_modules /opt/deck.new/node_modules; fi
 rm -rf /opt/deck && mv /opt/deck.new /opt/deck
 cd /opt/deck

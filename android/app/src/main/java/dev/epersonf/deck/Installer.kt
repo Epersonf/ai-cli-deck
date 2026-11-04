@@ -32,6 +32,8 @@ class Installer(private val ctx: Context, private val env: Env, private val log:
         if (!File(env.rootfs, "bin/bash").exists() && !File(env.rootfs, "usr/bin/bash").exists()) {
             if (!downloadAndExtractRootfs()) return false
         }
+        val installed = if (marker.exists()) marker.readText().trim() else "none"
+        log("[info] install check: installed=$installed bundled=${assetVersion()} current=${isCurrent()}")
         if (isCurrent()) return true
         log(env.en.getString(R.string.log_installing))
         installAssets()
