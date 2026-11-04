@@ -30,4 +30,12 @@ if [ -d /opt/deck/node_modules ]; then mv /opt/deck/node_modules /opt/deck.new/n
 rm -rf /opt/deck && mv /opt/deck.new /opt/deck
 cd /opt/deck
 npm install --no-audit --no-fund
+
+# node-pty ships no linux-arm64 prebuild, so its install script must compile it. An interrupted earlier
+# install can leave the package present but unbuilt (npm then skips its scripts): verify and rebuild.
+if ! node -e "require('/opt/deck/node_modules/node-pty')" 2>/dev/null; then
+  echo "node-pty native module missing, building from source..."
+  npm rebuild node-pty --build-from-source --foreground-scripts --no-audit --no-fund
+  node -e "require('/opt/deck/node_modules/node-pty')"
+fi
 echo "bootstrap ok"
