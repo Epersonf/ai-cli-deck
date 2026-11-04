@@ -32,7 +32,7 @@
     <string name="language_system">系统默认</string>
     <string name="setting_save">保存</string>
     <string name="setting_saved">已保存。“停止 → 启动”后生效。</string>
-    <string name="err_port">端口必须介于 1024 和 65535 之间</string>
+    <string name="err_port">端口必须介于 1 和 65535 之间</string>
     <string name="err_host_password">在网络上开放 Deck 需要设置密码</string>
     <string name="section_network">网络</string>
     <string name="section_behavior">行为</string>

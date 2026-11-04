@@ -32,7 +32,7 @@
     <string name="language_system">Padrão do sistema</string>
     <string name="setting_save">Salvar</string>
     <string name="setting_saved">Salvo. Pare → Inicie para aplicar.</string>
-    <string name="err_port">A porta deve estar entre 1024 e 65535</string>
+    <string name="err_port">A porta deve estar entre 1 e 65535</string>
     <string name="err_host_password">É preciso uma senha para expor o deck na rede</string>
     <string name="section_network">Rede</string>
     <string name="section_behavior">Comportamento</string>

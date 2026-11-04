@@ -86,7 +86,7 @@ class SettingsActivity : Activity() {
         val p = port.text.toString().toIntOrNull()
         val h = host.text.toString().trim().ifEmpty { Env.LOOPBACK }
         val exposed = h != Env.LOOPBACK && h != "localhost"
-        if (p == null || p !in 1024..65535) return toast(R.string.err_port)
+        if (p == null || p !in 1..65535) return toast(R.string.err_port)
         if (exposed && password.text.isEmpty()) return toast(R.string.err_host_password)
         val newLang = codes[lang.selectedItemPosition]
         val langChanged = newLang != Lang.saved(this)

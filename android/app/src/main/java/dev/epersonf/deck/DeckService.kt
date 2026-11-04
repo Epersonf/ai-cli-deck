@@ -5,14 +5,11 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import java.io.FileWriter
 
 /** Foreground service: keeps the deck (Node inside proot) alive, restarts it when it exits. */
 class DeckService : Service() {
 
     companion object {
-        /** Terminal color escapes from npm/node-gyp, noise in the log view. */
-        private val ANSI = Regex("\u001B\\[[0-9;]*[A-Za-z]")
         const val ACTION_STOP = "dev.epersonf.deck.STOP"
         @Volatile var state = DeckState.STOPPED
         /** Port while running, seconds left while restarting. */
@@ -54,14 +51,7 @@ class DeckService : Service() {
 
     private fun alive(gen: Int) = running && gen == generation
 
-    private fun log(line: String) {
-        try {
-            FileWriter(env.logFile, true).use { it.appendLine(line.replace(ANSI, "")) }
-            if (env.logFile.length() > 2_000_000) {
-                env.logFile.writeText(env.logFile.readText().takeLast(500_000))
-            }
-        } catch (_: Exception) {}
-    }
+    private fun log(line: String) = env.appendLog(line)
 
     private fun setStatus(gen: Int, st: DeckState, a: Int = 0) {
         if (!alive(gen)) return
@@ -130,7 +120,7 @@ class DeckService : Service() {
     private fun shutdown() {
         running = false
         generation++
-        proc?.destroy()
+        proc?.let { killHard(it) }
         worker?.interrupt()
         worker = null
         locks.release()
@@ -140,10 +130,16 @@ class DeckService : Service() {
         stopSelf()
     }
 
+    /** SIGTERM first; if proot is still alive shortly after, SIGKILL (its --kill-on-exit then takes the server down). */
+    private fun killHard(p: Process) {
+        p.destroy()
+        Thread { try { Thread.sleep(2000) } catch (_: InterruptedException) {}; if (p.isAlive) p.destroyForcibly() }.start()
+    }
+
     override fun onDestroy() {
         running = false
         generation++
-        proc?.destroy()
+        proc?.let { killHard(it) }
         locks.release()
         super.onDestroy()
     }

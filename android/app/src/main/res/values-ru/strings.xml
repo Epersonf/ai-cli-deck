@@ -32,7 +32,7 @@
     <string name="language_system">Как в системе</string>
     <string name="setting_save">Сохранить</string>
     <string name="setting_saved">Сохранено. «Остановить → Запустить» для применения.</string>
-    <string name="err_port">Порт должен быть от 1024 до 65535</string>
+    <string name="err_port">Порт должен быть от 1 до 65535</string>
     <string name="err_host_password">Для доступа по сети нужен пароль</string>
     <string name="section_network">Сеть</string>
     <string name="section_behavior">Поведение</string>

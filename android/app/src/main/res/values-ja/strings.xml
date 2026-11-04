@@ -32,7 +32,7 @@
     <string name="language_system">システムの既定</string>
     <string name="setting_save">保存</string>
     <string name="setting_saved">保存しました。「停止 → 開始」で反映されます。</string>
-    <string name="err_port">ポートは 1024〜65535 の範囲で指定してください</string>
+    <string name="err_port">ポートは 1〜65535 の範囲で指定してください</string>
     <string name="err_host_password">ネットワークに公開するにはパスワードが必要です</string>
     <string name="section_network">ネットワーク</string>
     <string name="section_behavior">動作</string>

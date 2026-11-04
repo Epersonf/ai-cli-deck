@@ -33,7 +33,7 @@
     <string name="language_system">System default</string>
     <string name="setting_save">Save</string>
     <string name="setting_saved">Saved. Stop → Start to apply.</string>
-    <string name="err_port">Port must be between 1024 and 65535</string>
+    <string name="err_port">Port must be between 1 and 65535</string>
     <string name="err_host_password">A password is required to expose the deck on the network</string>
     <string name="section_network">Network</string>
     <string name="section_behavior">Behavior</string>
