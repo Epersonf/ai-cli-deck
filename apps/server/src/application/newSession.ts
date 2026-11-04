@@ -25,5 +25,6 @@ export function newSession(
     persistent: from.persistent,
     sharedCwdWith: [],
     name: null,
+    parentId: body.parentId ?? null,
   };
 }

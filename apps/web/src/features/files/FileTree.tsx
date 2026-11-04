@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { ConfirmDelete } from './ConfirmDelete';
 import { ExplorerOptions } from './ExplorerOptions';
+import { useSessions } from '../sessions/sessionsStore';
 import { loadPrefs, savePrefs, type ExplorerPrefs } from './explorerPrefs';
 import { FileList } from './FileList';
 import { parentOf } from './explorerPath';
@@ -34,6 +35,16 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
     onDone: () => setReloadKey((k) => k + 1),
   });
 
+  /** A plain shell in the folder being viewed, as a new tab of this session (for git, tests, anything). */
+  const openTerminal = (): void =>
+    void api
+      .openTerminal(sessionId, dir)
+      .then((session) => {
+        useSessions.getState().upsert(session);
+        useSessions.getState().select(session.id);
+      })
+      .catch(() => undefined);
+
   useEffect(() => {
     api
       .git(sessionId)
@@ -58,6 +69,7 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
         canDelete={dir !== ''}
         onRefresh={() => setReloadKey((k) => k + 1)}
         onTransfer={() => setTransferOpen(true)}
+        onTerminal={openTerminal}
         onOptions={() => setOptionsOpen(true)}
         onDelete={() => setDeleteOpen(true)}
       />

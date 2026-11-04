@@ -17,6 +17,47 @@ function setup(reserved: string[] = ['claude']) {
   return { service, saved, registered, removed, wiped };
 }
 
+describe('ProfileService id collisions', () => {
+  it('gives profiles created at the same moment different ids (and so different folders)', async () => {
+    const { service, wiped } = setup([]);
+    const made = await Promise.all([
+      service.create({ label: 'Work!', base: 'claude' }),
+      service.create({ label: 'Work?', base: 'claude' }),
+      service.create({ label: 'Work', base: 'codex' }),
+    ]);
+    expect(made.map((p) => p.id)).toEqual(['work', 'work-2', 'work-3']);
+    expect(new Set(wiped).size).toBe(3);
+  });
+
+  it('knows about a profile another process added to the file, and never reuses its id', async () => {
+    const outside: Profile = {
+      id: 'work',
+      label: 'Work',
+      base: 'claude',
+      command: '',
+      baseUrl: '',
+    };
+    let stored: Profile[] = [];
+    const registered: string[] = [];
+    const service = new ProfileService({
+      store: {
+        load: () => Promise.resolve(stored),
+        save: (p) => ((stored = [...p]), Promise.resolve()),
+      },
+      register: (p) => void registered.push(p.id),
+      unregister: () => undefined,
+      reservedIds: () => [],
+      wipeData: () => Promise.resolve(),
+    });
+    await service.load();
+    stored = [outside]; // `clideck profile add "Work" claude` ran while the deck was up
+    const mine = await service.create({ label: 'Work', base: 'claude' });
+    expect(mine.id).toBe('work-2');
+    expect(registered).toContain('work');
+    expect(stored.map((p) => p.id)).toEqual(['work', 'work-2']); // its profile is kept, not overwritten
+  });
+});
+
 describe('ProfileService custom endpoint', () => {
   it('requires an http(s) URL for the endpoint base', async () => {
     const { service } = setup([]);

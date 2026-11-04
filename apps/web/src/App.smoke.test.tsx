@@ -12,6 +12,7 @@ vi.mock('@xterm/xterm', () => ({
     modes = { applicationCursorKeysMode: false };
     loadAddon() {}
     attachCustomKeyEventHandler() {}
+    attachCustomWheelEventHandler() {}
     open() {}
     write() {}
     reset() {}
@@ -73,9 +74,19 @@ describe('App smoke', () => {
     expect($('.current-name')?.textContent).toBe('Shell · alpha');
   });
 
+  it("opens on the profile of the terminal you are in, and 'back' lists all profiles", async () => {
+    await mount();
+    click($('button[aria-label="All terminals"]'));
+    expect($('.profile-head h3')?.textContent).toBe('Shell');
+    expect(document.querySelectorAll('.session-row')).toHaveLength(2);
+    click($('.drawer-back'));
+    expect(document.querySelectorAll('.profile-row')).toHaveLength(2);
+  });
+
   it('shows profiles first, with add, rename and delete on the ones you made', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
+    click($('.drawer-back')); // the drawer opens on the active terminal's profile
     expect([...document.querySelectorAll('.profile-row h3')].map((h) => h.textContent)).toEqual([
       'Work',
       'Shell',
@@ -99,6 +110,7 @@ describe('App smoke', () => {
   it('searches profiles, and finds terminals by name from the profile list', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
+    click($('.drawer-back')); // the drawer opens on the active terminal's profile
     typeInto($('.drawer-search'), 'wor');
     expect([...document.querySelectorAll('.profile-row h3')].map((h) => h.textContent)).toEqual([
       'Work',

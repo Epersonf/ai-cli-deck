@@ -43,9 +43,11 @@ export class SessionManager {
 
   async create(body: CreateSessionBody): Promise<Session> {
     const { system, ports, mux } = this.deps;
+    // A sub-terminal hangs off the main session of its family, never off another sub-terminal.
+    const parentId = body.parentId ? this.reg.rootOf(body.parentId) : null;
     const cwd = resolveCwd(body.cwd, system.homeDir());
     if (!(await system.isDirectory(cwd))) throw invalid(`Not a directory: ${cwd}`);
-    const session = newSession(body, cwd, await ports.allocate(), {
+    const session = newSession({ ...body, parentId }, cwd, await ports.allocate(), {
       id: system.newId(),
       now: system.now(),
       persistent: mux.available,
@@ -80,6 +82,8 @@ export class SessionManager {
 
   async remove(id: string): Promise<void> {
     const runtime = this.reg.require(id);
+    // Ending a session ends the sub-terminals opened from it.
+    for (const child of this.reg.childrenOf(id)) await this.remove(child.id);
     try {
       runtime.pty?.kill();
     } catch {

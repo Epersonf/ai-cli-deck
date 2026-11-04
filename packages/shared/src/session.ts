@@ -23,6 +23,8 @@ export const SessionSchema = z.object({
   sharedCwdWith: z.array(z.string()),
   /** User-chosen display name; null means the default "provider · folder" label. */
   name: z.string().nullable().default(null),
+  /** Set for a sub-terminal opened from another session (e.g. a plain shell in a folder, for git). */
+  parentId: z.string().nullable().default(null),
 });
 export type Session = z.infer<typeof SessionSchema>;
 
@@ -32,6 +34,8 @@ export const CreateSessionBodySchema = z.object({
   useWorktree: z.boolean().default(false),
   command: z.string().min(1).nullable().default(null),
   args: z.array(z.string()).default([]),
+  /** Open this as a sub-terminal of that session (set by the server, not by clients). */
+  parentId: z.string().min(1).nullable().optional(),
 });
 export type CreateSessionBody = z.infer<typeof CreateSessionBodySchema>;
 

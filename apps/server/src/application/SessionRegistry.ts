@@ -35,6 +35,15 @@ export class SessionRegistry {
     return runtime;
   }
 
+  /** The main session a sub-terminal opened from `id` belongs to (`id` itself for a main session). */
+  rootOf(id: string): string {
+    return this.require(id).session.parentId ?? id;
+  }
+
+  childrenOf(id: string): Session[] {
+    return this.list().filter((s) => s.parentId === id);
+  }
+
   runtimeOf(session: Session): Runtime {
     return { session, pty: null, ring: new RingBuffer(this.replayBytes) };
   }

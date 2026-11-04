@@ -12,6 +12,7 @@ vi.mock('@xterm/xterm', () => ({
     modes = { applicationCursorKeysMode: false };
     loadAddon() {}
     attachCustomKeyEventHandler() {}
+    attachCustomWheelEventHandler() {}
     open() {}
     write() {}
     reset() {}
@@ -45,6 +46,7 @@ describe('App dialogs', () => {
   it('offers clean profiles: a name and a base; the key is asked inside the terminal', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
+    click($('.drawer-back')); // the drawer opens on the active terminal's profile
     const buttons = [...document.querySelectorAll('.drawer > button')];
     click(buttons.find((b) => b.textContent === 'New profile') ?? null);
     const fields = [...document.querySelectorAll('.modal input, .modal select')];
@@ -63,6 +65,7 @@ describe('App dialogs', () => {
   it('the custom endpoint base asks for the API base URL', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
+    click($('.drawer-back')); // the drawer opens on the active terminal's profile
     const buttons = [...document.querySelectorAll('.drawer > button')];
     click(buttons.find((b) => b.textContent === 'New profile') ?? null);
     expect($('.modal input[type="url"]')).toBeNull();

@@ -8,6 +8,7 @@ import { useT } from '../../shared/i18n/store';
 import { dispatchMessage } from './dispatch';
 import { attachImagePaste } from './pasteImage';
 import { isPasteShortcut } from './pasteShortcut';
+import { attachWheelScroll } from './wheelScroll';
 import { createLatencyMeter, type Latency } from './latencyMeter';
 import { attachLocalEcho } from './localEcho';
 import { openLink } from './openLink';
@@ -57,6 +58,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     term.open(element);
     // Let the browser paste (text, or an image that is uploaded) instead of sending ^V to the CLI.
     term.attachCustomKeyEventHandler((event) => !isPasteShortcut(event));
+    attachWheelScroll(term);
     tameMobileKeyboard(term);
     termRef.current = term;
     fitRef.current = fit;

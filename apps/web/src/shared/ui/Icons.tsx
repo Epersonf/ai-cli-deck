@@ -104,3 +104,20 @@ export function SlidersIcon({ size = 18 }: Props) {
     </svg>
   );
 }
+
+/** A prompt in a window, used to open a terminal in a folder. */
+export function TerminalIcon({ size = 18 }: Props) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      aria-hidden
+      {...base}
+      strokeLinejoin="round"
+    >
+      <rect x="12" y="20" width="76" height="60" rx="8" />
+      <path d="M28 40l14 10-14 10M50 64h22" />
+    </svg>
+  );
+}

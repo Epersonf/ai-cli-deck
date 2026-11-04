@@ -13,6 +13,7 @@ import { useShortcuts } from './features/layout/useShortcuts';
 import { sessionLabel } from './features/sessions/sessionLabel';
 import { NewSessionDialog } from './features/sessions/NewSessionDialog';
 import { SessionSwitcher } from './features/sessions/SessionSwitcher';
+import { SubTabs } from './features/sessions/SubTabs';
 import { useProfiles } from './features/sessions/profilesStore';
 import { useSessions } from './features/sessions/sessionsStore';
 import { SettingsDialog } from './features/settings/SettingsDialog';
@@ -85,6 +86,7 @@ export function App() {
         onSplit={() => patch({ showRight: !layout.showRight })}
         onSettings={() => setDialog('settings')}
       />
+      <SubTabs />
       <Workspace
         sessions={sessions}
         activeId={activeId}

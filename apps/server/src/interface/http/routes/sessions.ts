@@ -31,6 +31,23 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
 
   app.post('/api/sessions', async (request, reply) => {
     const body = parseWith(CreateSessionBodySchema, request.body);
+    // parentId is only ever set by the sub-terminal route below.
+    return reply.code(201).send(await c.sessions.create({ ...body, parentId: null }));
+  });
+
+  // A plain shell in a folder of this session (inside its root), as a sub-terminal: for git, tests, anything by hand.
+  app.post('/api/sessions/:id/terminal', async (request, reply) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { path } = parseWith(z.object({ path: z.string().default('') }), request.body ?? {});
+    const cwd = await c.workspace.resolveDir(id, path);
+    const body = {
+      provider: 'shell',
+      cwd,
+      useWorktree: false,
+      command: null,
+      args: [],
+      parentId: id,
+    };
     return reply.code(201).send(await c.sessions.create(body));
   });
 

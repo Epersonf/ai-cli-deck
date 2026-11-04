@@ -19,10 +19,16 @@ interface Props {
  */
 export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   const t = useT();
-  const { sessions, select } = useSessions();
+  const { sessions, select, activeId } = useSessions();
   const providers = useProfiles((s) => s.providers);
   const groups = useMemo(() => groupSessions(providers, sessions), [providers, sessions]);
-  const [openId, setOpenId] = useState<string | null>(null);
+  // Reopening the drawer lands on the profile of the terminal you are in; "back" shows all profiles.
+  const [openId, setOpenId] = useState<string | null>(() => {
+    const active = sessions.find((s) => s.id === activeId);
+    // A sub-terminal belongs to its main session's profile.
+    const root = sessions.find((s) => s.id === active?.parentId) ?? active;
+    return root?.provider ?? null;
+  });
   // A profile that was deleted while open drops back to the list.
   const open = groups.find((g) => g.id === openId) ?? null;
   const newIn = (id: string): void => (onClose(), onNew(id));
