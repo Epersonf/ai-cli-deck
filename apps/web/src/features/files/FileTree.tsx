@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../shared/api/endpoints';
-import { useT } from '../../shared/i18n/store';
 import { ConfirmDelete } from './ConfirmDelete';
 import { ExplorerOptions } from './ExplorerOptions';
 import { loadPrefs, savePrefs, type ExplorerPrefs } from './explorerPrefs';
@@ -8,6 +7,7 @@ import { FileList } from './FileList';
 import { parentOf } from './explorerPath';
 import { PathBar } from './PathBar';
 import { TransferDialog } from './TransferDialog';
+import { TreeTools } from './TreeTools';
 import { useUpload } from './Uploader';
 
 interface Props {
@@ -21,7 +21,6 @@ interface Props {
 
 /** One explorer: address bar with back, tools, and the current folder's entries. */
 export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props) {
-  const t = useT();
   const [prefs, setPrefs] = useState<ExplorerPrefs>(loadPrefs);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -54,38 +53,14 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
       }}
     >
       <PathBar cwd={cwd} dir={dir} onGo={onDir} onBack={() => onDir(parentOf(dir))} />
-      <div className="tree-tools">
-        <button
-          type="button"
-          title={t('common.refresh')}
-          aria-label={t('common.refresh')}
-          onClick={() => setReloadKey((k) => k + 1)}
-        >
-          ⟳
-        </button>
-        <button
-          type="button"
-          title={t('files.transfer')}
-          aria-label={t('files.transfer')}
-          disabled={busy}
-          onClick={() => setTransferOpen(true)}
-        >
-          ⇅
-        </button>
-        <button type="button" onClick={() => setOptionsOpen(true)}>
-          ⚙ {t('files.options')}
-        </button>
-        <button
-          type="button"
-          className="icon-danger"
-          title={t('files.delete')}
-          aria-label={t('files.delete')}
-          disabled={dir === ''}
-          onClick={() => setDeleteOpen(true)}
-        >
-          🗑
-        </button>
-      </div>
+      <TreeTools
+        busy={busy}
+        canDelete={dir !== ''}
+        onRefresh={() => setReloadKey((k) => k + 1)}
+        onTransfer={() => setTransferOpen(true)}
+        onOptions={() => setOptionsOpen(true)}
+        onDelete={() => setDeleteOpen(true)}
+      />
       {transferOpen && (
         <TransferDialog
           sessionId={sessionId}

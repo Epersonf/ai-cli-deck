@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { VIEWPORT, type BrowserEngine, type PageDriver } from '../../application/browserTypes.js';
 
@@ -88,9 +88,15 @@ export class PlaywrightEngine implements BrowserEngine {
     return existsSync(file) ? file : null;
   }
 
-  install(): Promise<void> {
-    const cli = createRequire(import.meta.url).resolve('playwright-core/cli.js');
-    return new Promise((resolve, reject) => {
+  /** Playwright's package "exports" hide cli.js, so find the package folder through package.json. */
+  private cliPath(): string {
+    const pkg = createRequire(import.meta.url).resolve('playwright-core/package.json');
+    return join(dirname(pkg), 'cli.js');
+  }
+
+  async install(): Promise<void> {
+    const cli = this.cliPath();
+    await new Promise<void>((resolve, reject) => {
       const child = spawn(process.execPath, [cli, 'install', 'chromium-headless-shell'], {
         env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: this.browsersDir },
         stdio: ['ignore', 'ignore', 'pipe'],

@@ -30,6 +30,18 @@ describe('BrowserService', () => {
     expect(browser.status().installed).toBe(true);
   });
 
+  it('reports an install that throws immediately instead of failing silently', async () => {
+    const engine = new FakeBrowserEngine();
+    engine.installed = false;
+    engine.install = () => {
+      throw new Error('cli not found');
+    };
+    const browser = new BrowserService(engine);
+    browser.install();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(browser.status()).toMatchObject({ installing: false, error: 'cli not found' });
+  });
+
   it('keeps one page per session and drives it', async () => {
     const engine = new FakeBrowserEngine();
     const browser = new BrowserService(engine);

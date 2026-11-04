@@ -59,3 +59,48 @@ export function TrashIcon({ size = 18 }: Props) {
     </svg>
   );
 }
+
+/** A circular arrow, used to refresh. */
+export function RefreshIcon({ size = 18 }: Props) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      aria-hidden
+      {...base}
+      strokeLinejoin="round"
+    >
+      <path d="M80 50a30 30 0 1 1-9-21.5" />
+      <path d="M74 12v20H54" />
+    </svg>
+  );
+}
+
+/** Up and down arrows, used for upload / download. */
+export function TransferIcon({ size = 18 }: Props) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      aria-hidden
+      {...base}
+      strokeLinejoin="round"
+    >
+      <path d="M34 82V20M18 36l16-16 16 16M66 18v62M50 64l16 16 16-16" />
+    </svg>
+  );
+}
+
+/** Three sliders, used for the explorer options. */
+export function SlidersIcon({ size = 18 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden {...base}>
+      <path d="M14 26h72M14 50h72M14 74h72" />
+      <circle cx="34" cy="26" r="9" fill="var(--leather-2)" />
+      <circle cx="66" cy="50" r="9" fill="var(--leather-2)" />
+      <circle cx="42" cy="74" r="9" fill="var(--leather-2)" />
+    </svg>
+  );
+}

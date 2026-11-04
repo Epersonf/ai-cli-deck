@@ -15,6 +15,14 @@ if [ "$need" = 1 ]; then
   apt-get install -y --no-install-recommends ca-certificates curl xz-utils git tmux build-essential python3 procps psmisc openssh-client less nano
 fi
 
+# Shared libraries the deck's browser pane (Playwright's headless Chromium, installed on demand) needs.
+if ! ldconfig -p | grep -q 'libgbm\.so\.1'; then
+  apt-get update
+  apt-get install -y --no-install-recommends libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 \
+    libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libpango-1.0-0 \
+    libcairo2 libx11-6 libxcb1 libxext6 fonts-liberation
+fi
+
 if ! command -v node >/dev/null || ! node -v | grep -q '^v2[2-9]'; then
   base=https://nodejs.org/dist/latest-v22.x
   f=$(curl -fsSL "$base/SHASUMS256.txt" | awk '/linux-arm64.tar.xz/ {print $2}')

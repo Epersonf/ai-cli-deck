@@ -67,7 +67,10 @@ export function PreviewPanel({ sessionId, visible }: Props) {
                 void api
                   .browserInstall()
                   .then(setBrowser)
-                  .catch(() => undefined)
+                  // never fail silently: show why the request did not go through
+                  .catch((e: unknown) =>
+                    setBrowser({ ...browser, error: e instanceof Error ? e.message : String(e) }),
+                  )
               }
             >
               {t('preview.install')}

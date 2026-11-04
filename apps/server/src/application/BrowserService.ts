@@ -31,8 +31,9 @@ export class BrowserService {
   install(): BrowserStatus {
     if (this.installing === null && !this.engine.isInstalled()) {
       this.error = null;
-      this.installing = this.engine
-        .install()
+      // Promise.resolve().then(): an engine that throws before returning a promise still ends up in `error`.
+      this.installing = Promise.resolve()
+        .then(() => this.engine.install())
         .catch((e: unknown) => {
           this.error = e instanceof Error ? e.message : 'install failed';
         })

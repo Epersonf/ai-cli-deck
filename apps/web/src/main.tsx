@@ -11,6 +11,7 @@ import './styles/drawer.css';
 import './styles/explorer.css';
 import './styles/terminal.css';
 import './styles/files.css';
+import './styles/tools.css';
 import './styles/viewer.css';
 import './styles/preview.css';
 import './styles/approvals.css';
