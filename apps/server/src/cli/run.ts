@@ -7,6 +7,7 @@ import { addProfile, knownTemplates, parseProfileArgs } from './profileCommand.j
 import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
 import { readStdin } from './stdin.js';
+import { phoneCommand } from './phoneCommand.js';
 import { runTask } from './taskCommand.js';
 
 const show = (value: unknown): string => JSON.stringify(value, null, 2);
@@ -37,11 +38,7 @@ async function execute(
     case 'task':
       return runTask(deck, command.action, command.args);
     case 'phone':
-      return show(
-        command.action === 'notify'
-          ? await call(deck, 'POST', '/phone/notify', { text: command.text, title: command.title })
-          : await call(deck, 'GET', `/phone/${command.action}`),
-      );
+      return phoneCommand(deck, command);
     case 'handoff': {
       if (command.text === null) return show(await call(deck, 'GET', '/handoff'));
       const text = command.text === '-' ? await readStdin() : command.text;

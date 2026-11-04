@@ -54,4 +54,24 @@
     <string name="phone_enable">Attiva</string>
     <string name="phone_notif_off">Le notifiche sono disattivate per questa app. Attivale nella pagina che si aprirà.</string>
     <string name="phone_channel">Notifiche degli agenti</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">Consente agli agenti di vedere la rete attuale e quelle vicine e (solo dopo il tuo tocco su Consenti in una notifica) connettersi, cambiare o accendere/spegnere il Wi-Fi. Chiede il permesso di posizione, richiesto da Android per leggere i nomi Wi-Fi.</string>
+    <string name="phone_wifi_warn_title">Accesso al Wi-Fi</string>
+    <string name="phone_wifi_warn_body">Gli agenti potranno vedere a quale Wi-Fi sei connesso e quali sono vicini, il che può rivelare dove sei. Cambiare il Wi-Fi richiede sempre il tuo tocco su Consenti. Android chiederà il permesso di posizione. Attivare l’accesso al Wi-Fi?</string>
+    <string name="setting_phone_files">File</string>
+    <string name="files_off">Disattivato</string>
+    <string name="files_shared">Solo una cartella condivisa</string>
+    <string name="files_all">Tutta la memoria</string>
+    <string name="setting_phone_files_hint">Cartella condivisa: gli agenti vedono solo la cartella “CLI Deck” del telefono, in /root/phone nel terminale. Tutta la memoria: l’intera memoria interna, in /sdcard. Vale dopo Ferma → Avvia.</string>
+    <string name="phone_files_warn_title">Accesso ai file</string>
+    <string name="phone_files_shared_body">Gli agenti potranno leggere e modificare tutto nella cartella “CLI Deck” del telefono (in /root/phone), e nient’altro. Mettici solo ciò che accetti che vedano. Android chiederà il permesso di archiviazione. Continuare?</string>
+    <string name="phone_files_all_body">Gli agenti potranno leggere, modificare e cancellare QUALSIASI file della memoria: foto, documenti, download, file di altre app. Un agente ingannato potrebbe divulgarli o distruggerli. Preferisci “Solo una cartella condivisa”. Android chiederà il permesso di archiviazione. Continuare con tutta la memoria?</string>
+    <string name="phone_permission_denied">Permesso non concesso: la funzione resta disattivata.</string>
+    <string name="phone_files_allfiles">Attiva “Consenti l’accesso a tutti i file” per questa app nella pagina che si aprirà.</string>
+    <string name="phone_confirm_channel">Richieste degli agenti</string>
+    <string name="phone_allow">Consenti</string>
+    <string name="phone_deny">Nega</string>
+    <string name="phone_ask_connect">Un agente vuole collegare questo telefono alla rete Wi-Fi “%1$s”.</string>
+    <string name="phone_ask_wifi_on">Un agente vuole accendere il Wi-Fi.</string>
+    <string name="phone_ask_wifi_off">Un agente vuole spegnere il Wi-Fi.</string>
 </resources>

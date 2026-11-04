@@ -10,21 +10,45 @@ export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools):
       'phone',
       {
         description:
-          'The phone the deck runs on (enabled by the user). action: battery (percent, charging), device (model, Android version) or notify (shows a notification: text, optional title).',
+          'The phone the deck runs on (enabled by the user). action: battery, device, notify (text, title?), wifi_status, wifi_scan, wifi_connect (ssid, password?), wifi_on, wifi_off. Wi-Fi changes wait for the person to tap Allow on the phone.',
         inputSchema: {
-          action: z.enum(['battery', 'device', 'notify']),
+          action: z.enum([
+            'battery',
+            'device',
+            'notify',
+            'wifi_status',
+            'wifi_scan',
+            'wifi_connect',
+            'wifi_on',
+            'wifi_off',
+          ]),
+          ssid: z.string().max(64).optional(),
+          password: z.string().max(100).optional(),
           text: z.string().max(400).optional(),
           title: z.string().max(80).optional(),
         },
       },
-      ({ action, text, title }) =>
-        runAsync(() =>
-          action === 'battery'
-            ? tools.phoneBattery()
-            : action === 'device'
-              ? tools.phoneDevice()
-              : tools.phoneNotify(text ?? '', title),
-        ),
+      ({ action, text, title, ssid, password }) =>
+        runAsync(async () => {
+          switch (action) {
+            case 'battery':
+              return tools.phoneBattery();
+            case 'device':
+              return tools.phoneDevice();
+            case 'wifi_status':
+              return tools.phoneWifi();
+            case 'wifi_scan':
+              return tools.phoneWifiScan();
+            case 'wifi_connect':
+              return tools.phoneWifiConnect(ssid ?? '', password);
+            case 'wifi_on':
+              return tools.phoneWifiEnable(true);
+            case 'wifi_off':
+              return tools.phoneWifiEnable(false);
+            default:
+              return tools.phoneNotify(text ?? '', title);
+          }
+        }),
     );
   }
   server.registerTool(

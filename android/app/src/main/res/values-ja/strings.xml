@@ -54,4 +54,24 @@
     <string name="phone_enable">有効にする</string>
     <string name="phone_notif_off">このアプリの通知がオフです。開いたページでオンにしてください。</string>
     <string name="phone_channel">エージェントの通知</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">エージェントが現在のネットワークと周辺のネットワークを見られるようにし、通知の「許可」をタップした場合に限り、接続・切り替え・オン/オフを行えます。Wi-Fi 名の取得に Android が要求する位置情報の権限を求めます。</string>
+    <string name="phone_wifi_warn_title">Wi-Fi へのアクセス</string>
+    <string name="phone_wifi_warn_body">エージェントは、接続中の Wi-Fi と周辺の Wi-Fi を見られるようになり、あなたの居場所が分かる可能性があります。Wi-Fi の変更には常に「許可」のタップが必要です。Android が位置情報の権限を求めます。Wi-Fi へのアクセスを有効にしますか？</string>
+    <string name="setting_phone_files">ファイル</string>
+    <string name="files_off">オフ</string>
+    <string name="files_shared">共有フォルダのみ</string>
+    <string name="files_all">ストレージ全体</string>
+    <string name="setting_phone_files_hint">共有フォルダ：エージェントはスマホの「CLI Deck」フォルダだけを見られます（ターミナルでは /root/phone）。ストレージ全体：内部ストレージ全体（/sdcard）。停止 → 開始後に反映されます。</string>
+    <string name="phone_files_warn_title">ファイルへのアクセス</string>
+    <string name="phone_files_shared_body">エージェントは、スマホの「CLI Deck」フォルダ（/root/phone）内のすべてを読み書きできますが、それ以外にはアクセスできません。見られてもよいものだけを入れてください。Android がストレージの権限を求めます。続けますか？</string>
+    <string name="phone_files_all_body">エージェントは、ストレージ内の任意のファイル（写真、書類、ダウンロード、他のアプリのファイル）を読み、変更し、削除できます。だまされたエージェントが流出や破壊を起こす恐れがあります。「共有フォルダのみ」をおすすめします。Android がストレージの権限を求めます。ストレージ全体で続けますか？</string>
+    <string name="phone_permission_denied">権限が付与されませんでした。この機能はオフのままです。</string>
+    <string name="phone_files_allfiles">開いたページで、このアプリの「すべてのファイルへのアクセスを許可」をオンにしてください。</string>
+    <string name="phone_confirm_channel">エージェントからの要求</string>
+    <string name="phone_allow">許可</string>
+    <string name="phone_deny">拒否</string>
+    <string name="phone_ask_connect">エージェントがこのスマホを Wi-Fi ネットワーク「%1$s」に接続しようとしています。</string>
+    <string name="phone_ask_wifi_on">エージェントが Wi-Fi をオンにしようとしています。</string>
+    <string name="phone_ask_wifi_off">エージェントが Wi-Fi をオフにしようとしています。</string>
 </resources>

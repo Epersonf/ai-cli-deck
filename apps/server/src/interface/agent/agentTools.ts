@@ -4,6 +4,8 @@ import type { BatteryRule } from '../../application/batteryRule.js';
 import type { Container } from '../container.js';
 
 const TITLE_MAX = 60;
+/** How long a request that needs the person's tap on the phone may take. */
+const ASK_MS = 45_000;
 
 export type AgentDeps = Pick<
   Container,
@@ -76,6 +78,12 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     phoneEnabled: deps.phone !== null,
     phoneBattery: () => phone().request('GET', '/battery'),
     phoneDevice: () => phone().request('GET', '/device'),
+    phoneWifi: () => phone().request('GET', '/wifi'),
+    phoneWifiScan: () => phone().request('GET', '/wifi/scan', undefined, 20_000),
+    // These wait for the person to tap Allow on the phone.
+    phoneWifiConnect: (ssid: string, password = '') =>
+      phone().request('POST', '/wifi/connect', { ssid, password }, ASK_MS),
+    phoneWifiEnable: (on: boolean) => phone().request('POST', '/wifi/enable', { on }, ASK_MS),
     phoneNotify: (text: string, title = '') => phone().request('POST', '/notify', { title, text }),
 
     /** Background jobs of this terminal's profile: a command that keeps running, or a watcher that notifies the phone. */

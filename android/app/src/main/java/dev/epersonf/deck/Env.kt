@@ -28,6 +28,10 @@ class Env(ctx: Context) {
     val verbose: Boolean get() = prefs.getBoolean("verbose", false)
     /** "Phone access" (battery, notifications...) for the agents: off until the user turns it on and confirms. */
     val phoneAccess: Boolean get() = prefs.getBoolean("phone_access", false)
+    /** Wi-Fi for the agents (needs "Phone access" too): own switch, own permission. */
+    val phoneWifi: Boolean get() = phoneAccess && prefs.getBoolean("phone_wifi", false)
+    /** "off", "shared" (only the folder "CLI Deck" of the phone storage) or "all" (the whole storage). */
+    val phoneFiles: String get() = if (phoneAccess) prefs.getString("phone_files", "off") ?: "off" else "off"
     val password: String get() = prefs.getString("password", "") ?: ""
 
     /** libtalloc & friends ship as lib*.so (APK rule); the linker wants their real sonames. */
@@ -52,6 +56,20 @@ class Env(ctx: Context) {
         return extra
     }
 
+    /** The phone storage inside the Ubuntu, only when the person chose to share it. */
+    private fun phoneBinds(): List<String> {
+        val storage = android.os.Environment.getExternalStorageDirectory()
+        return when (phoneFiles) {
+            "all" -> listOf("-b", "${storage.path}:/sdcard").also { File(rootfs, "sdcard").mkdirs() }
+            "shared" -> File(storage, "CLI Deck").let { dir ->
+                dir.mkdirs()
+                File(rootfs, "root/phone").mkdirs()
+                if (dir.isDirectory) listOf("-b", "${dir.path}:/root/phone") else emptyList()
+            }
+            else -> emptyList()
+        }
+    }
+
     fun prootCommand(script: String, extraEnv: Map<String, String> = emptyMap()): ProcessBuilder {
         val envArgs = mutableListOf(
             "HOME=/root", "USER=root", "LANG=C.UTF-8", "TERM=xterm-256color",
@@ -64,6 +82,7 @@ class Env(ctx: Context) {
             "--kill-on-exit", "--kernel-release=6.17.0-PRoot-Distro",
             "-b", "/dev", "-b", "/proc", "-b", "/sys", "-b", "/dev/urandom:/dev/random",
             "-b", "${tmpDir.path}:/tmp",
+            *phoneBinds().toTypedArray(),
             "-w", "/root",
             "/usr/bin/env", "-i", *envArgs.toTypedArray(),
             "/bin/bash", "-lc", script,

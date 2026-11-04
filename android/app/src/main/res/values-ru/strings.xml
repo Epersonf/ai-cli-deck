@@ -54,4 +54,24 @@
     <string name="phone_enable">Включить</string>
     <string name="phone_notif_off">Уведомления для этого приложения выключены. Включите их на открывшейся странице.</string>
     <string name="phone_channel">Уведомления агентов</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">Позволяет агентам видеть текущую и ближайшие сети и (только после вашего нажатия «Разрешить» в уведомлении) подключаться, переключать, включать и выключать Wi-Fi. Запрашивает разрешение на местоположение, которое Android требует для чтения имён Wi-Fi.</string>
+    <string name="phone_wifi_warn_title">Доступ к Wi-Fi</string>
+    <string name="phone_wifi_warn_body">Агенты смогут видеть, к какой сети Wi-Fi вы подключены и какие есть рядом, что может раскрыть ваше местоположение. Изменение Wi-Fi всегда требует вашего нажатия «Разрешить». Android запросит разрешение на местоположение. Включить доступ к Wi-Fi?</string>
+    <string name="setting_phone_files">Файлы</string>
+    <string name="files_off">Выкл.</string>
+    <string name="files_shared">Только общая папка</string>
+    <string name="files_all">Всё хранилище</string>
+    <string name="setting_phone_files_hint">Общая папка: агенты видят только папку «CLI Deck» телефона (в терминале это /root/phone). Всё хранилище: вся внутренняя память (/sdcard). Действует после Стоп → Старт.</string>
+    <string name="phone_files_warn_title">Доступ к файлам</string>
+    <string name="phone_files_shared_body">Агенты смогут читать и изменять всё в папке «CLI Deck» телефона (/root/phone) и больше ничего. Кладите туда только то, что не жалко показать. Android запросит разрешение на хранилище. Продолжить?</string>
+    <string name="phone_files_all_body">Агенты смогут читать, менять и удалять ЛЮБЫЕ файлы хранилища: фото, документы, загрузки, файлы других приложений. Обманутый агент может их слить или уничтожить. Лучше выбрать «Только общая папка». Android запросит разрешение на хранилище. Продолжить со всем хранилищем?</string>
+    <string name="phone_permission_denied">Разрешение не выдано: функция остаётся выключенной.</string>
+    <string name="phone_files_allfiles">Включите «Разрешить доступ ко всем файлам» для этого приложения на открывшейся странице.</string>
+    <string name="phone_confirm_channel">Запросы агентов</string>
+    <string name="phone_allow">Разрешить</string>
+    <string name="phone_deny">Отклонить</string>
+    <string name="phone_ask_connect">Агент хочет подключить этот телефон к сети Wi-Fi «%1$s».</string>
+    <string name="phone_ask_wifi_on">Агент хочет включить Wi-Fi.</string>
+    <string name="phone_ask_wifi_off">Агент хочет выключить Wi-Fi.</string>
 </resources>

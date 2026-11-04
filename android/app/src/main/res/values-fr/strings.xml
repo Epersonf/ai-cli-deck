@@ -54,4 +54,24 @@
     <string name="phone_enable">Activer</string>
     <string name="phone_notif_off">Les notifications sont désactivées pour cette app. Activez-les dans la page qui s’ouvre.</string>
     <string name="phone_channel">Notifications des agents</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">Permet aux agents de voir le réseau actuel et ceux alentour et (seulement après votre appui sur Autoriser dans une notification) de se connecter, changer ou activer/désactiver le Wi-Fi. Demande la permission de localisation, exigée par Android pour lire les noms Wi-Fi.</string>
+    <string name="phone_wifi_warn_title">Accès au Wi-Fi</string>
+    <string name="phone_wifi_warn_body">Les agents pourront voir à quel Wi-Fi vous êtes connecté et lesquels sont proches, ce qui peut révéler où vous êtes. Modifier le Wi-Fi exige toujours votre appui sur Autoriser. Android demandera la permission de localisation. Activer l’accès au Wi-Fi ?</string>
+    <string name="setting_phone_files">Fichiers</string>
+    <string name="files_off">Désactivé</string>
+    <string name="files_shared">Un dossier partagé seulement</string>
+    <string name="files_all">Tout le stockage</string>
+    <string name="setting_phone_files_hint">Dossier partagé : les agents ne voient que le dossier « CLI Deck » du téléphone, dans /root/phone du terminal. Tout le stockage : le stockage interne entier, dans /sdcard. Appliqué après Arrêter → Démarrer.</string>
+    <string name="phone_files_warn_title">Accès aux fichiers</string>
+    <string name="phone_files_shared_body">Les agents pourront lire et modifier tout le contenu du dossier « CLI Deck » du téléphone (dans /root/phone), et rien d’autre. N’y mettez que ce que vous acceptez de leur montrer. Android demandera la permission de stockage. Continuer ?</string>
+    <string name="phone_files_all_body">Les agents pourront lire, modifier et supprimer N’IMPORTE QUEL fichier du stockage : photos, documents, téléchargements, fichiers d’autres apps. Un agent trompé pourrait les divulguer ou les détruire. Préférez « Un dossier partagé seulement ». Android demandera la permission de stockage. Continuer avec tout le stockage ?</string>
+    <string name="phone_permission_denied">Permission refusée : cette fonction reste désactivée.</string>
+    <string name="phone_files_allfiles">Activez « Autoriser l’accès à tous les fichiers » pour cette app sur la page qui s’ouvre.</string>
+    <string name="phone_confirm_channel">Demandes des agents</string>
+    <string name="phone_allow">Autoriser</string>
+    <string name="phone_deny">Refuser</string>
+    <string name="phone_ask_connect">Un agent veut connecter ce téléphone au réseau Wi-Fi « %1$s ».</string>
+    <string name="phone_ask_wifi_on">Un agent veut activer le Wi-Fi.</string>
+    <string name="phone_ask_wifi_off">Un agent veut désactiver le Wi-Fi.</string>
 </resources>

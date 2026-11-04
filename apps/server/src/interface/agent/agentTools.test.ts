@@ -81,6 +81,29 @@ describe('agent tools', () => {
     ]);
   });
 
+  it('Wi-Fi: reading is quick, changing waits long for the person to tap Allow on the phone', async () => {
+    const { deps, a } = await setup();
+    const calls: unknown[][] = [];
+    const phone = {
+      request: (method: string, path: string, body?: unknown, timeoutMs?: number) => {
+        calls.push([method, path, body, timeoutMs]);
+        return Promise.resolve({});
+      },
+    };
+    const tools = createAgentTools({ ...deps, phone: phone as never }, a.id);
+    await tools.phoneWifi();
+    await tools.phoneWifiConnect('Home', 'secret');
+    await tools.phoneWifiEnable(false);
+    expect(calls[0]).toEqual(['GET', '/wifi', undefined, undefined]);
+    expect(calls[1]).toEqual([
+      'POST',
+      '/wifi/connect',
+      { ssid: 'Home', password: 'secret' },
+      45_000,
+    ]);
+    expect(calls[2]).toEqual(['POST', '/wifi/enable', { on: false }, 45_000]);
+  });
+
   it('describes the calling session', async () => {
     const { tools, a } = await setup();
     expect(tools.whoami()).toMatchObject({ id: a.id, cwd: '/work', port: a.port });

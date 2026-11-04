@@ -54,4 +54,24 @@
     <string name="phone_enable">Activar</string>
     <string name="phone_notif_off">Las notificaciones están desactivadas para esta app. Actívalas en la página que se abrirá.</string>
     <string name="phone_channel">Notificaciones de agentes</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">Permite que los agentes vean la red actual y las cercanas y (solo tras tocar Permitir en una notificación) conecten, cambien o enciendan/apaguen el Wi-Fi. Pide el permiso de ubicación, que Android exige para leer nombres de Wi-Fi.</string>
+    <string name="phone_wifi_warn_title">Acceso al Wi-Fi</string>
+    <string name="phone_wifi_warn_body">Los agentes podrán ver a qué Wi-Fi estás conectado y cuáles hay cerca, lo que puede revelar dónde estás. Cambiar el Wi-Fi siempre requiere tu toque en Permitir. Android pedirá el permiso de ubicación. ¿Activar el acceso al Wi-Fi?</string>
+    <string name="setting_phone_files">Archivos</string>
+    <string name="files_off">Desactivado</string>
+    <string name="files_shared">Solo una carpeta compartida</string>
+    <string name="files_all">Todo el almacenamiento</string>
+    <string name="setting_phone_files_hint">Carpeta compartida: los agentes ven solo la carpeta “CLI Deck” del teléfono, en /root/phone en el terminal. Todo el almacenamiento: el interno completo, en /sdcard. Se aplica tras Detener → Iniciar.</string>
+    <string name="phone_files_warn_title">Acceso a archivos</string>
+    <string name="phone_files_shared_body">Los agentes podrán leer y modificar todo lo de la carpeta “CLI Deck” del teléfono (en /root/phone), y nada más. Pon ahí solo lo que aceptes que vean. Android pedirá permiso de almacenamiento. ¿Continuar?</string>
+    <string name="phone_files_all_body">Los agentes podrán leer, modificar y borrar CUALQUIER archivo del almacenamiento: fotos, documentos, descargas, archivos de otras apps. Un agente engañado podría filtrarlos o destruirlos. Prefiere “Solo una carpeta compartida”. Android pedirá permiso de almacenamiento. ¿Continuar con todo el almacenamiento?</string>
+    <string name="phone_permission_denied">Permiso no concedido: esa función sigue desactivada.</string>
+    <string name="phone_files_allfiles">Activa “Permitir acceso a todos los archivos” para esta app en la página que se abrirá.</string>
+    <string name="phone_confirm_channel">Peticiones de agentes</string>
+    <string name="phone_allow">Permitir</string>
+    <string name="phone_deny">Denegar</string>
+    <string name="phone_ask_connect">Un agente quiere conectar este teléfono a la red Wi-Fi “%1$s”.</string>
+    <string name="phone_ask_wifi_on">Un agente quiere encender el Wi-Fi.</string>
+    <string name="phone_ask_wifi_off">Un agente quiere apagar el Wi-Fi.</string>
 </resources>

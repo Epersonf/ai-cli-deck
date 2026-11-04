@@ -65,7 +65,13 @@ export interface TemplateStorePort {
 
 /** The phone the deck runs on (Android app bridge). Only exists when the user turned "Phone access" on. */
 export interface PhonePort {
-  request(method: 'GET' | 'POST', path: string, body?: unknown): Promise<unknown>;
+  /** `timeoutMs`: how long to wait for an answer (changes that need the person's tap wait longer). */
+  request(
+    method: 'GET' | 'POST',
+    path: string,
+    body?: unknown,
+    timeoutMs?: number,
+  ): Promise<unknown>;
 }
 
 export interface ProfileStorePort {

@@ -55,4 +55,24 @@
     <string name="phone_enable">Enable</string>
     <string name="phone_notif_off">Notifications are off for this app. Turn them on in the page that opens.</string>
     <string name="phone_channel">Agent notifications</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">Lets agents see the current network and the ones around, and (only after you tap Allow on a notification) connect, switch or turn Wi-Fi on or off. Asks for the location permission, which Android requires to read Wi-Fi names.</string>
+    <string name="phone_wifi_warn_title">Wi-Fi access</string>
+    <string name="phone_wifi_warn_body">Agents will be able to see which Wi-Fi you are on and which are nearby, which can reveal where you are. Changing Wi-Fi always needs your tap on Allow. Android will ask for the location permission. Enable Wi-Fi access?</string>
+    <string name="setting_phone_files">Files</string>
+    <string name="files_off">Off</string>
+    <string name="files_shared">Shared folder only</string>
+    <string name="files_all">All phone storage</string>
+    <string name="setting_phone_files_hint">Shared folder: agents see only the folder “CLI Deck” of your phone, at /root/phone in the terminal. All storage: the whole internal storage, at /sdcard. Applies after Stop → Start.</string>
+    <string name="phone_files_warn_title">File access</string>
+    <string name="phone_files_shared_body">Agents will be able to read and change everything in the “CLI Deck” folder of your phone (at /root/phone), and nothing else. Put there only what you are happy for them to see. Android will ask for storage permission. Continue?</string>
+    <string name="phone_files_all_body">Agents will be able to read, change and delete ANY file in your phone storage: photos, documents, downloads, other apps’ files. A tricked agent could leak or destroy them. Prefer “Shared folder only”. Android will ask for storage permission. Continue with all storage?</string>
+    <string name="phone_permission_denied">Permission not granted: that feature stays off.</string>
+    <string name="phone_files_allfiles">Turn on “Allow access to all files” for this app on the page that opens.</string>
+    <string name="phone_confirm_channel">Requests from agents</string>
+    <string name="phone_allow">Allow</string>
+    <string name="phone_deny">Deny</string>
+    <string name="phone_ask_connect">An agent wants to connect this phone to the Wi-Fi network “%1$s”.</string>
+    <string name="phone_ask_wifi_on">An agent wants to turn Wi-Fi on.</string>
+    <string name="phone_ask_wifi_off">An agent wants to turn Wi-Fi off.</string>
 </resources>

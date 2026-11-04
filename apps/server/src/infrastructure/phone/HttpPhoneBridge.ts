@@ -10,14 +10,19 @@ export class HttpPhoneBridge implements PhonePort {
     private readonly token: string,
   ) {}
 
-  async request(method: 'GET' | 'POST', path: string, body?: unknown): Promise<unknown> {
+  async request(
+    method: 'GET' | 'POST',
+    path: string,
+    body?: unknown,
+    timeoutMs = TIMEOUT_MS,
+  ): Promise<unknown> {
     let response: Response;
     try {
       response = await fetch(`${this.url}${path}`, {
         method,
         headers: { authorization: `Bearer ${this.token}`, 'content-type': 'application/json' },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
     } catch {
       throw unavailable('The phone did not answer (is the Android app running?)');

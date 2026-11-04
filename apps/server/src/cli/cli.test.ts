@@ -39,6 +39,23 @@ describe('parseArgs', () => {
     expect(command('install', '--force')).toEqual({ name: 'install', force: true });
   });
 
+  it('parses the phone commands, including Wi-Fi', () => {
+    expect(command('phone', 'battery')).toMatchObject({ name: 'phone', action: 'battery' });
+    expect(command('phone', 'notify', 'hello', 'there', '--title', 'Hi')).toMatchObject({
+      action: 'notify',
+      text: 'hello there',
+      title: 'Hi',
+    });
+    expect(command('phone', 'wifi')).toMatchObject({ action: 'wifi-status' });
+    expect(command('phone', 'wifi', 'connect', 'Home', '--password', 'x')).toMatchObject({
+      action: 'wifi-connect',
+      args: ['Home', '--password', 'x'],
+    });
+    expect(parseArgs(['phone', 'wifi', 'connect'])).toMatchObject({ ok: false });
+    expect(parseArgs(['phone', 'wifi', 'dance'])).toMatchObject({ ok: false });
+    expect(parseArgs(['phone', 'notify'])).toMatchObject({ ok: false });
+  });
+
   it('reports usage errors', () => {
     expect(parseArgs(['preview'])).toEqual({
       ok: false,

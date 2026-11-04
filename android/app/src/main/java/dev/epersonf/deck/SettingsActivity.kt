@@ -105,6 +105,8 @@ class SettingsActivity : Activity() {
             .putBoolean("autostart", auto.isChecked)
             .putBoolean("verbose", verbose.isChecked)
             .putBoolean("phone_access", phone.enabled)
+            .putBoolean("phone_wifi", phone.wifiEnabled)
+            .putString("phone_files", phone.filesMode)
             .also { if (newLang == null) it.remove("lang") else it.putString("lang", newLang) }
             .apply()
         toast(R.string.setting_saved)
@@ -113,6 +115,10 @@ class SettingsActivity : Activity() {
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
         }
         finish()
+    }
+
+    override fun onRequestPermissionsResult(code: Int, permissions: Array<out String>, results: IntArray) {
+        phone.onPermissionResult(code, results.isNotEmpty() && results.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED })
     }
 
     private fun label(res: Int) = Ui.body(this, getString(res), muted = true).apply {

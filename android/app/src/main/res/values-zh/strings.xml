@@ -54,4 +54,24 @@
     <string name="phone_enable">启用</string>
     <string name="phone_notif_off">此应用的通知已关闭。请在打开的页面中开启。</string>
     <string name="phone_channel">智能体通知</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">允许智能体查看当前网络和附近网络，并（仅在你点按通知上的“允许”后）连接、切换或开关 Wi-Fi。会请求位置权限，这是 Android 读取 Wi-Fi 名称所要求的。</string>
+    <string name="phone_wifi_warn_title">Wi-Fi 访问</string>
+    <string name="phone_wifi_warn_body">智能体将能看到你连接的 Wi-Fi 和附近的 Wi-Fi，这可能暴露你的位置。更改 Wi-Fi 始终需要你点按“允许”。Android 会请求位置权限。启用 Wi-Fi 访问？</string>
+    <string name="setting_phone_files">文件</string>
+    <string name="files_off">关闭</string>
+    <string name="files_shared">仅共享文件夹</string>
+    <string name="files_all">全部存储</string>
+    <string name="setting_phone_files_hint">共享文件夹：智能体只能看到手机上的“CLI Deck”文件夹，在终端中位于 /root/phone。全部存储：整个内部存储，位于 /sdcard。停止 → 启动后生效。</string>
+    <string name="phone_files_warn_title">文件访问</string>
+    <string name="phone_files_shared_body">智能体将能读取并修改手机上“CLI Deck”文件夹内的所有内容（位于 /root/phone），除此之外什么都不行。只放你愿意让它们看到的内容。Android 会请求存储权限。继续？</string>
+    <string name="phone_files_all_body">智能体将能读取、修改并删除存储中的任何文件：照片、文档、下载、其他应用的文件。被欺骗的智能体可能泄露或毁坏它们。建议选择“仅共享文件夹”。Android 会请求存储权限。确定使用全部存储？</string>
+    <string name="phone_permission_denied">未授予权限：该功能保持关闭。</string>
+    <string name="phone_files_allfiles">请在打开的页面中为此应用开启“允许访问所有文件”。</string>
+    <string name="phone_confirm_channel">智能体的请求</string>
+    <string name="phone_allow">允许</string>
+    <string name="phone_deny">拒绝</string>
+    <string name="phone_ask_connect">有智能体想让此手机连接 Wi-Fi 网络“%1$s”。</string>
+    <string name="phone_ask_wifi_on">有智能体想打开 Wi-Fi。</string>
+    <string name="phone_ask_wifi_off">有智能体想关闭 Wi-Fi。</string>
 </resources>

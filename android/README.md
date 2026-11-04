@@ -44,4 +44,16 @@ How it works: the app opens a small HTTP server on loopback with a random token 
 only to the deck server (inside proot). The deck server exposes it to agents as `clideck phone battery|device|notify`
 and as one MCP tool, `phone`, which exists only when access is on. Every request is written to the log, and
 notifications are limited to 6 a minute. Today: battery (percent, charging, temperature), device info and
-notifications. Wi-Fi, files and background tasks are planned and will ask for their own permissions.
+notifications, plus two opt-in capabilities with their own switch, warning and permission:
+
+- **Wi-Fi** (`clideck phone wifi status|scan|on|off|connect "<ssid>" [--password P]`): status and scans only need the
+  location permission (Android hides Wi-Fi names without it). Connecting, switching or turning Wi-Fi on/off always
+  shows a notification with Allow / Deny; no answer in 30 s counts as Deny. The app targets Android 9 on purpose so the
+  older Wi-Fi calls keep working on newer versions, but some makers still block them: failures are reported, and I
+  could not verify every phone.
+- **Files**: "Shared folder only" binds the phone's `CLI Deck` folder at `/root/phone` inside the Ubuntu (agents see
+  only that); "All phone storage" binds the whole internal storage at `/sdcard`. Applies after Stop > Start.
+  The phone's storage has no symlinks or permissions, so use it to exchange files, not to keep git repositories.
+  Newer Android also needs "Allow access to all files" for the app; the settings screen opens that page when needed.
+
+Background tasks (the drawer) and "notify me when a terminal goes quiet" are described in the main README.

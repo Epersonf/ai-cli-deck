@@ -18,6 +18,11 @@ const NotifyBody = z.object({
   text: z.string().min(1).max(400),
   title: z.string().max(80).optional(),
 });
+const WifiConnectBody = z.object({
+  ssid: z.string().min(1).max(64),
+  password: z.string().max(100).optional(),
+});
+const WifiEnableBody = z.object({ on: z.boolean() });
 const ReasonBody = z.object({ reason: z.string().min(1).max(500) });
 
 /** HTTP face of the agent tools, used by the `clideck` command. Loopback only. */
@@ -45,6 +50,15 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
   );
   app.get(`${base}/phone/battery`, (request) => tools(request.params).phoneBattery());
   app.get(`${base}/phone/device`, (request) => tools(request.params).phoneDevice());
+  app.get(`${base}/phone/wifi`, (request) => tools(request.params).phoneWifi());
+  app.get(`${base}/phone/wifi/scan`, (request) => tools(request.params).phoneWifiScan());
+  app.post(`${base}/phone/wifi/connect`, (request) => {
+    const { ssid, password } = parseWith(WifiConnectBody, request.body);
+    return tools(request.params).phoneWifiConnect(ssid, password);
+  });
+  app.post(`${base}/phone/wifi/enable`, (request) =>
+    tools(request.params).phoneWifiEnable(parseWith(WifiEnableBody, request.body).on),
+  );
   app.post(`${base}/phone/notify`, (request) => {
     const { text, title } = parseWith(NotifyBody, request.body);
     return tools(request.params).phoneNotify(text, title);

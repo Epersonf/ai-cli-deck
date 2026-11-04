@@ -12,13 +12,23 @@ export type Command =
   | { name: 'meta'; key: string | null; value: string | null }
   | { name: 'handoff'; text: string | null }
   | { name: 'task'; action: string; args: string[] }
-  | { name: 'phone'; action: 'battery' | 'device' | 'notify'; text: string; title: string }
+  | { name: 'phone'; action: string; text: string; title: string; args: string[] }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
   | { name: 'setup'; provider: string | null }
   | { name: 'profile'; args: string[] }
   | ({ name: 'ensure-key' } & EnsureKey);
+
+const PHONE_USAGE =
+  'usage: clideck phone battery | device | notify "<text>" [--title "<title>"] | wifi status|scan|on|off|connect "<ssid>" [--password P]';
+
+function parseWifi(words: readonly string[]): Parsed {
+  const [verb = 'status', ...args] = words;
+  const known = ['status', 'scan', 'on', 'off', 'connect'];
+  if (!known.includes(verb) || (verb === 'connect' && !args[0])) return fail(PHONE_USAGE);
+  return ok({ name: 'phone', action: `wifi-${verb}`, text: '', title: '', args });
+}
 
 export type Parsed = { ok: true; command: Command } | { ok: false; error: string };
 
@@ -66,9 +76,11 @@ export function parseArgs(argv: readonly string[]): Parsed {
       const title = titleAt >= 0 ? (words[titleAt + 1] ?? '') : '';
       const message = (titleAt >= 0 ? words.slice(0, titleAt) : words).join(' ').trim();
       if (action === 'battery' || action === 'device')
-        return ok({ name, action, text: '', title: '' });
-      if (action === 'notify' && message !== '') return ok({ name, action, text: message, title });
-      return fail('usage: clideck phone battery | device | notify "<text>" [--title "<title>"]');
+        return ok({ name, action, text: '', title: '', args: [] });
+      if (action === 'notify' && message !== '')
+        return ok({ name, action, text: message, title, args: [] });
+      if (action === 'wifi') return parseWifi(words);
+      return fail(PHONE_USAGE);
     }
     case 'handoff':
       return ok({ name, text: text === '' ? null : text });

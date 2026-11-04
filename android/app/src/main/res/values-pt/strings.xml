@@ -54,4 +54,24 @@
     <string name="phone_enable">Ativar</string>
     <string name="phone_notif_off">As notificações estão desligadas para este app. Ligue-as na página que vai abrir.</string>
     <string name="phone_channel">Notificações dos agentes</string>
+    <string name="setting_phone_wifi">Wi-Fi</string>
+    <string name="setting_phone_wifi_hint">Permite que agentes vejam a rede atual e as próximas e (só depois de você tocar em Permitir numa notificação) conectem, troquem ou liguem/desliguem o Wi-Fi. Pede a permissão de localização, que o Android exige para ler nomes de Wi-Fi.</string>
+    <string name="phone_wifi_warn_title">Acesso ao Wi-Fi</string>
+    <string name="phone_wifi_warn_body">Os agentes poderão ver em qual Wi-Fi você está e quais há por perto, o que pode revelar onde você está. Mudar o Wi-Fi sempre exige seu toque em Permitir. O Android vai pedir a permissão de localização. Ativar o acesso ao Wi-Fi?</string>
+    <string name="setting_phone_files">Arquivos</string>
+    <string name="files_off">Desligado</string>
+    <string name="files_shared">Só uma pasta compartilhada</string>
+    <string name="files_all">Todo o armazenamento</string>
+    <string name="setting_phone_files_hint">Pasta compartilhada: os agentes veem só a pasta “CLI Deck” do celular, em /root/phone no terminal. Todo o armazenamento: o armazenamento interno inteiro, em /sdcard. Vale após Parar → Iniciar.</string>
+    <string name="phone_files_warn_title">Acesso a arquivos</string>
+    <string name="phone_files_shared_body">Os agentes poderão ler e alterar tudo na pasta “CLI Deck” do celular (em /root/phone), e nada além. Coloque lá só o que aceita que eles vejam. O Android vai pedir permissão de armazenamento. Continuar?</string>
+    <string name="phone_files_all_body">Os agentes poderão ler, alterar e apagar QUALQUER arquivo do armazenamento: fotos, documentos, downloads, arquivos de outros apps. Um agente enganado poderia vazá-los ou destruí-los. Prefira “Só uma pasta compartilhada”. O Android vai pedir permissão de armazenamento. Continuar com todo o armazenamento?</string>
+    <string name="phone_permission_denied">Permissão não concedida: esse recurso continua desligado.</string>
+    <string name="phone_files_allfiles">Ative “Permitir acesso a todos os arquivos” para este app na página que vai abrir.</string>
+    <string name="phone_confirm_channel">Pedidos dos agentes</string>
+    <string name="phone_allow">Permitir</string>
+    <string name="phone_deny">Negar</string>
+    <string name="phone_ask_connect">Um agente quer conectar este celular à rede Wi-Fi “%1$s”.</string>
+    <string name="phone_ask_wifi_on">Um agente quer ligar o Wi-Fi.</string>
+    <string name="phone_ask_wifi_off">Um agente quer desligar o Wi-Fi.</string>
 </resources>
