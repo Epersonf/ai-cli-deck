@@ -136,6 +136,10 @@ each session stays bound to the profile it was started with. They are stored in
 ## Talking back to the deck
 
 Inside any session, `clideck help` lists the commands (`title`, `preview`, `sessions`, `worktree`, `status`...).
+Agents can also name their terminal (`clideck title`) and save how to continue their chat
+(`clideck resume "--resume <chat id>"`; `clideck meta` keeps other small notes). The deck stores
+only that pointer, never the conversation: when a terminal has ended, **Resume chat** restarts the same CLI,
+folder and profile with those arguments and the CLI reloads its own saved chat.
 Run `clideck install` once to get `/clideck help` as a slash command in Claude Code and Codex.
 Claude sessions also get the MCP server automatically. See [docs/protocol.md](docs/protocol.md).
 

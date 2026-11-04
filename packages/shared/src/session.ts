@@ -25,6 +25,8 @@ export const SessionSchema = z.object({
   name: z.string().nullable().default(null),
   /** Set for a sub-terminal opened from another session (e.g. a plain shell in a folder, for git). */
   parentId: z.string().nullable().default(null),
+  /** Small notes the agent keeps for itself (e.g. the id of its chat). Only `resume` means something to the deck. */
+  meta: z.record(z.string(), z.string()).default({}),
 });
 export type Session = z.infer<typeof SessionSchema>;
 
@@ -38,6 +40,20 @@ export const CreateSessionBodySchema = z.object({
   parentId: z.string().min(1).nullable().optional(),
 });
 export type CreateSessionBody = z.infer<typeof CreateSessionBodySchema>;
+
+/** Key whose value is the argument list that makes the session's own CLI continue its chat. */
+export const RESUME_KEY = 'resume';
+export const META_LIMITS = {
+  keys: 12,
+  keyLength: 32,
+  valueLength: 500,
+  totalLength: 3000,
+} as const;
+
+export const RestartSessionBodySchema = z.object({
+  /** true: continue the chat saved under the "resume" note; false: start a fresh chat. */
+  resume: z.boolean().default(true),
+});
 
 export const ProviderStatusSchema = z.enum(['ready', 'missing']);
 export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;

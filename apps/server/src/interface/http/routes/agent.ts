@@ -9,6 +9,8 @@ const Params = z.object({ sessionId: z.string().min(1) });
 const RequestParams = Params.extend({ requestId: z.string().min(1) });
 const UrlBody = z.object({ url: z.string().min(1) });
 const TitleBody = z.object({ title: z.string().max(200) });
+const MetaQuery = z.object({ key: z.string().min(1).optional() });
+const MetaBody = z.object({ key: z.string().min(1), value: z.string() });
 const ReasonBody = z.object({ reason: z.string().min(1).max(500) });
 
 /** HTTP face of the agent tools, used by the `clideck` command. Loopback only. */
@@ -22,6 +24,14 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
   app.post(`${base}/title`, (request) =>
     tools(request.params).title(parseWith(TitleBody, request.body).title),
   );
+  app.get(`${base}/meta`, (request) => {
+    const { key } = parseWith(MetaQuery, request.query);
+    return tools(request.params).meta(key);
+  });
+  app.put(`${base}/meta`, (request) => {
+    const { key, value } = parseWith(MetaBody, request.body);
+    return tools(request.params).meta(key, value);
+  });
   app.post(`${base}/preview`, (request) =>
     tools(request.params).openPreview(parseWith(UrlBody, request.body).url),
   );

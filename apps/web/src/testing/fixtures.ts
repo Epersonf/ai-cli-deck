@@ -13,6 +13,7 @@ export const makeSession = (id: string, cwd: string, provider = 'shell'): Sessio
   sharedCwdWith: [],
   name: null,
   parentId: null,
+  meta: {},
 });
 
 export const SESSIONS = [makeSession('s1', '/work/alpha'), makeSession('s2', '/work/beta')];

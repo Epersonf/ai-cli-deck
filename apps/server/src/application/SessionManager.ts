@@ -13,8 +13,15 @@ import { resolveCwd } from './cwd.js';
 import { ScreenSaver } from './ScreenSaver.js';
 import { wirePty } from './ptyWiring.js';
 import type { SessionLauncher } from './SessionLauncher.js';
-import { tmuxNameFor } from './SessionLauncher.js';
 import { newSession } from './newSession.js';
+import { withMeta } from './sessionMeta.js';
+import { tmuxNameFor } from './SessionLauncher.js';
+import {
+  removeSession,
+  restartSession,
+  restoreSessions,
+  type LifecycleCtx,
+} from './sessionLifecycle.js';
 import { SessionRegistry, type Runtime } from './SessionRegistry.js';
 
 export interface SessionManagerDeps {
@@ -62,38 +69,22 @@ export class SessionManager {
     return this.get(session.id) ?? session;
   }
 
-  /** An ended session keeps showing the screen it had when it died. */
-  private async restoreEnded(saved: Session): Promise<void> {
-    const runtime = this.reg.runtimeOf({ ...saved, status: 'exited' });
-    await this.screens.restoreInto(saved.id, runtime.ring);
-    this.reg.runtimes.set(saved.id, runtime);
+  restore(): Promise<void> {
+    return restoreSessions(this.lifecycle());
   }
 
-  async restore(): Promise<void> {
-    const stored = await this.deps.store.load();
-    const live = new Set(await this.deps.mux.list());
-    for (const saved of stored) {
-      this.deps.ports.reserve(saved.port);
-      const canAttach = this.deps.mux.available && live.has(tmuxNameFor(saved.id));
-      if (canAttach) this.start(saved, () => this.deps.launcher.reattach(saved));
-      else await this.restoreEnded(saved);
-    }
+  restart(id: string, resume: boolean): Promise<void> {
+    return restartSession(this.lifecycle(), id, resume);
   }
 
-  async remove(id: string): Promise<void> {
-    const runtime = this.reg.require(id);
-    // Ending a session ends the sub-terminals opened from it.
-    for (const child of this.reg.childrenOf(id)) await this.remove(child.id);
-    try {
-      runtime.pty?.kill();
-    } catch {
-      // already exited: nothing left to kill
-    }
-    await this.deps.mux.kill(tmuxNameFor(id));
-    await this.screens.forget(id).catch(() => undefined);
-    this.deps.ports.release(runtime.session.port);
-    this.reg.runtimes.delete(id);
-    await this.reg.persist();
+  private lifecycle(): LifecycleCtx {
+    const { launcher, mux, store, ports } = this.deps;
+    const start = (session: Session, spawn: () => PtyHandle): void => this.start(session, spawn);
+    return { reg: this.reg, launcher, mux, store, ports, screens: this.screens, start };
+  }
+
+  remove(id: string): Promise<void> {
+    return removeSession(this.lifecycle(), id);
   }
 
   sendInput(id: string, data: string): void {
@@ -108,6 +99,14 @@ export class SessionManager {
     const runtime = this.reg.require(id);
     const captured = await this.deps.mux.capture(tmuxNameFor(id));
     return captured ?? runtime.ring.snapshot();
+  }
+
+  /** Sets a note kept with the session (an empty value removes it). */
+  async setMeta(id: string, key: string, value: string): Promise<Record<string, string>> {
+    const meta = withMeta(this.reg.require(id).session.meta, key, value);
+    this.reg.update(id, { meta });
+    await this.reg.persist();
+    return meta;
   }
 
   async rename(id: string, name: string | null): Promise<Session> {

@@ -142,3 +142,15 @@
 .prediction-layer .prediction-cursor {
   opacity: 0.55;
 }
+
+/* Over an ended terminal: restart it, or pick its chat up again. */
+.restart-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  transform: translateX(-50%);
+}

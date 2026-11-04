@@ -54,6 +54,7 @@ describe('MCP server', () => {
       'list_sessions',
       'open_preview',
       'propose_worktree',
+      'session_meta',
       'session_title',
       'suggest_new_tab',
     ]);

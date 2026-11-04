@@ -3,6 +3,7 @@ import {
   CreateSessionBodySchema,
   RenameProfileBodySchema,
   RenameSessionBodySchema,
+  RestartSessionBodySchema,
 } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
@@ -54,6 +55,13 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
   app.delete('/api/sessions/:id', async (request, reply) => {
     const { id } = parseWith(IdParams, request.params);
     await c.sessions.remove(id);
+    return reply.code(204).send();
+  });
+
+  app.post('/api/sessions/:id/restart', async (request, reply) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { resume } = parseWith(RestartSessionBodySchema, request.body ?? {});
+    await c.sessions.restart(id, resume);
     return reply.code(204).send();
   });
 

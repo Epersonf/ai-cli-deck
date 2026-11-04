@@ -9,5 +9,7 @@ export const AGENT_GUIDE = [
   "(navigate, snapshot, click, fill, type, press, screenshot) that drive a real Chromium shown in the user's preview pane.",
   'Once the first request makes the topic clear, name this terminal with `clideck title "<3-6 words>"`',
   '(MCP: session_title); rename only if the topic really changes.',
+  'Also save how to continue this chat: `clideck resume "<arguments for your own CLI>"` (MCP: session_meta);',
+  'ids only, never conversation content, so the deck can reopen this same chat if the terminal ends.',
   'Start dev servers on $PORT so sessions do not collide.',
 ].join(' ');

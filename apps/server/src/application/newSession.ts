@@ -26,5 +26,6 @@ export function newSession(
     sharedCwdWith: [],
     name: null,
     parentId: body.parentId ?? null,
+    meta: {},
   };
 }

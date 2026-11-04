@@ -48,6 +48,8 @@ export const api = {
   /** A plain shell in a folder of this session, opened as a sub-terminal. */
   openTerminal: (id: string, path: string) =>
     request(SessionSchema, 'POST', `${session(id)}/terminal`, { path }),
+  restartSession: (id: string, resume: boolean) =>
+    request(z.void(), 'POST', `${session(id)}/restart`, { resume }),
   renameSession: (id: string, name: string | null) =>
     request(SessionSchema, 'PATCH', session(id), { name }),
   createProfile: (body: CreateProfileBody) => request(ProfileSchema, 'POST', '/api/profiles', body),

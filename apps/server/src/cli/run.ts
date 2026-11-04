@@ -32,6 +32,12 @@ async function execute(
       return show(await call(deck, 'GET', '/whoami'));
     case 'sessions':
       return show(await call(deck, 'GET', '/sessions'));
+    case 'meta': {
+      if (command.value !== null && command.key !== null)
+        return show(await call(deck, 'PUT', '/meta', { key: command.key, value: command.value }));
+      const query = command.key === null ? '' : `?key=${encodeURIComponent(command.key)}`;
+      return show(await call(deck, 'GET', `/meta${query}`));
+    }
     case 'title': {
       const reply = (await (command.title === null
         ? call(deck, 'GET', '/title')

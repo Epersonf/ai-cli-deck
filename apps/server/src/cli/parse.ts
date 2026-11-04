@@ -9,6 +9,7 @@ export type Command =
   | { name: 'preview'; url: string }
   | { name: 'newtab'; url: string }
   | { name: 'title'; title: string | null }
+  | { name: 'meta'; key: string | null; value: string | null }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
@@ -40,6 +41,18 @@ export function parseArgs(argv: readonly string[]): Parsed {
       return text === ''
         ? fail(`usage: clideck ${name} <url|port>`)
         : ok({ name, url: normalizeUrl(text) });
+    case 'meta': {
+      const [verb = 'list', key, ...value] = rest;
+      if (verb === 'list') return ok({ name, key: null, value: null });
+      if (verb === 'get' && key) return ok({ name, key, value: null });
+      if (verb === 'set' && key) return ok({ name, key, value: value.join(' ') });
+      if (verb === 'del' && key) return ok({ name, key, value: '' });
+      return fail('usage: clideck meta [get <key> | set <key> "<value>" | del <key>]');
+    }
+    case 'resume':
+      return text === ''
+        ? fail('usage: clideck resume "<arguments that continue this chat>"')
+        : ok({ name: 'meta', key: 'resume', value: text });
     case 'title':
       return ok({ name, title: text === '' ? null : text });
     case 'worktree':

@@ -49,6 +49,16 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
       return { title: (await deps.sessions.rename(sessionId, clean === '' ? null : clean)).name };
     },
 
+    /**
+     * Notes kept with this session, e.g. the id of its chat so it can be resumed. No key: all of them;
+     * a key alone: that value; key and value: save it (an empty value removes it).
+     */
+    meta: async (key?: string, value?: string) => {
+      if (key === undefined) return self().meta;
+      if (value === undefined) return { [key]: self().meta[key] ?? null };
+      return deps.sessions.setMeta(sessionId, key, value);
+    },
+
     proposeWorktree: (reason: string) => {
       const request = deps.approvals.propose(self().id, reason);
       return { status: 'pending' as const, requestId: request.id };

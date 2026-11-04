@@ -12,6 +12,7 @@ import { attachWheelScroll } from './wheelScroll';
 import { createLatencyMeter, type Latency } from './latencyMeter';
 import { attachLocalEcho } from './localEcho';
 import { openLink } from './openLink';
+import { RestartBar } from './RestartBar';
 import { tameMobileKeyboard } from './mobileKeyboard';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { TERMINAL_THEME } from './theme';
@@ -74,6 +75,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
       onClose: () => setOnline(false),
       onMessage: (message) => {
         if (message.type === 'pong') meter.pong();
+        if (message.type === 'status' && message.session.status === 'running') claimSize(); // restarted
         if (message.type === 'output' && !message.replay) meter.output();
         dispatchMessage(sessionId, message, {
           write: (bytes) => term.write(bytes, echo.written),
@@ -135,6 +137,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   return (
     <div className="terminal-wrap">
       <div ref={host} className="terminal-host" />
+      <RestartBar sessionId={sessionId} />
       {online && latency.net !== null && (
         <div className="terminal-latency" title={t('terminal.latencyTip')}>
           {`${Math.round(latency.net)} ms`}
