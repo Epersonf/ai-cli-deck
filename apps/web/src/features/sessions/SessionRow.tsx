@@ -1,8 +1,9 @@
 import type { Session } from '@deck/shared';
 import { useState, type FormEvent } from 'react';
 import { useT } from '../../shared/i18n/store';
-import { PencilIcon } from '../../shared/ui/Icons';
+import { PencilIcon, TransferIcon } from '../../shared/ui/Icons';
 import { KebabMenu } from '../../shared/ui/KebabMenu';
+import { useFork } from './forkStore';
 import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
 import { useCloseSession } from './useCloseSession';
@@ -72,6 +73,15 @@ export function SessionRow({ session, index, active, onPick }: Props) {
             icon: <PencilIcon size={16} />,
             onSelect: () => (setName(session.name ?? ''), setEditing(true)),
           },
+          ...(session.parentId === null && session.provider !== 'shell'
+            ? [
+                {
+                  label: t('fork.menu'),
+                  icon: <TransferIcon size={16} />,
+                  onSelect: () => useFork.getState().open(session),
+                },
+              ]
+            : []),
           { label: t('tabs.closeAria'), danger: true, onSelect: () => close(session) },
         ]}
       />

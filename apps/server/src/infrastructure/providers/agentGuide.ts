@@ -11,5 +11,7 @@ export const AGENT_GUIDE = [
   '(MCP: session_title); rename only if the topic really changes.',
   'Also save how to continue this chat: `clideck resume "<arguments for your own CLI>"` (MCP: session_meta);',
   'ids only, never conversation content, so the deck can reopen this same chat if the terminal ends.',
+  'If your CLI can fork a chat, save that too: `clideck fork "<arguments>"`.',
+  'Write a handoff (`clideck handoff "<text>"`) ONLY when a message from [deck] asks you to, never on your own.',
   'Start dev servers on $PORT so sessions do not collide.',
 ].join(' ');

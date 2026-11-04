@@ -4,7 +4,10 @@ import type { Container } from '../container.js';
 
 const TITLE_MAX = 60;
 
-export type AgentDeps = Pick<Container, 'sessions' | 'approvals' | 'preview' | 'browser'>;
+export type AgentDeps = Pick<
+  Container,
+  'sessions' | 'handoffs' | 'approvals' | 'preview' | 'browser'
+>;
 
 /**
  * Everything an agent may do, scoped to ONE session. Shared by the MCP tools and the `clideck`
@@ -58,6 +61,10 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
       if (value === undefined) return { [key]: self().meta[key] ?? null };
       return deps.sessions.setMeta(sessionId, key, value);
     },
+
+    /** Leaves notes for whoever continues this chat. The deck asks for them; agents never write them unprompted. */
+    handoff: (text?: string) =>
+      text === undefined ? deps.handoffs.info(sessionId) : deps.handoffs.save(sessionId, text),
 
     proposeWorktree: (reason: string) => {
       const request = deps.approvals.propose(self().id, reason);

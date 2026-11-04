@@ -8,6 +8,8 @@ Commands:
   sessions                 Other sessions open in the deck
   title ["<name>"]         Name this terminal in the deck (no argument: print the current name)
   resume "<args>"          Save how to continue this chat, e.g. resume "--resume <chat id>" (ids only)
+  fork "<args>"            Save the arguments that make your CLI fork this chat (same profile)
+  handoff "<text>"|-       Leave notes for whoever continues this chat; only when the deck asks ("-" reads stdin)
   meta [get|set|del ...]   Notes kept with this terminal (no argument: list them)
   port                     Print this session's PORT (use it for dev servers)
   preview <url|port>       Open a localhost page in this session's preview panel

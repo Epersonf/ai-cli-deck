@@ -6,6 +6,7 @@ import { Workspace } from './Workspace';
 import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { ConfirmHost } from './features/confirm/ConfirmHost';
+import { ForkHost } from './features/sessions/ForkDialog';
 import { ProfileDialog } from './features/sessions/ProfileDialog';
 import { LoginScreen } from './features/auth/LoginScreen';
 import { useLayout } from './features/layout/layoutStore';
@@ -132,6 +133,7 @@ export function App() {
         />
       )}
       <ApprovalsPanel />
+      <ForkHost />
       <ConfirmHost />
     </div>
   );

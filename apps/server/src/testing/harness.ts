@@ -1,10 +1,18 @@
 import type { Session } from '@deck/shared';
+import { HandoffService } from '../application/HandoffService.js';
 import { PortAllocator } from '../application/PortAllocator.js';
 import { SessionLauncher } from '../application/SessionLauncher.js';
 import { SessionManager } from '../application/SessionManager.js';
 import { EventBus, type DeckEvent } from '../domain/events.js';
 import { createProviderRegistry } from '../infrastructure/providers/registry.js';
-import { FakeMux, FakePtyPort, FakeScrollback, FakeStore, FakeSystem } from './fakes.js';
+import {
+  FakeHandoffs,
+  FakeMux,
+  FakePtyPort,
+  FakeScrollback,
+  FakeStore,
+  FakeSystem,
+} from './fakes.js';
 
 export interface HarnessOptions {
   tmux?: boolean;
@@ -42,7 +50,9 @@ export function createHarness(options: HarnessOptions = {}) {
     bus,
     replayBytes: 1024,
   });
-  return { sessions, ptyPort, mux, store, scrollback, system, bus, events };
+  const handoffStore = new FakeHandoffs();
+  const handoffs = new HandoffService(sessions, handoffStore, () => Promise.resolve());
+  return { sessions, handoffs, handoffStore, ptyPort, mux, store, scrollback, system, bus, events };
 }
 
 export const customBody = (cwd = '/work', useWorktree = false) => ({

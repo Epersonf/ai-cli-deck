@@ -198,3 +198,13 @@ button.danger {
 .drawer .session-list li {
   min-width: 0;
 }
+
+/* A checkbox with its text on one line (fork dialog). */
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.check-row input {
+  width: auto;
+}

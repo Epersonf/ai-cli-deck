@@ -43,6 +43,8 @@ export type CreateSessionBody = z.infer<typeof CreateSessionBodySchema>;
 
 /** Key whose value is the argument list that makes the session's own CLI continue its chat. */
 export const RESUME_KEY = 'resume';
+/** Key whose value is the argument list that makes the session's own CLI fork its chat (same profile). */
+export const FORK_KEY = 'fork';
 export const META_LIMITS = {
   keys: 12,
   keyLength: 32,
@@ -80,4 +82,14 @@ export const RenameSessionBodySchema = z.object({
     .max(60)
     .transform((value) => (value === '' ? null : value))
     .nullable(),
+});
+
+export const HandoffInfoSchema = z.object({ updatedAt: z.string(), bytes: z.number().int() });
+export type HandoffInfo = z.infer<typeof HandoffInfoSchema>;
+
+export const ForkSessionBodySchema = z.object({
+  /** Profile of the new terminal; the same one when omitted. */
+  provider: z.string().min(1).optional(),
+  /** Start from the handoff note when the CLI cannot fork natively. */
+  useHandoff: z.boolean().default(true),
 });

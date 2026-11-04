@@ -55,6 +55,7 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
   app.delete('/api/sessions/:id', async (request, reply) => {
     const { id } = parseWith(IdParams, request.params);
     await c.sessions.remove(id);
+    await c.handoffs.forget(id);
     return reply.code(204).send();
   });
 

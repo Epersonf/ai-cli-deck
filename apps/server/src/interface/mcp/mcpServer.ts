@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { DeckError } from '../../domain/errors.js';
 import type { AgentTools } from '../agent/agentTools.js';
+import { registerBrowserTools } from './browserTools.js';
 import { run, runAsync } from './mcpResult.js';
 
 /** One MCP server per request, bound to the calling session. No tool runs git or writes files. */
@@ -30,6 +30,15 @@ export function buildMcpServer(tools: AgentTools): McpServer {
       inputSchema: { key: z.string().min(1).optional(), value: z.string().optional() },
     },
     ({ key, value }) => runAsync(() => tools.meta(key, value)),
+  );
+  server.registerTool(
+    'session_handoff',
+    {
+      description:
+        'Write the handoff notes for whoever continues this chat (done, what is left, decisions, key files). Only when the deck asks you to. No text: check whether one exists.',
+      inputSchema: { text: z.string().max(8000).optional() },
+    },
+    ({ text }) => runAsync(() => tools.handoff(text)),
   );
   server.registerTool(
     'propose_worktree',
@@ -68,77 +77,6 @@ export function buildMcpServer(tools: AgentTools): McpServer {
     ({ requestId }) => run(() => tools.requestStatus(requestId)),
   );
 
-  const target = z
-    .string()
-    .min(1)
-    .describe('Playwright selector: CSS, or text=Sign in, role=button[name="Save"], etc.');
-  server.registerTool(
-    'browser_navigate',
-    {
-      description:
-        "Open an http(s) address in the deck's real Chromium (shown to the user in the Preview pane). Works for localhost and the internet.",
-      inputSchema: { url: z.string().min(1).describe('URL, host or just a port') },
-    },
-    ({ url }) => runAsync(() => tools.browserNavigate(url)),
-  );
-  server.registerTool(
-    'browser_snapshot',
-    { description: 'Accessibility outline (text) of the current page: read this to see the page.' },
-    () => runAsync(() => tools.browserOutline()),
-  );
-  server.registerTool(
-    'browser_screenshot',
-    { description: 'Screenshot (JPEG) of the current page.' },
-    async () => {
-      try {
-        const image = await tools.browserScreenshot();
-        return {
-          content: [
-            { type: 'image' as const, data: image.toString('base64'), mimeType: 'image/jpeg' },
-          ],
-        };
-      } catch (error) {
-        if (!(error instanceof DeckError)) throw error;
-        return { content: [{ type: 'text' as const, text: error.message }], isError: true };
-      }
-    },
-  );
-  server.registerTool(
-    'browser_click',
-    { description: 'Click an element of the current page.', inputSchema: { target } },
-    ({ target: t }) => runAsync(() => tools.browserClick(t)),
-  );
-  server.registerTool(
-    'browser_fill',
-    {
-      description: 'Replace the text of an input/textarea.',
-      inputSchema: { target, text: z.string().max(10000) },
-    },
-    ({ target: t, text }) => runAsync(() => tools.browserFill(t, text)),
-  );
-  server.registerTool(
-    'browser_type',
-    {
-      description: 'Type text into the focused element.',
-      inputSchema: { text: z.string().min(1).max(2000) },
-    },
-    ({ text }) => runAsync(() => tools.browserType(text)),
-  );
-  server.registerTool(
-    'browser_press',
-    {
-      description: 'Press a key, e.g. Enter, Tab, Escape, ArrowDown, Control+A.',
-      inputSchema: { key: z.string().min(1).max(40) },
-    },
-    ({ key }) => runAsync(() => tools.browserPress(key)),
-  );
-  server.registerTool(
-    'browser_scroll',
-    {
-      description: 'Scroll the page vertically by pixels (positive = down).',
-      inputSchema: { dy: z.number().min(-5000).max(5000) },
-    },
-    ({ dy }) => runAsync(() => tools.browserScroll(dy)),
-  );
+  registerBrowserTools(server, tools);
   return server;
 }

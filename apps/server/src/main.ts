@@ -33,6 +33,8 @@ import { createConfiguredProvider } from './infrastructure/providers/configured.
 import { createProfileService } from './infrastructure/providers/profileWiring.js';
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
+import { HandoffService } from './application/HandoffService.js';
+import { FileHandoffStore } from './infrastructure/store/FileHandoffStore.js';
 import { FileScrollbackStore } from './infrastructure/store/FileScrollbackStore.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
 import { runCommand } from './infrastructure/tmux/exec.js';
@@ -102,6 +104,7 @@ async function main(): Promise<void> {
 
   const app = await createApp({
     sessions,
+    handoffs: new HandoffService(sessions, new FileHandoffStore(join(paths.stateDir, 'handoffs'))),
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
     workspace: new WorkspaceService({ sessions, files: new FileReader(), git }),
     preview: new PreviewService(sessions, bus),

@@ -6,6 +6,7 @@ import { parseArgs, type Command } from './parse.js';
 import { addProfile, parseProfileArgs } from './profileCommand.js';
 import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
+import { readStdin } from './stdin.js';
 
 const show = (value: unknown): string => JSON.stringify(value, null, 2);
 
@@ -32,6 +33,11 @@ async function execute(
       return show(await call(deck, 'GET', '/whoami'));
     case 'sessions':
       return show(await call(deck, 'GET', '/sessions'));
+    case 'handoff': {
+      if (command.text === null) return show(await call(deck, 'GET', '/handoff'));
+      const text = command.text === '-' ? await readStdin() : command.text;
+      return show(await call(deck, 'PUT', '/handoff', { text }));
+    }
     case 'meta': {
       if (command.value !== null && command.key !== null)
         return show(await call(deck, 'PUT', '/meta', { key: command.key, value: command.value }));

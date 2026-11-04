@@ -4,6 +4,7 @@ import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
 import type { AuthService } from '../application/AuthService.js';
 import type { LoginThrottle } from '../application/LoginThrottle.js';
+import type { HandoffService } from '../application/HandoffService.js';
 import type { BrowserService } from '../application/BrowserService.js';
 import type { PreviewService } from '../application/PreviewService.js';
 import type { SessionManager } from '../application/SessionManager.js';
@@ -20,6 +21,7 @@ export interface SecurityOptions {
 /** Everything the transport layer needs, wired once in the composition root. */
 export interface Container {
   sessions: SessionManager;
+  handoffs: HandoffService;
   approvals: ApprovalService;
   workspace: WorkspaceService;
   preview: PreviewService;

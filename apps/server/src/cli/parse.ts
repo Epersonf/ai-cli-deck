@@ -10,6 +10,7 @@ export type Command =
   | { name: 'newtab'; url: string }
   | { name: 'title'; title: string | null }
   | { name: 'meta'; key: string | null; value: string | null }
+  | { name: 'handoff'; text: string | null }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
@@ -49,6 +50,12 @@ export function parseArgs(argv: readonly string[]): Parsed {
       if (verb === 'del' && key) return ok({ name, key, value: '' });
       return fail('usage: clideck meta [get <key> | set <key> "<value>" | del <key>]');
     }
+    case 'handoff':
+      return ok({ name, text: text === '' ? null : text });
+    case 'fork':
+      return text === ''
+        ? fail('usage: clideck fork "<arguments that fork this chat>"')
+        : ok({ name: 'meta', key: 'fork', value: text });
     case 'resume':
       return text === ''
         ? fail('usage: clideck resume "<arguments that continue this chat>"')

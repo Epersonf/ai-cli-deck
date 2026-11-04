@@ -1,5 +1,6 @@
 import type { Session } from '@deck/shared';
 import type {
+  HandoffStorePort,
   LaunchSpec,
   MultiplexerPort,
   PtyHandle,
@@ -118,5 +119,28 @@ export class FakeSystem implements SystemPort {
   }
   now(): Date {
     return new Date('2026-01-01T00:00:00.000Z');
+  }
+}
+
+export class FakeHandoffs implements HandoffStorePort {
+  readonly files = new Map<string, { text: string; updatedAt: string }>();
+  private clock = 0;
+  pathOf(id: string): string {
+    return `/handoffs/${id}.md`;
+  }
+  write(id: string, text: string): Promise<void> {
+    this.files.set(id, {
+      text,
+      updatedAt: new Date(Date.UTC(2026, 0, 1, 0, 0, ++this.clock)).toISOString(),
+    });
+    return Promise.resolve();
+  }
+  info(id: string) {
+    const file = this.files.get(id);
+    return Promise.resolve(file ? { updatedAt: file.updatedAt, bytes: file.text.length } : null);
+  }
+  remove(id: string): Promise<void> {
+    this.files.delete(id);
+    return Promise.resolve();
   }
 }

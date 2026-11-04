@@ -21,6 +21,7 @@ async function connect() {
   const tools = createAgentTools(
     {
       sessions: h.sessions,
+      handoffs: h.handoffs,
       approvals,
       preview: new PreviewService(h.sessions, h.bus),
       browser: new BrowserService(new FakeBrowserEngine()),
@@ -54,6 +55,7 @@ describe('MCP server', () => {
       'list_sessions',
       'open_preview',
       'propose_worktree',
+      'session_handoff',
       'session_meta',
       'session_title',
       'suggest_new_tab',

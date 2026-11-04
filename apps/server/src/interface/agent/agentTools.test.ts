@@ -20,6 +20,7 @@ async function setup() {
   const c = await h.sessions.create(customBody('/other', false));
   const deps = {
     sessions: h.sessions,
+    handoffs: h.handoffs,
     approvals,
     preview,
     browser: new BrowserService(new FakeBrowserEngine()),

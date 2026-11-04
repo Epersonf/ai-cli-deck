@@ -1,4 +1,11 @@
-import type { FileContent, FileEntry, GitStatus, Profile, Session } from '@deck/shared';
+import type {
+  FileContent,
+  FileEntry,
+  GitStatus,
+  HandoffInfo,
+  Profile,
+  Session,
+} from '@deck/shared';
 
 export interface LaunchSpec {
   command: string;
@@ -37,6 +44,14 @@ export interface SessionStorePort {
 export interface ScrollbackStorePort {
   load(id: string): Promise<Uint8Array | null>;
   save(id: string, data: Uint8Array): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
+/** The handoff note an agent writes when its chat is about to be forked or moved (one file per session). */
+export interface HandoffStorePort {
+  pathOf(id: string): string;
+  write(id: string, text: string): Promise<void>;
+  info(id: string): Promise<HandoffInfo | null>;
   remove(id: string): Promise<void>;
 }
 

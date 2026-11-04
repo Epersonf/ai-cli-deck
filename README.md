@@ -140,6 +140,10 @@ Agents can also name their terminal (`clideck title`) and save how to continue t
 (`clideck resume "--resume <chat id>"`; `clideck meta` keeps other small notes). The deck stores
 only that pointer, never the conversation: when a terminal has ended, **Resume chat** restarts the same CLI,
 folder and profile with those arguments and the CLI reloads its own saved chat.
+To fork a chat or move it to another profile, use ⋮ > Fork or move. In the same profile, if the agent saved
+how its CLI forks (`clideck fork "<args>"`), the CLI copies the chat itself. Otherwise the running agent is
+asked once, by a `[deck]` message, to leave handoff notes (`clideck handoff`, a file under the deck state
+folder, never in your repo) and the new chat starts from them. Agents never write handoffs on their own.
 Run `clideck install` once to get `/clideck help` as a slash command in Claude Code and Codex.
 Claude sessions also get the MCP server automatically. See [docs/protocol.md](docs/protocol.md).
 
