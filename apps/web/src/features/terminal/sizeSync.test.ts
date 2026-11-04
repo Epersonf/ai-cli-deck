@@ -1,24 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { createSizeSync } from './sizeSync';
 
-function setup(own = { cols: 100, rows: 30 }) {
+function setup(own = { cols: 100, rows: 30 }, start = own) {
   const term = {
-    ...own,
+    ...start,
     resize: (cols: number, rows: number) => Object.assign(term, { cols, rows }),
   };
   const sent: Array<[number, number]> = [];
   const flags: boolean[] = [];
-  const fitter = { fit: () => term.resize(own.cols, own.rows) };
+  const mirrored: Array<[number, number]> = [];
+  const fitter = {
+    fit: () => term.resize(own.cols, own.rows),
+    mirror: () => mirrored.push([term.cols, term.rows]),
+    propose: () => own,
+  };
   const sync = createSizeSync(
     term,
     fitter,
     (c, r) => sent.push([c, r]),
     (f) => flags.push(f),
   );
-  return { term, sync, sent, flags };
+  return { term, sync, sent, flags, mirrored };
 }
 
 describe('size sync between devices', () => {
+  it('after a reload, recognises its own size before it has fitted', () => {
+    const { sync, flags, term } = setup({ cols: 100, rows: 30 }, { cols: 80, rows: 24 });
+    sync.onServerSize(100, 30);
+    expect(sync.following).toBe(false);
+    expect(flags).toEqual([]);
+    expect([term.cols, term.rows]).toEqual([100, 30]);
+  });
+
   it('ignores the echo of its own size', () => {
     const { sync, flags, term } = setup();
     sync.onServerSize(100, 30);
@@ -27,14 +40,18 @@ describe('size sync between devices', () => {
     expect(term.cols).toBe(100);
   });
 
-  it('mirrors another device’s size and does not refit or report its own', () => {
-    const { sync, term, sent } = setup();
+  it('mirrors another device’s size, shrinking to fit, and does not refit or report its own', () => {
+    const { sync, term, sent, mirrored } = setup();
     sync.onServerSize(160, 48);
     expect(sync.following).toBe(true);
     expect([term.cols, term.rows]).toEqual([160, 48]);
-    sync.fit();
+    sync.fit(); // the window changed: shrink again, keep the size
     sync.sendIfOwner();
     expect([term.cols, term.rows]).toEqual([160, 48]);
+    expect(mirrored).toEqual([
+      [160, 48],
+      [160, 48],
+    ]);
     expect(sent).toEqual([]);
   });
 

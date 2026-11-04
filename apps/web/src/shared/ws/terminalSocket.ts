@@ -1,10 +1,12 @@
-import { ServerMessageSchema, TOKEN_QUERY, WS_PATH } from '@deck/shared';
+import { REPLAY_FRAME, ServerMessageSchema, TOKEN_QUERY, WS_PATH } from '@deck/shared';
 import type { ClientMessage, ServerMessage } from '@deck/shared';
 import { getToken } from '../api/token';
 
 export interface SocketHandlers {
   onOpen(): void;
   onMessage(message: ServerMessage): void;
+  /** Terminal bytes, straight from a binary frame; `replay` is the screen sent once on connect. */
+  onOutput(bytes: Uint8Array, replay: boolean): void;
   onClose(): void;
 }
 
@@ -36,6 +38,7 @@ export function openTerminalSocket(sessionId: string, handlers: SocketHandlers):
 
   const connect = (): void => {
     const ws = new WebSocket(socketUrl(sessionId));
+    ws.binaryType = 'arraybuffer';
     socket = ws;
     ws.onopen = () => {
       attempt = 0;
@@ -46,6 +49,11 @@ export function openTerminalSocket(sessionId: string, handlers: SocketHandlers):
       pingTimer = window.setInterval(() => send({ type: 'ping' }), PING_MS);
     };
     ws.onmessage = (event: MessageEvent<unknown>) => {
+      if (event.data instanceof ArrayBuffer) {
+        const frame = new Uint8Array(event.data);
+        if (frame.length > 1) handlers.onOutput(frame.subarray(1), frame[0] === REPLAY_FRAME);
+        return;
+      }
       if (typeof event.data !== 'string') return;
       try {
         const parsed = ServerMessageSchema.safeParse(JSON.parse(event.data));

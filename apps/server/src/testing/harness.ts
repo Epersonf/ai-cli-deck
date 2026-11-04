@@ -24,7 +24,7 @@ export interface HarnessOptions {
 
 export function createHarness(options: HarnessOptions = {}) {
   const ptyPort = new FakePtyPort();
-  const mux = new FakeMux(options.tmux ?? true, options.liveTmux ?? []);
+  const mux = new FakeMux(options.tmux ?? true, options.liveTmux ?? [], ptyPort);
   const store = new FakeStore(options.stored ?? []);
   const system = new FakeSystem();
   const scrollback = options.scrollback ?? new FakeScrollback();
@@ -33,7 +33,6 @@ export function createHarness(options: HarnessOptions = {}) {
   bus.subscribe((e) => events.push(e));
   const providers = createProviderRegistry();
   const launcher = new SessionLauncher({
-    pty: ptyPort,
     mux,
     providers,
     mcpBaseUrl: 'http://127.0.0.1:7842/mcp',

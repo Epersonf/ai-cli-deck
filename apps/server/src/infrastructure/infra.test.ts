@@ -51,16 +51,28 @@ describe('providers', () => {
 });
 
 describe('tmux and git helpers', () => {
-  it('builds a create-or-attach command on a private socket with the status bar off', () => {
-    const args = buildTmuxArgs('deck-s1', {
-      command: 'claude',
-      args: ['-x'],
-      env: { A: '1', TMUX: 'x' },
-      cwd: '/w',
-    });
-    expect(args.slice(0, 3)).toEqual(['-u', '-L', 'deck']);
+  const size = { cols: 100, rows: 30 };
+
+  it('builds a control-mode create-or-attach command on a private socket with the status bar off', () => {
+    const args = buildTmuxArgs(
+      'deck-s1',
+      { command: 'claude', args: ['-x'], env: { A: '1', TMUX: 'x' }, cwd: '/w' },
+      size,
+    );
+    expect(args.slice(0, 4)).toEqual(['-u', '-L', 'deck', '-C']);
     const at = args.indexOf('new-session');
-    expect(args.slice(at, at + 6)).toEqual(['new-session', '-A', '-s', 'deck-s1', '-c', '/w']);
+    expect(args.slice(at, at + 10)).toEqual([
+      'new-session',
+      '-A',
+      '-s',
+      'deck-s1',
+      '-x',
+      '100',
+      '-y',
+      '30',
+      '-c',
+      '/w',
+    ]);
     expect(args).toContain('A=1');
     expect(args).not.toContain('TMUX=x');
     expect(args.slice(args.indexOf('claude'), args.indexOf('claude') + 2)).toEqual([
@@ -70,13 +82,16 @@ describe('tmux and git helpers', () => {
     expect(args.indexOf('status')).toBeLessThan(at);
   });
 
-  it('gives the wheel to tmux (mouse on, deep history) and lets copies reach the browser clipboard', () => {
-    const args = buildTmuxArgs('deck-s1', { command: 'claude', args: [], env: {}, cwd: '/w' });
+  it('leaves the mouse and the scrollback to the browser terminal, and answers colour queries', () => {
+    const args = buildTmuxArgs(
+      'deck-s1',
+      { command: 'claude', args: [], env: {}, cwd: '/w' },
+      size,
+    );
     const option = (name: string): string | undefined => args[args.indexOf(name) + 1];
-    expect(option('mouse')).toBe('on');
+    expect(option('mouse')).toBe('off');
     expect(Number(option('history-limit'))).toBeGreaterThanOrEqual(10000);
-    expect(option('set-clipboard')).toBe('on');
-    expect(args.some((a) => a.includes('Ms=') && a.includes(']52;'))).toBe(true);
+    expect(option('window-style')).toBe('fg=#ecdcb8,bg=#120d08');
   });
 
   it('parses porcelain status', () => {

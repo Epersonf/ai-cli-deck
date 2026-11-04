@@ -2,15 +2,17 @@ import '@xterm/xterm/css/xterm.css';
 import type { Terminal } from '@xterm/xterm';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { openTerminalSocket } from '../../shared/ws/terminalSocket';
-import { useT } from '../../shared/i18n/store';
-import { createTerminal } from './createTerminal';
+import { FONT_SIZE, createTerminal } from './createTerminal';
 import { dispatchMessage } from './dispatch';
+import { createFitter, laidOut } from './fitter';
 import { attachImagePaste } from './pasteImage';
 import { createLatencyMeter, type Latency } from './latencyMeter';
 import { attachLocalEcho } from './localEcho';
 import { RestartBar } from './RestartBar';
+import { TerminalBadges } from './TerminalBadges';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { createSizeSync, type SizeSync } from './sizeSync';
+import { resyncWhenShown } from './scrollbarSync';
 import { attachTouchScroll } from './touchScroll';
 import type { ModifiersApi } from './useModifiers';
 
@@ -29,7 +31,6 @@ interface Props {
 const hasFinePointer = (): boolean => window.matchMedia('(pointer: fine)').matches;
 
 export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
-  const t = useT();
   const host = useRef<HTMLDivElement>(null);
   const syncRef = useRef<SizeSync | null>(null);
   const termRef = useRef<Terminal | null>(null);
@@ -42,7 +43,9 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   useEffect(() => {
     const element = host.current;
     if (!element) return;
-    const { term, fit } = createTerminal(element, sessionId);
+    // True once the server says tmux sits in between: tmux then answers the program's queries itself.
+    let upstream = false;
+    const { term, fit } = createTerminal(element, sessionId, () => upstream);
     termRef.current = term;
 
     const meter = createLatencyMeter();
@@ -57,32 +60,33 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
         claimIfActive();
       },
       onClose: () => setOnline(false),
+      onOutput: (bytes, replay) => {
+        if (!replay) meter.output();
+        term.write(bytes, echo.written);
+      },
       onMessage: (message) => {
         if (message.type === 'pong') meter.pong();
         if (message.type === 'size') sync.onServerSize(message.cols, message.rows);
-        if (message.type === 'status' && message.session.status === 'running') {
-          if (document.hasFocus()) sync.sendIfOwner(); // restarted: the new process needs our size
+        if (message.type === 'status') {
+          upstream = message.session.persistent;
+          // Restarted: the new process needs our size.
+          if (message.session.status === 'running' && document.hasFocus()) sync.sendIfOwner();
         }
-        if (message.type === 'output' && !message.replay) meter.output();
         dispatchMessage(sessionId, message, {
-          write: (bytes) => term.write(bytes, echo.written),
-          reset: () => term.reset(),
           note: (text) => term.write(`\r\n\x1b[2m[${text}]\x1b[0m\r\n`),
         });
       },
     });
     const sync = createSizeSync(
       term,
-      fit,
-      (cols, rows) => socket.send({ type: 'resize', cols, rows }),
+      createFitter(term, fit, element, FONT_SIZE),
+      // Only a terminal that is really on screen has a size worth giving the program.
+      (cols, rows) => laidOut(element) && socket.send({ type: 'resize', cols, rows }),
       setFollowing,
     );
     syncRef.current = sync;
     const send = (data: string): void => socket.send({ type: 'input', data });
-    apiRef.current = {
-      send,
-      applicationCursor: () => term.modes.applicationCursorKeysMode,
-    };
+    apiRef.current = { send, applicationCursor: () => term.modes.applicationCursorKeysMode };
     const probe = window.setInterval(() => {
       meter.ping();
       socket.send({ type: 'ping' });
@@ -99,17 +103,19 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
 
     const detachPaste = attachImagePaste(element, term, sessionId);
     const detachTouch = attachTouchScroll(term, element);
+    const detachShown = resyncWhenShown(term, element);
 
     let frame = 0;
     const observer = new ResizeObserver(() => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => element.clientWidth > 0 && sync.fit());
+      frame = requestAnimationFrame(() => sync.fit());
     });
     observer.observe(element);
 
     return () => {
       detachPaste();
       detachTouch();
+      detachShown();
       window.clearInterval(probe);
       window.removeEventListener('focus', claimIfActive);
       echo.dispose();
@@ -131,18 +137,12 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     <div className="terminal-wrap">
       <div ref={host} className={`terminal-host${following ? ' following' : ''}`} />
       <RestartBar sessionId={sessionId} />
-      {following && (
-        <button type="button" className="terminal-follow" onClick={() => syncRef.current?.claim()}>
-          {t('terminal.following')}
-        </button>
-      )}
-      {online && latency.net !== null && (
-        <div className="terminal-latency" title={t('terminal.latencyTip')}>
-          {`${Math.round(latency.net)} ms`}
-          {latency.echo !== null && ` · ${Math.round(latency.echo)} ms`}
-        </div>
-      )}
-      {!online && <div className="terminal-offline">{t('terminal.reconnecting')}</div>}
+      <TerminalBadges
+        online={online}
+        following={following}
+        latency={latency}
+        claim={() => syncRef.current?.claim()}
+      />
     </div>
   );
 }

@@ -5,25 +5,17 @@ import { showSidePane } from '../layout/layoutStore';
 import { usePreview } from '../preview/previewStore';
 import { useSessions } from '../sessions/sessionsStore';
 
-export const decodeBase64 = (data: string): Uint8Array =>
-  Uint8Array.from(atob(data), (char) => char.charCodeAt(0));
-
 export interface TerminalSink {
-  write(bytes: Uint8Array): void;
-  reset(): void;
   note(text: string): void;
 }
 
-/** Routes one server message to the terminal or to the matching feature store. */
+/** Routes one server message (terminal output comes separately, as binary frames) to its feature. */
 export function dispatchMessage(
   sessionId: string,
   message: ServerMessage,
   sink: TerminalSink,
 ): void {
   switch (message.type) {
-    case 'output':
-      sink.write(decodeBase64(message.data));
-      break;
     case 'status':
       useSessions.getState().upsert(message.session);
       break;

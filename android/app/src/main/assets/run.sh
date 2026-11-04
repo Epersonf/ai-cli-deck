@@ -38,25 +38,29 @@ if [ "$DECK_VERBOSE" = "1" ]; then
   diag "tmux pane output: $(tmux -L decktest capture-pane -p -t t 2>&1 | tr '\n' '|')"
   tmux -L decktest kill-server 2>&1
 
-  # The deck's real session path: node-pty spawning tmux with deck-style args and the full environment.
+  # The deck's real session path: a tmux control-mode client (tmux -C) with deck-style args and the full
+  # environment; keys go in with send-keys, the program's output comes back in %output lines.
   # In the background so it never delays startup; results show up in the log a few seconds later.
   cat > /tmp/diag-pty.cjs <<'JS'
-const pty = require('/opt/deck/node_modules/node-pty');
+const { spawn } = require('child_process');
 const argv = process.argv.slice(2);
 const env = { ...process.env, TERM: 'xterm-256color', COLORTERM: 'truecolor', LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8' };
 const envFlags = Object.entries(env).filter(([k]) => k !== 'TMUX' && k !== 'TMUX_PANE').flatMap(([k, v]) => ['-e', k + '=' + v]);
-const args = ['-u', '-L', 'decktest3', 'set-option', '-g', 'status', 'off', ';', 'new-session', '-A', '-s', 't3', '-c', '/root', ...envFlags, ...argv];
+const args = ['-u', '-L', 'decktest3', '-C', 'set-option', '-g', 'status', 'off', ';', 'new-session', '-A', '-s', 't3', '-x', '80', '-y', '24', '-c', '/root', ...envFlags, ...argv];
 let out = '';
+const unescape = (s) => s.replace(/\\([0-7]{3})/g, (_, o) => String.fromCharCode(parseInt(o, 8)));
 const clean = (s) => s.replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, '').replace(/\r/g, '<CR>').replace(/\n/g, '|').slice(-500);
-const done = (why, code) => { console.log('[verbose] node-pty session (' + argv.join(' ') + '): ' + why + ' exit=' + code + ' out=' + clean(out)); process.exit(0); };
-let p;
-try { p = pty.spawn('tmux', args, { name: 'xterm-256color', cols: 80, rows: 24, cwd: '/root', env }); }
-catch (e) { console.log('[verbose] node-pty spawn failed: ' + e.message); process.exit(0); }
-p.onData((d) => { out += d; });
-p.onExit((e) => done('exited', e.exitCode));
-setTimeout(() => p.write('echo HI_$((2+3))\r'), 3000);
-setTimeout(() => p.write('\r'), 4500);
-setTimeout(() => p.write('exit\r'), 5500);
+const done = (why, code) => { console.log('[verbose] tmux control session (' + argv.join(' ') + '): ' + why + ' exit=' + code + ' out=' + clean(out)); process.exit(0); };
+const p = spawn('tmux', args, { cwd: '/root', env });
+p.on('error', (e) => done('spawn failed: ' + e.message, 'none'));
+p.stdout.on('data', (d) => {
+  for (const line of d.toString('latin1').split('\n')) if (line.startsWith('%output ')) out += unescape(line.slice(line.indexOf(' ', 8) + 1));
+});
+p.on('exit', (code) => done('exited', code));
+const keys = (text) => p.stdin.write("send-keys -t =t3: -l -- '" + text + "'\nsend-keys -t =t3: Enter\n");
+setTimeout(() => keys('echo HI_$((2+3))'), 3000);
+setTimeout(() => keys(''), 4500);
+setTimeout(() => keys('exit'), 5500);
 setTimeout(() => done('timeout', 'none'), 12000);
 JS
   (

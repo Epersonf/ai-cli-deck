@@ -71,6 +71,13 @@ export class SessionRegistry {
     if (fresh) this.bus.publish({ kind: 'session', session: fresh });
   }
 
+  /** The program of `runtime` ended; a session removed or restarted meanwhile is left alone. */
+  ended(runtime: Runtime): void {
+    runtime.pty = null;
+    const { id } = runtime.session;
+    if (this.runtimes.get(id) === runtime) this.update(id, { status: 'exited' });
+  }
+
   persist(): Promise<void> {
     return this.store.save([...this.runtimes.values()].map((r) => r.session));
   }

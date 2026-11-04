@@ -65,7 +65,8 @@ async function main(): Promise<void> {
     realStatusDeps(),
   );
   const system = new SystemAdapter();
-  const mux = await detectMultiplexer(runCommand);
+  const pty = new NodePtyAdapter();
+  const mux = await detectMultiplexer(runCommand, pty);
   const git = new GitCli(runCommand);
   const bus = new EventBus();
   const shellName = defaultShell(process.env, process.platform);
@@ -76,7 +77,6 @@ async function main(): Promise<void> {
     defaultShell: shellName,
   });
   const launcher = new SessionLauncher({
-    pty: new NodePtyAdapter(),
     mux,
     providers: providers,
     mcpBaseUrl: `http://127.0.0.1:${config.port}${MCP_PATH}`,

@@ -15,9 +15,17 @@
 - **Providers are data.** Built-ins (`shell`, `claude`, `codex`, `claude-deepseek`, `custom`) are one
   file each; any other CLI is declared in `config.json` (command, args, env, `mcpArgs`) with no code.
 - **tmux on a private socket** (`-L deck`) so deck sessions never mix with the user's own tmux.
-  Options (`status off`, `escape-time`) are set before `new-session -A`, which blocks until detach.
+- **tmux keeps programs alive; the browser terminal is the terminal.** The server talks to tmux in
+  control mode (`tmux -C`, `TmuxControlClient`): `%output` lines carry the program's own bytes, which go
+  to xterm.js unchanged, so the browser keeps the only scrollback (one scroll, local, no round trip) and
+  sees everything a native terminal would (clearing the scrollback, synchronized output, OSC 52, links).
+  Keys go in with `send-keys -l`. tmux's mouse is off and its own history is only used to rebuild the
+  screen for a device that connects later. tmux still answers the program's queries (cursor position,
+  colours from `window-style`), so xterm keeps quiet on those (`upstreamReplies.ts`). Drawing through
+  `tmux attach` instead meant two scrollbacks (tmux's and xterm's) and lost `ESC [3J`, so every redraw of
+  an agent's chat piled up again in the browser's scrollback.
 - **Reattach without a provider.** After a server restart, live `deck-*` tmux sessions are
-  re-attached with `tmux attach` (the provider is not needed again).
+  re-attached with a control-mode `attach-session` (the provider is not needed again).
 - **Screens survive a dead machine.** `ScreenSaver` writes each live session's screen (tmux
   `capture-pane`, or the ring buffer without tmux) to `<state dir>/scrollback/<id>.bin` every 5 s
   when there was output. tmux dies with Termux, so on restart an ended session replays that file

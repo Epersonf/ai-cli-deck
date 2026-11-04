@@ -21,6 +21,11 @@ export interface PtyHandle {
   onData(listener: (data: Uint8Array) => void): void;
   onExit(listener: (code: number | null) => void): void;
   kill(): void;
+  /**
+   * The screen as it is (scrollback, cursor, modes), handed over at an exact point of the output: what
+   * `onData` gave before `done` runs is part of it, what comes after is not. Null when it is not available.
+   */
+  snapshot?(done: (screen: Uint8Array | null) => void): void;
 }
 
 export interface PtyPort {
@@ -28,9 +33,12 @@ export interface PtyPort {
 }
 
 export interface MultiplexerPort {
+  /** True when sessions outlive the server (tmux). */
   readonly available: boolean;
-  wrap(name: string, spec: LaunchSpec): LaunchSpec;
-  attach(name: string, spec: LaunchSpec): LaunchSpec;
+  /** Starts `spec` as the session `name`. */
+  launch(name: string, spec: LaunchSpec, size: { cols: number; rows: number }): PtyHandle;
+  /** Connects again to a session that outlived a server restart. */
+  reattach(name: string, spec: LaunchSpec): PtyHandle;
   list(): Promise<string[]>;
   capture(name: string): Promise<Uint8Array | null>;
   kill(name: string): Promise<void>;

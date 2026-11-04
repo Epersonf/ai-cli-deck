@@ -6,27 +6,34 @@ All shapes live in `packages/shared` as zod schemas; types are inferred from the
 
 Client to server (JSON text frames):
 
-| type     | fields         | meaning                |
-| -------- | -------------- | ---------------------- |
-| `input`  | `data: string` | keystrokes for the pty |
-| `resize` | `cols`, `rows` | terminal size          |
-| `ping`   | -              | keep-alive             |
+| type     | fields         | meaning                         |
+| -------- | -------------- | ------------------------------- |
+| `input`  | `data: string` | keystrokes for the pty          |
+| `resize` | `cols`, `rows` | terminal size (at least 10 x 2) |
+| `ping`   | -              | keep-alive                      |
 
-Server to client:
+Server to client, terminal output: **binary frames**, no JSON and no base64. The first byte is `0`
+(`OUTPUT_FRAME`, live output) or `1` (`REPLAY_FRAME`, the screen sent once on connect); the rest are
+the program's bytes, written to xterm as they are.
 
-| type               | fields                    | meaning                                            |
-| ------------------ | ------------------------- | -------------------------------------------------- |
-| `output`           | `data` (base64), `replay` | raw pty bytes; `replay: true` is the screen replay |
-| `status`           | `session`                 | session changed (status, cwd, preview, ...)        |
-| `exit`             | `code`                    | the process ended                                  |
-| `approval-request` | `request`                 | a pending approval for this session                |
-| `preview-open`     | `url`                     | open this localhost URL in the preview             |
-| `new-tab`          | `url`                     | offer an "open in new tab" button                  |
-| `pong`             | -                         | answer to `ping`                                   |
+Server to client, everything else (JSON text frames):
 
-On connect the server sends `status`, then a replay (tmux `capture-pane`, or an in-memory ring
-buffer without tmux), then live output. A session that ended while the server was down replays the
-last screen saved under `<state dir>/scrollback/<id>.bin`. The browser resets its terminal on every (re)connect.
+| type               | fields    | meaning                                     |
+| ------------------ | --------- | ------------------------------------------- |
+| `status`           | `session` | session changed (status, cwd, preview, ...) |
+| `exit`             | `code`    | the process ended                           |
+| `approval-request` | `request` | a pending approval for this session         |
+| `preview-open`     | `url`     | open this localhost URL in the preview      |
+| `new-tab`          | `url`     | offer an "open in new tab" button           |
+| `pong`             | -         | answer to `ping`                            |
+
+On connect the server sends `status`, `size`, then the replay, then live output. With tmux the replay is
+a snapshot taken through the session's control-mode client at an exact point of its output stream: the
+history (into the browser's scrollback), the screen, the cursor and the modes (bracketed paste, cursor
+keys, mouse...). Output before that point is part of it, output after it is sent live, so nothing is
+lost or applied twice. Without tmux it is an in-memory ring buffer of raw output. A session that ended
+while the server was down replays the last screen saved under `<state dir>/scrollback/<id>.bin`. The
+browser resets its terminal on every (re)connect.
 
 ## HTTP API (`/api`)
 

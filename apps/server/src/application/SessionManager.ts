@@ -15,7 +15,6 @@ import { wirePty } from './ptyWiring.js';
 import type { SessionLauncher } from './SessionLauncher.js';
 import { newSession } from './newSession.js';
 import { withMeta } from './sessionMeta.js';
-import { tmuxNameFor } from './SessionLauncher.js';
 import {
   removeSession,
   restartSession,
@@ -96,10 +95,19 @@ export class SessionManager {
     if (this.reg.setSize(id, cols, rows)) this.reg.require(id).pty?.resize(cols, rows);
   }
 
-  async replay(id: string): Promise<Uint8Array> {
-    const runtime = this.reg.require(id);
-    const captured = await this.deps.mux.capture(tmuxNameFor(id));
-    return captured ?? runtime.ring.snapshot();
+  /**
+   * The screen for a device that connects, handed over at an exact point of the output (see
+   * PtyHandle.snapshot): output published before `done` runs is part of it, output after it is not.
+   * Without a snapshot (no tmux, or a session that ended) it is the recent raw output.
+   */
+  snapshot(id: string, done: (screen: Uint8Array) => void): void {
+    const { pty, ring } = this.reg.require(id);
+    if (pty?.snapshot) pty.snapshot((screen) => done(screen ?? ring.snapshot()));
+    else done(ring.snapshot());
+  }
+
+  replay(id: string): Promise<Uint8Array> {
+    return new Promise((resolve) => this.snapshot(id, resolve));
   }
 
   /** Sets a note kept with the session (an empty value removes it). */
@@ -134,17 +142,8 @@ export class SessionManager {
     const pty = spawn();
     const runtime: Runtime = { ...this.reg.runtimeOf(session), pty };
     this.reg.runtimes.set(session.id, runtime);
-    wirePty(
-      pty,
-      runtime.ring,
-      session.id,
-      this.deps.bus,
-      () => {
-        runtime.pty = null;
-        this.reg.update(session.id, { status: 'exited' });
-      },
-      () => this.screens.touch(session.id),
-    );
+    const touched = (): void => this.screens.touch(session.id);
+    wirePty(pty, runtime.ring, session.id, this.deps.bus, () => this.reg.ended(runtime), touched);
     this.reg.update(session.id, { status: 'running' });
   }
 }

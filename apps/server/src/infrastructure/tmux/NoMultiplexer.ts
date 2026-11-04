@@ -1,4 +1,4 @@
-import type { LaunchSpec, MultiplexerPort } from '../../domain/ports.js';
+import type { LaunchSpec, MultiplexerPort, PtyHandle, PtyPort } from '../../domain/ports.js';
 import type { Runner } from './exec.js';
 import { TmuxMultiplexer } from './TmuxMultiplexer.js';
 
@@ -6,11 +6,13 @@ import { TmuxMultiplexer } from './TmuxMultiplexer.js';
 export class NoMultiplexer implements MultiplexerPort {
   readonly available = false;
 
-  wrap(_name: string, spec: LaunchSpec): LaunchSpec {
-    return spec;
+  constructor(private readonly pty: PtyPort) {}
+
+  launch(_name: string, spec: LaunchSpec, size: { cols: number; rows: number }): PtyHandle {
+    return this.pty.spawn(spec, size);
   }
-  attach(_name: string, spec: LaunchSpec): LaunchSpec {
-    return spec;
+  reattach(): PtyHandle {
+    throw new Error('Without tmux no session outlives the server');
   }
   list(): Promise<string[]> {
     return Promise.resolve([]);
@@ -23,11 +25,11 @@ export class NoMultiplexer implements MultiplexerPort {
   }
 }
 
-export async function detectMultiplexer(run: Runner): Promise<MultiplexerPort> {
+export async function detectMultiplexer(run: Runner, pty: PtyPort): Promise<MultiplexerPort> {
   try {
     await run('tmux', ['-V']);
     return new TmuxMultiplexer(run);
   } catch {
-    return new NoMultiplexer();
+    return new NoMultiplexer(pty);
   }
 }

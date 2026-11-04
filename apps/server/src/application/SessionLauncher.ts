@@ -2,12 +2,11 @@ import { utf8Locale } from './utf8Env';
 import { TMUX_PREFIX, type Session } from '@deck/shared';
 import { invalid } from '../domain/errors.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
-import type { LaunchSpec, MultiplexerPort, PtyHandle, PtyPort } from '../domain/ports.js';
+import type { LaunchSpec, MultiplexerPort, PtyHandle } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 import { agentGuide } from '../infrastructure/providers/agentGuide.js';
 
 export interface LauncherDeps {
-  pty: PtyPort;
   mux: MultiplexerPort;
   providers: ProviderRegistry;
   mcpBaseUrl: string;
@@ -75,7 +74,7 @@ export class SessionLauncher {
         DECK_MCP_URL: ctx.mcpUrl,
       },
     };
-    return this.deps.mux.wrap(tmuxNameFor(session.id), spec);
+    return spec;
   }
 
   private pathEntry(): Record<string, string> {
@@ -98,7 +97,7 @@ export class SessionLauncher {
       COLORTERM: 'truecolor',
     };
     const spec = { command: '', args: [], env, cwd: session.cwd };
-    return this.deps.pty.spawn(this.deps.mux.attach(tmuxNameFor(session.id), spec), DEFAULT_SIZE);
+    return this.deps.mux.reattach(tmuxNameFor(session.id), spec);
   }
 
   launch(
@@ -107,6 +106,7 @@ export class SessionLauncher {
     args: readonly string[],
     inheritFrom?: string,
   ): PtyHandle {
-    return this.deps.pty.spawn(this.buildSpec(session, command, args, inheritFrom), DEFAULT_SIZE);
+    const spec = this.buildSpec(session, command, args, inheritFrom);
+    return this.deps.mux.launch(tmuxNameFor(session.id), spec, DEFAULT_SIZE);
   }
 }

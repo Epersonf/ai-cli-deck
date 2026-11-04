@@ -6,15 +6,23 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('input'), data: z.string() }),
   z.object({
     type: z.literal('resize'),
-    cols: z.number().int().min(1).max(1000),
-    rows: z.number().int().min(1).max(1000),
+    // Smaller than this is a terminal that is not on screen yet; the program would redraw into garbage.
+    cols: z.number().int().min(10).max(1000),
+    rows: z.number().int().min(2).max(1000),
   }),
   z.object({ type: z.literal('ping') }),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 
+/**
+ * Terminal output travels as binary WebSocket frames (no JSON, no base64): the first byte says what the
+ * rest is, the remaining bytes go to the terminal as they are.
+ */
+export const OUTPUT_FRAME = 0;
+/** The screen as it is when a device connects (scrollback, screen, cursor and modes), sent once. */
+export const REPLAY_FRAME = 1;
+
 export const ServerMessageSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('output'), data: z.string(), replay: z.boolean() }),
   z.object({ type: z.literal('status'), session: SessionSchema }),
   z.object({ type: z.literal('exit'), code: z.number().int().nullable() }),
   z.object({ type: z.literal('approval-request'), request: ApprovalRequestSchema }),

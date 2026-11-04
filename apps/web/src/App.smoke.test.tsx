@@ -5,29 +5,11 @@ import { $, click, mount, useSmokeApp } from './testing/smokeHarness';
 
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
-vi.mock('@xterm/xterm', () => ({
-  Terminal: class {
-    cols = 80;
-    rows = 24;
-    modes = { applicationCursorKeysMode: false };
-    loadAddon() {}
-    attachCustomKeyEventHandler() {}
-    parser = { registerOscHandler() {} };
-    open() {}
-    write() {}
-    reset() {}
-    dispose() {}
-    focus() {}
-    onData() {}
-    onResize() {}
-  },
-}));
-vi.mock('@xterm/addon-fit', () => ({
-  FitAddon: class {
-    fit() {}
-  },
-}));
-vi.mock('@xterm/addon-web-links', () => ({ WebLinksAddon: vi.fn() }));
+vi.mock('@xterm/xterm', () => import('./testing/fakeXterm'));
+vi.mock('@xterm/addon-fit', () => import('./testing/fakeXterm'));
+vi.mock('@xterm/addon-web-links', () => import('./testing/fakeXterm'));
+vi.mock('@xterm/addon-unicode11', () => import('./testing/fakeXterm'));
+vi.mock('@xterm/addon-webgl', () => import('./testing/fakeXterm'));
 
 useSmokeApp();
 

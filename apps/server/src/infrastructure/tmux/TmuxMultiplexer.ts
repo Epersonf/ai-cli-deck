@@ -1,6 +1,7 @@
-import { TMUX_PREFIX } from '@deck/shared';
-import type { LaunchSpec, MultiplexerPort } from '../../domain/ports.js';
+import { TERMINAL_COLORS, TMUX_PREFIX } from '@deck/shared';
+import type { LaunchSpec, MultiplexerPort, PtyHandle } from '../../domain/ports.js';
 import type { Runner } from './exec.js';
+import { TmuxControlClient } from './TmuxControlClient.js';
 
 const SKIPPED_ENV = new Set(['TMUX', 'TMUX_PANE']);
 
@@ -11,26 +12,44 @@ const SKIPPED_ENV = new Set(['TMUX', 'TMUX_PANE']);
 export const TMUX_SOCKET = process.env.DECK_TMUX_SOCKET || 'deck';
 const SOCKET_ARGS = ['-u', '-L', TMUX_SOCKET];
 
-/** Builds the argv that creates-or-attaches a tmux session running `spec`. */
-export function buildTmuxArgs(name: string, spec: LaunchSpec): string[] {
+/**
+ * tmux only keeps the programs alive here. The deck talks to it in control mode and hands the program's
+ * own output to the browser terminal, which draws it and keeps the scrollback: one scroll, and a local one.
+ * tmux's mouse and status line are never shown. tmux still answers what a program asks its terminal (the
+ * cursor position, the colours), so it is given the deck terminal's colours.
+ */
+const SERVER_OPTIONS = [
+  ...['set-option', '-g', 'status', 'off', ';'],
+  ...['set-option', '-g', 'mouse', 'off', ';'],
+  // Rebuilds the scrollback of a device that connects later.
+  ...['set-option', '-g', 'history-limit', '20000', ';'],
+  ...[
+    'set-option',
+    '-g',
+    'window-style',
+    `fg=${TERMINAL_COLORS.foreground},bg=${TERMINAL_COLORS.background}`,
+    ';',
+  ],
+];
+
+/** The session's pane, for keys and screen queries. */
+const targetOf = (name: string): string => `=${name}:`;
+
+/** The argv of a control-mode client that creates (or joins) the session `name` running `spec`. */
+export function buildTmuxArgs(
+  name: string,
+  spec: LaunchSpec,
+  size: { cols: number; rows: number },
+): string[] {
   const envFlags = Object.entries(spec.env)
     .filter(([key]) => !SKIPPED_ENV.has(key))
     .flatMap(([key, value]) => ['-e', `${key}=${value}`]);
-  // Options come first: `new-session -A` only returns when the client detaches.
+  const geometry = ['-x', String(size.cols), '-y', String(size.rows)];
   return [
     ...SOCKET_ARGS,
-    ...['set-option', '-g', 'status', 'off', ';'],
-    ...['set-option', '-g', 'escape-time', '10', ';'],
-    // Stay on the browser terminal's normal screen (no alternate screen switch).
-    ...['set-option', '-ga', 'terminal-overrides', ',*:smcup@:rmcup@', ';'],
-    // The wheel goes to tmux, which hands it to a program that asked for the mouse (e.g. an agent
-    // that scrolls its own chat) or else scrolls tmux's history, which holds the whole session.
-    ...['set-option', '-g', 'mouse', 'on', ';'],
-    ...['set-option', '-g', 'history-limit', '20000', ';'],
-    // Text selected with the mouse (tmux copy mode) is sent to the browser's clipboard via OSC 52.
-    ...['set-option', '-g', 'set-clipboard', 'on', ';'],
-    ...['set-option', '-ga', 'terminal-overrides', `,*:Ms=\\E]52;%p1%s;%p2%s\\007`, ';'],
-    ...['new-session', '-A', '-s', name, '-c', spec.cwd, ...envFlags],
+    '-C',
+    ...SERVER_OPTIONS,
+    ...['new-session', '-A', '-s', name, ...geometry, '-c', spec.cwd, ...envFlags],
     spec.command,
     ...spec.args,
   ];
@@ -41,13 +60,14 @@ export class TmuxMultiplexer implements MultiplexerPort {
 
   constructor(private readonly run: Runner) {}
 
-  wrap(name: string, spec: LaunchSpec): LaunchSpec {
-    return { command: 'tmux', args: buildTmuxArgs(name, spec), env: spec.env, cwd: spec.cwd };
+  launch(name: string, spec: LaunchSpec, size: { cols: number; rows: number }): PtyHandle {
+    const args = buildTmuxArgs(name, spec, size);
+    return new TmuxControlClient({ args, target: targetOf(name), ...place(spec), attached: false });
   }
 
-  attach(name: string, spec: LaunchSpec): LaunchSpec {
-    const args = [...SOCKET_ARGS, 'attach-session', '-t', `=${name}`];
-    return { command: 'tmux', args, env: spec.env, cwd: spec.cwd };
+  reattach(name: string, spec: LaunchSpec): PtyHandle {
+    const args = [...SOCKET_ARGS, '-C', ...SERVER_OPTIONS, 'attach-session', '-t', `=${name}`];
+    return new TmuxControlClient({ args, target: targetOf(name), ...place(spec), attached: true });
   }
 
   async list(): Promise<string[]> {
@@ -64,20 +84,11 @@ export class TmuxMultiplexer implements MultiplexerPort {
     }
   }
 
+  /** The last screen lines as text with colours, saved so a session that dies can still be read. */
   async capture(name: string): Promise<Uint8Array | null> {
     try {
-      const args = [
-        ...SOCKET_ARGS,
-        'capture-pane',
-        '-p',
-        '-e',
-        '-J',
-        '-S',
-        '-300',
-        '-t',
-        `=${name}:`,
-      ];
-      const out = await this.run('tmux', args);
+      const args = [...SOCKET_ARGS, 'capture-pane', '-p', '-e', '-J', '-S', '-300', '-t'];
+      const out = await this.run('tmux', [...args, targetOf(name)]);
       return Buffer.from(out.replace(/\n/g, '\r\n'), 'utf8');
     } catch {
       return null;
@@ -90,3 +101,5 @@ export class TmuxMultiplexer implements MultiplexerPort {
     );
   }
 }
+
+const place = (spec: LaunchSpec) => ({ env: spec.env, cwd: spec.cwd });

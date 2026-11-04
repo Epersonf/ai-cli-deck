@@ -155,9 +155,9 @@
   transform: translateX(-50%);
 }
 
-/* Another device sets the size: show it as it is, scrolling if it does not fit. */
+/* Another device sets the size: the font shrinks so it fits (fitter.ts), never a second scrollbar. */
 .terminal-host.following {
-  overflow: auto;
+  overflow: hidden;
 }
 .terminal-follow {
   position: absolute;
