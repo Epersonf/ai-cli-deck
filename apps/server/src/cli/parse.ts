@@ -1,4 +1,5 @@
 import { normalizeUrl } from '@deck/shared';
+import { parseEnsureKey, type EnsureKey } from './ensureKey.js';
 
 export type Command =
   | { name: 'help' }
@@ -11,7 +12,8 @@ export type Command =
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
   | { name: 'setup'; provider: string | null }
-  | { name: 'profile'; args: string[] };
+  | { name: 'profile'; args: string[] }
+  | ({ name: 'ensure-key' } & EnsureKey);
 
 export type Parsed = { ok: true; command: Command } | { ok: false; error: string };
 
@@ -48,7 +50,13 @@ export function parseArgs(argv: readonly string[]): Parsed {
     case 'profile':
       return rest[0] === 'add'
         ? ok({ name, args: rest.slice(1) })
-        : fail('usage: clideck profile add "<name>" <claude|claude-deepseek|codex|custom>');
+        : fail(
+            'usage: clideck profile add "<name>" <claude|claude-endpoint|claude-deepseek|codex|custom> [--url <api-base-url>]',
+          );
+    case 'ensure-key': {
+      const parsed = parseEnsureKey(rest);
+      return typeof parsed === 'string' ? fail(parsed) : ok({ name, ...parsed });
+    }
     case 'install':
       return ok({ name, force: rest.includes('--force') });
     default:

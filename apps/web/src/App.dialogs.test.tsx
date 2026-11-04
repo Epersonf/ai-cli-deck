@@ -40,7 +40,7 @@ describe('App dialogs', () => {
     expect($('[role="alertdialog"]')).toBeNull();
   });
 
-  it('offers clean profiles: a name and a base, never a key or login', async () => {
+  it('offers clean profiles: a name and a base; the key is asked inside the terminal', async () => {
     await mount();
     click($('button[aria-label="All terminals"]'));
     const buttons = [...document.querySelectorAll('.drawer > button')];
@@ -48,7 +48,13 @@ describe('App dialogs', () => {
     const fields = [...document.querySelectorAll('.modal input, .modal select')];
     expect(fields).toHaveLength(2);
     const options = [...document.querySelectorAll('.modal option')].map((o) => o.textContent);
-    expect(options).toEqual(['Claude Code', 'Claude Code (DeepSeek)', 'Codex', 'Custom']);
+    expect(options).toEqual([
+      'Claude Code',
+      'Claude Code (custom endpoint)',
+      'Claude Code (DeepSeek)',
+      'Codex',
+      'Custom',
+    ]);
     expect(document.querySelector('.modal')?.textContent).not.toMatch(/api key|password/i);
   });
 

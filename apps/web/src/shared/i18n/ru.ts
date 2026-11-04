@@ -47,6 +47,10 @@ export const ru: Messages = {
   'profile.command': 'Программа для запуска (пусто = shell)',
   'profile.base.claude': 'Claude Code',
   'profile.base.claude-deepseek': 'Claude Code (DeepSeek)',
+  'profile.base.claude-endpoint': 'Claude Code (свой эндпоинт)',
+  'profile.url': 'Базовый URL API',
+  'profile.urlHint':
+    'Адрес, на который Claude Code отправляет запросы, например шлюз вашей компании. Терминал спросит ключ API при первом запуске и сохранит его только внутри этого профиля.',
   'profile.base.codex': 'Codex',
   'profile.base.custom': 'Свой',
   'status.starting': 'запускается',

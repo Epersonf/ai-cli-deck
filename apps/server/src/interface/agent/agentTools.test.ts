@@ -36,6 +36,12 @@ describe('agent tools', () => {
     ]);
   });
 
+  it('never lists terminals of another profile', async () => {
+    const { tools, h } = await setup();
+    const other = await h.sessions.create({ ...customBody('/work'), provider: 'shell' });
+    expect(tools.listSessions().map((s) => s.id)).not.toContain(other.id);
+  });
+
   it('describes the calling session', async () => {
     const { tools, a } = await setup();
     expect(tools.whoami()).toMatchObject({ id: a.id, cwd: '/work', port: a.port });

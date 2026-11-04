@@ -45,6 +45,10 @@ export const en = {
   'profile.command': 'Program to run (empty = shell)',
   'profile.base.claude': 'Claude Code',
   'profile.base.claude-deepseek': 'Claude Code (DeepSeek)',
+  'profile.base.claude-endpoint': 'Claude Code (custom endpoint)',
+  'profile.url': 'API base URL',
+  'profile.urlHint':
+    'The address Claude Code sends its requests to, such as your company gateway. The terminal asks for the API key the first time and keeps it only inside this profile.',
   'profile.base.codex': 'Codex',
   'profile.base.custom': 'Custom',
   'status.starting': 'starting',

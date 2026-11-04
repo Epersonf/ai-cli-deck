@@ -111,11 +111,22 @@ how to get it.
 
 ## Profiles (clean terminals)
 
-A profile is a **named, clean terminal** built on a base: Claude Code, Claude Code (DeepSeek), Codex
-or Custom (any program, or just a shell). It starts with its own empty config folder
+A profile is a **named, clean terminal** built on a base: Claude Code, Claude Code (custom endpoint),
+Claude Code (DeepSeek), Codex or Custom (any program, or just a shell). It starts with its own empty config folder
 (`CLAUDE_CONFIG_DIR` / `CODEX_HOME` under `~/.config/ai-cli-deck/profiles/<id>`), so **no login and no
-key is linked**. You sign in or export a key yourself inside that terminal, exactly as the CLI
-documents. The deck holds no credentials, so it keeps working if a CLI changes how it logs in.
+key is linked**. You sign in inside that terminal, exactly as the CLI documents. The deck holds no
+credentials, so it keeps working if a CLI changes how it logs in.
+
+**Custom endpoint and DeepSeek.** *Claude Code (custom endpoint)* talks to an Anthropic-compatible API at
+a base URL you choose (for example a company gateway with its own keys); *Claude Code (DeepSeek)* is the
+same thing with the URL and models fixed. The first time such a terminal starts it asks for the API key
+(typed hidden, via `clideck ensure-key`) and remembers it in that profile's own Claude settings
+(`settings.json`, `env`), so later starts need nothing. The key only ever goes to that profile's Claude.
+
+**Profiles are separate worlds.** Each has its own config folder, login, key and endpoint, and an agent
+in one cannot list the terminals of another (`clideck sessions` / the MCP tool only show the same profile).
+They all run as the same operating-system user, so this is separation of configuration and of what the
+deck exposes, not a security sandbox: use separate OS users or containers if you need that.
 
 Create profiles from the terminals menu (☰ > New profile) or with
 `clideck profile add "Work" claude`. Profiles can be renamed; the base and the id never change, and

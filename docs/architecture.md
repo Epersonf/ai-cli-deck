@@ -33,7 +33,9 @@
 - **`clideck` is on every session's PATH** (`apps/server/bin`) with `DECK_URL` and `DECK_SESSION_ID`
   exported; `clideck install` adds `/clideck` slash commands for Claude Code and Codex.
 - **Profiles** (`ProfileService`, `profiles.json`) are clean terminals on a base. Each gets its own empty CLI
-  config folder; the deck stores no credentials. The DeepSeek base only sets the endpoint and model env.
+  config folder; the deck stores no credentials. The endpoint bases (custom endpoint, DeepSeek) set
+  `ANTHROPIC_BASE_URL` and start `claude` through `clideck ensure-key`, which asks for the key in the terminal
+  and saves it in that profile's own Claude `settings.json`. Agent tools only see terminals of the same profile.
 - **Auth is a domain service** (`AuthService`) behind ports, so password rules are unit tested
   without touching disk or crypto.
 - **Localization without a library.** `apps/web/src/shared/i18n` holds one typed dictionary per

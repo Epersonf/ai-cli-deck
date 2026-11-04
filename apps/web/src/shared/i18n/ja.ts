@@ -47,6 +47,10 @@ export const ja: Messages = {
   'profile.command': '実行するプログラム（空欄 = シェル）',
   'profile.base.claude': 'Claude Code',
   'profile.base.claude-deepseek': 'Claude Code (DeepSeek)',
+  'profile.base.claude-endpoint': 'Claude Code（カスタムエンドポイント）',
+  'profile.url': 'API ベース URL',
+  'profile.urlHint':
+    'Claude Code がリクエストを送る宛先です（社内ゲートウェイなど）。初回起動時にターミナルが API キーを尋ね、このプロファイル内にのみ保存します。',
   'profile.base.codex': 'Codex',
   'profile.base.custom': 'カスタム',
   'status.starting': '起動中',

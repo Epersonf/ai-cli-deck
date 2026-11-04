@@ -4,11 +4,16 @@ import { HELP } from './help.js';
 import { installSlashCommands } from './install.js';
 import { parseArgs, type Command } from './parse.js';
 import { addProfile, parseProfileArgs } from './profileCommand.js';
+import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
 
 const show = (value: unknown): string => JSON.stringify(value, null, 2);
 
-async function execute(command: Command, env: NodeJS.ProcessEnv): Promise<string> {
+/** Commands that print a result; `ensure-key` starts a program instead and is handled in run(). */
+async function execute(
+  command: Exclude<Command, { name: 'ensure-key' }>,
+  env: NodeJS.ProcessEnv,
+): Promise<string> {
   if (command.name === 'help') return HELP;
   if (command.name === 'setup') return runSetup(command.provider);
   if (command.name === 'profile') {
@@ -45,6 +50,8 @@ export async function run(argv: readonly string[], env: NodeJS.ProcessEnv): Prom
     console.error(parsed.error);
     return 2;
   }
+  // Starts another program and returns its exit code, so it bypasses the print-a-string path below.
+  if (parsed.command.name === 'ensure-key') return ensureKey(parsed.command, env);
   try {
     console.log(await execute(parsed.command, env));
     return 0;

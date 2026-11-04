@@ -1,4 +1,4 @@
-import { profileIdFor, type CreateProfileBody, type Profile } from '@deck/shared';
+import { isHttpUrl, profileIdFor, type CreateProfileBody, type Profile } from '@deck/shared';
 import { invalid, notFound } from '../domain/errors.js';
 import type { ProfileStorePort } from '../domain/ports.js';
 
@@ -34,10 +34,13 @@ export class ProfileService {
   }
 
   async create(body: CreateProfileBody): Promise<Profile> {
-    if (body.base !== 'custom' && body.command !== '')
+    const { command = '', baseUrl = '' } = body;
+    if (body.base !== 'custom' && command !== '')
       throw invalid('Only custom profiles take a command');
+    if (body.base === 'claude-endpoint' && !isHttpUrl(baseUrl))
+      throw invalid('A custom endpoint needs an http(s) base URL');
     const taken = [...this.deps.reservedIds(), ...this.profiles.map((p) => p.id)];
-    const profile: Profile = { ...body, id: profileIdFor(body.label, taken) };
+    const profile: Profile = { ...body, command, baseUrl, id: profileIdFor(body.label, taken) };
     // A new profile always starts empty, even if an old folder with this id was left behind.
     await this.deps.wipeData(profile.id);
     this.profiles = [...this.profiles, profile];

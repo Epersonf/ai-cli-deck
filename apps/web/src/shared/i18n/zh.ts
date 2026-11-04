@@ -46,6 +46,10 @@ export const zh: Messages = {
   'profile.command': '要运行的程序（留空 = shell）',
   'profile.base.claude': 'Claude Code',
   'profile.base.claude-deepseek': 'Claude Code (DeepSeek)',
+  'profile.base.claude-endpoint': 'Claude Code（自定义端点）',
+  'profile.url': 'API 基础 URL',
+  'profile.urlHint':
+    'Claude Code 发送请求的地址，例如贵公司的网关。终端会在首次启动时询问 API 密钥，并且只保存在此配置文件中。',
   'profile.base.codex': 'Codex',
   'profile.base.custom': '自定义',
   'status.starting': '启动中',

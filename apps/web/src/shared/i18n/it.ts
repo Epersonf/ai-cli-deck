@@ -46,6 +46,10 @@ export const it: Messages = {
   'profile.command': 'Programma da eseguire (vuoto = shell)',
   'profile.base.claude': 'Claude Code',
   'profile.base.claude-deepseek': 'Claude Code (DeepSeek)',
+  'profile.base.claude-endpoint': 'Claude Code (endpoint personalizzato)',
+  'profile.url': 'URL base dell’API',
+  'profile.urlHint':
+    'L’indirizzo a cui Claude Code invia le richieste, ad esempio il gateway della tua azienda. Il terminale chiede la chiave API la prima volta e la conserva solo in questo profilo.',
   'profile.base.codex': 'Codex',
   'profile.base.custom': 'Personalizzato',
   'status.starting': 'in avvio',

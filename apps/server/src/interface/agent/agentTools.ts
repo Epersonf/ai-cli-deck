@@ -22,11 +22,15 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
       return { id, provider, cwd, port, previewUrl, worktree, status };
     },
 
+    /**
+     * Only terminals of the SAME profile: a profile is a separate world (its own CLI login, key and
+     * endpoint), so an agent in one must not even see the sessions of another.
+     */
     listSessions: () => {
       const me = self();
       return deps.sessions
         .list()
-        .filter((s) => s.id !== me.id)
+        .filter((s) => s.id !== me.id && s.provider === me.provider)
         .map((s) => ({
           id: s.id,
           provider: s.provider,

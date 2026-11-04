@@ -17,6 +17,22 @@ function setup(reserved: string[] = ['claude']) {
   return { service, saved, registered, removed, wiped };
 }
 
+describe('ProfileService custom endpoint', () => {
+  it('requires an http(s) URL for the endpoint base', async () => {
+    const { service } = setup([]);
+    await expect(
+      service.create({ label: 'Corp', base: 'claude-endpoint', command: '', baseUrl: '' }),
+    ).rejects.toThrow(/base URL/);
+    const ok = await service.create({
+      label: 'Corp',
+      base: 'claude-endpoint',
+      command: '',
+      baseUrl: 'https://llm.example.com',
+    });
+    expect(ok.baseUrl).toBe('https://llm.example.com');
+  });
+});
+
 describe('ProfileService data erasure', () => {
   it('wipes the folder before a new profile starts, so a reused name never inherits a login', async () => {
     const { service, wiped } = setup([]);
