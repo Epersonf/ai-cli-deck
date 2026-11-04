@@ -37,4 +37,6 @@
     <string name="section_network">Rete</string>
     <string name="section_behavior">Comportamento</string>
     <string name="settings_open">Impostazioni</string>
+    <string name="copy_log">Copia registro</string>
+    <string name="log_copied">Registro copiato negli appunti</string>
 </resources>

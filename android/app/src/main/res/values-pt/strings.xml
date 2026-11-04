@@ -37,4 +37,6 @@
     <string name="section_network">Rede</string>
     <string name="section_behavior">Comportamento</string>
     <string name="settings_open">Configurações</string>
+    <string name="copy_log">Copiar log</string>
+    <string name="log_copied">Log copiado para a área de transferência</string>
 </resources>

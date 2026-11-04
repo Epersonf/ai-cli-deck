@@ -20,6 +20,8 @@ enum class DeckState { STOPPED, INSTALLING, STARTING, RUNNING, RESTARTING }
 class DeckService : Service() {
 
     companion object {
+        /** Terminal color escapes from npm/node-gyp, noise in the log view. */
+        private val ANSI = Regex("\u001B\\[[0-9;]*[A-Za-z]")
         const val ACTION_STOP = "dev.epersonf.deck.STOP"
         @Volatile var state = DeckState.STOPPED
         @Volatile var status: String = ""
@@ -56,7 +58,7 @@ class DeckService : Service() {
 
     private fun log(line: String) {
         try {
-            FileWriter(env.logFile, true).use { it.appendLine(line) }
+            FileWriter(env.logFile, true).use { it.appendLine(line.replace(ANSI, "")) }
             if (env.logFile.length() > 2_000_000) {
                 val tail = env.logFile.readText().takeLast(500_000)
                 env.logFile.writeText(tail)

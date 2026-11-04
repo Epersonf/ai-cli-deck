@@ -88,6 +88,14 @@ class MainActivity : Activity() {
         if (env.prefs.getBoolean("autostart", true) && !DeckService.running) startDeck()
     }
 
+    /** Copies the whole log file (not just the visible tail) so it can be pasted elsewhere. */
+    private fun copyLog() {
+        val full = try { env.logFile.takeIf { it.exists() }?.readText() ?: "" } catch (_: Exception) { "" }
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        cm.setPrimaryClip(android.content.ClipData.newPlainText("CLI Deck log", full))
+        android.widget.Toast.makeText(this, R.string.log_copied, android.widget.Toast.LENGTH_SHORT).show()
+    }
+
     private fun statusCard(): LinearLayout {
         val card = Ui.card(this)
         card.addView(Ui.heading(this, getString(R.string.section_status), 11f))
@@ -102,7 +110,15 @@ class MainActivity : Activity() {
     private fun logCard(): LinearLayout {
         val card = Ui.card(this)
         card.layoutParams = LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = Ui.dp(this@MainActivity, 14) }
-        card.addView(Ui.heading(this, getString(R.string.section_log), 11f))
+        val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
+        header.addView(Ui.heading(this, getString(R.string.section_log), 11f).apply {
+            layoutParams = LinearLayout.LayoutParams(0, -2, 1f)
+        })
+        header.addView(Ui.button(this, getString(R.string.copy_log)) { copyLog() }.apply {
+            textSize = 11f; minHeight = 0; minimumHeight = 0
+            setPadding(Ui.dp(this@MainActivity, 12), Ui.dp(this@MainActivity, 6), Ui.dp(this@MainActivity, 12), Ui.dp(this@MainActivity, 6))
+        })
+        card.addView(header)
         logView = TextView(this).apply {
             typeface = android.graphics.Typeface.MONOSPACE; textSize = 11f; setTextColor(getColor(R.color.verdigris))
         }

@@ -36,6 +36,21 @@ npm install --no-audit --no-fund
 if ! node -e "require('/opt/deck/node_modules/node-pty')" 2>/dev/null; then
   echo "node-pty native module missing, building from source..."
   npm rebuild node-pty --build-from-source --foreground-scripts --no-audit --no-fund
-  node -e "require('/opt/deck/node_modules/node-pty')"
+  # proot --link2symlink turns make's hardlink (COPY Release/pty.node) into a dangling symlink to a hidden
+  # .l2s.* file; replace it with a real copy of the freshly linked module.
+  R=/opt/deck/node_modules/node-pty/build/Release
+  built=""
+  for c in "$R/obj.target/pty.node" "$R"/obj.target/.l2s.pty.node*; do
+    if [ -f "$c" ]; then built="$c"; break; fi
+  done
+  if [ -n "$built" ]; then
+    rm -f "$R/pty.node" && cp "$built" "$R/pty.node"
+  fi
+  if ! node -e "require('/opt/deck/node_modules/node-pty')" 2>/dev/null; then
+    echo "node-pty still fails to load. Diagnostics:"
+    ls -laR /opt/deck/node_modules/node-pty/build/Release 2>&1 | head -40
+    node -e "for (const d of ['build/Release','build/Debug']) { try { require('/opt/deck/node_modules/node-pty/' + d + '/pty.node'); console.log('loaded', d) } catch (e) { console.log(d + ':', e.message) } }"
+    exit 1
+  fi
 fi
 echo "bootstrap ok"

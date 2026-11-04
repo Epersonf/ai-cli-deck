@@ -37,4 +37,6 @@
     <string name="section_network">Red</string>
     <string name="section_behavior">Comportamiento</string>
     <string name="settings_open">Ajustes</string>
+    <string name="copy_log">Copiar registro</string>
+    <string name="log_copied">Registro copiado al portapapeles</string>
 </resources>

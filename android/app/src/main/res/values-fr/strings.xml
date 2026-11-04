@@ -37,4 +37,6 @@
     <string name="section_network">Réseau</string>
     <string name="section_behavior">Comportement</string>
     <string name="settings_open">Réglages</string>
+    <string name="copy_log">Copier le journal</string>
+    <string name="log_copied">Journal copié dans le presse-papiers</string>
 </resources>

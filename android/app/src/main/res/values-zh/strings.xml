@@ -37,4 +37,6 @@
     <string name="section_network">网络</string>
     <string name="section_behavior">行为</string>
     <string name="settings_open">设置</string>
+    <string name="copy_log">复制日志</string>
+    <string name="log_copied">日志已复制到剪贴板</string>
 </resources>

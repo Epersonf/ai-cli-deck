@@ -37,4 +37,6 @@
     <string name="section_network">Сеть</string>
     <string name="section_behavior">Поведение</string>
     <string name="settings_open">Настройки</string>
+    <string name="copy_log">Копировать журнал</string>
+    <string name="log_copied">Журнал скопирован в буфер обмена</string>
 </resources>
