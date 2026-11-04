@@ -43,4 +43,15 @@
     <string name="setting_verbose_hint">システム情報、ターミナルのセルフテスト、debug レベルのサーバーログをログに追加します。「停止 → 開始」後に反映されます。</string>
     <string name="file_saved">保存しました。</string>
     <string name="file_not_saved">ファイルを保存できませんでした。</string>
+    <string name="section_phone">スマホへのアクセス</string>
+    <string name="setting_phone">エージェントにこのスマホの利用を許可</string>
+    <string name="setting_phone_hint">既定ではオフ。deck の AI エージェントが電池残量や端末情報を読み取り、このスマホに通知を送れるようにします。停止 → 開始後に反映されます。</string>
+    <string name="phone_warn_title">スマホへのアクセス：先にお読みください</string>
+    <string name="phone_warn_body">deck の AI エージェントは、このスマホの情報（電池、端末）を読み取り、通知を表示できるようになります。今後さらに機能が増える可能性があります。エージェントは、ページ・ファイル・メッセージ内のテキストにだまされ（プロンプトインジェクション）、届く範囲を悪用されることがあります。理解したうえで必要な場合のみオンにしてください。</string>
+    <string name="phone_continue">理解しました。続ける</string>
+    <string name="phone_confirm_title">本当によろしいですか？</string>
+    <string name="phone_confirm_body">ここでいつでもオフにできます。エージェントはこのスイッチが許す範囲のみ利用でき、各リクエストはログに記録されます。スマホへのアクセスを有効にしますか？</string>
+    <string name="phone_enable">有効にする</string>
+    <string name="phone_notif_off">このアプリの通知がオフです。開いたページでオンにしてください。</string>
+    <string name="phone_channel">エージェントの通知</string>
 </resources>

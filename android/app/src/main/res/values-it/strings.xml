@@ -43,4 +43,15 @@
     <string name="setting_verbose_hint">Aggiunge info di sistema, autotest del terminale e log del server a livello debug. Valido dopo Ferma → Avvia.</string>
     <string name="file_saved">Salvato.</string>
     <string name="file_not_saved">Impossibile salvare il file.</string>
+    <string name="section_phone">Accesso al telefono</string>
+    <string name="setting_phone">Consenti agli agenti di usare questo telefono</string>
+    <string name="setting_phone_hint">Disattivato di default. Permette agli agenti IA del deck di leggere batteria e dati del dispositivo e inviare notifiche a questo telefono. Vale dopo Ferma → Avvia.</string>
+    <string name="phone_warn_title">Accesso al telefono: leggi prima</string>
+    <string name="phone_warn_body">Gli agenti IA del deck potranno leggere informazioni da questo telefono (batteria, dispositivo) e mostrare notifiche. In futuro potrebbero arrivare altre funzioni. Un agente può essere ingannato da testo in una pagina, un file o un messaggio (prompt injection) per usare ciò che raggiunge. Attivalo solo se lo capisci e lo vuoi.</string>
+    <string name="phone_continue">Ho capito, continua</string>
+    <string name="phone_confirm_title">Sei sicuro?</string>
+    <string name="phone_confirm_body">Puoi disattivarlo qui in qualsiasi momento. Gli agenti ricevono solo ciò che questo interruttore consente e ogni richiesta è scritta nel log. Attivare l’accesso al telefono?</string>
+    <string name="phone_enable">Attiva</string>
+    <string name="phone_notif_off">Le notifiche sono disattivate per questa app. Attivale nella pagina che si aprirà.</string>
+    <string name="phone_channel">Notifiche degli agenti</string>
 </resources>

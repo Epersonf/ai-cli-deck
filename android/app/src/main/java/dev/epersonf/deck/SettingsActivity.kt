@@ -26,6 +26,7 @@ class SettingsActivity : Activity() {
     private lateinit var auto: Switch
     private lateinit var verbose: Switch
     private lateinit var lang: Spinner
+    private lateinit var phone: PhoneAccessCard
     private val codes = listOf<String?>(null) + Lang.ALL.map { it.first }
 
     override fun attachBaseContext(base: Context) = super.attachBaseContext(Lang.wrap(base))
@@ -39,6 +40,8 @@ class SettingsActivity : Activity() {
         col.addView(Ui.heading(this, getString(R.string.section_settings), 22f))
         col.addView(networkCard())
         col.addView(behaviorCard())
+        phone = PhoneAccessCard(this, env)
+        col.addView(phone.view)
         col.addView(Ui.button(this, getString(R.string.setting_save), primary = true) { save() }
             .also { it.layoutParams = Ui.lp(top = 16) })
         setContentView(ScrollView(this).apply { addView(col) })
@@ -101,6 +104,7 @@ class SettingsActivity : Activity() {
             .putString("password", password.text.toString())
             .putBoolean("autostart", auto.isChecked)
             .putBoolean("verbose", verbose.isChecked)
+            .putBoolean("phone_access", phone.enabled)
             .also { if (newLang == null) it.remove("lang") else it.putString("lang", newLang) }
             .apply()
         toast(R.string.setting_saved)

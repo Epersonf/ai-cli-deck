@@ -12,6 +12,10 @@ const TitleBody = z.object({ title: z.string().max(200) });
 const MetaQuery = z.object({ key: z.string().min(1).optional() });
 const MetaBody = z.object({ key: z.string().min(1), value: z.string() });
 const HandoffBody = z.object({ text: z.string() });
+const NotifyBody = z.object({
+  text: z.string().min(1).max(400),
+  title: z.string().max(80).optional(),
+});
 const ReasonBody = z.object({ reason: z.string().min(1).max(500) });
 
 /** HTTP face of the agent tools, used by the `clideck` command. Loopback only. */
@@ -37,6 +41,12 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
   app.put(`${base}/handoff`, (request) =>
     tools(request.params).handoff(parseWith(HandoffBody, request.body).text),
   );
+  app.get(`${base}/phone/battery`, (request) => tools(request.params).phoneBattery());
+  app.get(`${base}/phone/device`, (request) => tools(request.params).phoneDevice());
+  app.post(`${base}/phone/notify`, (request) => {
+    const { text, title } = parseWith(NotifyBody, request.body);
+    return tools(request.params).phoneNotify(text, title);
+  });
   app.post(`${base}/preview`, (request) =>
     tools(request.params).openPreview(parseWith(UrlBody, request.body).url),
   );

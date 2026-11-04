@@ -21,6 +21,7 @@ async function setup() {
   const deps = {
     sessions: h.sessions,
     handoffs: h.handoffs,
+    phone: null,
     approvals,
     preview,
     browser: new BrowserService(new FakeBrowserEngine()),
@@ -51,6 +52,32 @@ describe('agent tools', () => {
     expect(h.sessions.get(b.id)?.name).toBeNull();
     expect((await tools.title('x'.repeat(200))).title).toHaveLength(60);
     await expect(tools.title('   ')).resolves.toEqual({ title: null });
+  });
+
+  it('keeps the phone out of reach unless the Android app enabled it', async () => {
+    const { tools } = await setup();
+    expect(tools.phoneEnabled).toBe(false);
+    expect(() => tools.phoneBattery()).toThrow(/Phone access is off/);
+    expect(() => tools.phoneNotify('hi')).toThrow(/Phone access is off/);
+  });
+
+  it('reads the battery and shows notifications through the phone bridge when enabled', async () => {
+    const { deps, a } = await setup();
+    const calls: unknown[][] = [];
+    const phone = {
+      request: (method: string, path: string, body?: unknown) => {
+        calls.push([method, path, body]);
+        return Promise.resolve({ ok: true });
+      },
+    };
+    const tools = createAgentTools({ ...deps, phone: phone as never }, a.id);
+    expect(tools.phoneEnabled).toBe(true);
+    await tools.phoneBattery();
+    await tools.phoneNotify('battery low', 'Phone');
+    expect(calls).toEqual([
+      ['GET', '/battery', undefined],
+      ['POST', '/notify', { title: 'Phone', text: 'battery low' }],
+    ]);
   });
 
   it('describes the calling session', async () => {

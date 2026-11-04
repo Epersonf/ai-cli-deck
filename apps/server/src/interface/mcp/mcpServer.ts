@@ -77,6 +77,28 @@ export function buildMcpServer(tools: AgentTools): McpServer {
     ({ requestId }) => run(() => tools.requestStatus(requestId)),
   );
 
+  if (tools.phoneEnabled) {
+    server.registerTool(
+      'phone',
+      {
+        description:
+          'The phone the deck runs on (enabled by the user). action: battery (percent, charging), device (model, Android version) or notify (shows a notification: text, optional title).',
+        inputSchema: {
+          action: z.enum(['battery', 'device', 'notify']),
+          text: z.string().max(400).optional(),
+          title: z.string().max(80).optional(),
+        },
+      },
+      ({ action, text, title }) =>
+        runAsync(() =>
+          action === 'battery'
+            ? tools.phoneBattery()
+            : action === 'device'
+              ? tools.phoneDevice()
+              : tools.phoneNotify(text ?? '', title),
+        ),
+    );
+  }
   registerBrowserTools(server, tools);
   return server;
 }

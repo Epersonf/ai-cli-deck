@@ -43,4 +43,15 @@
     <string name="setting_verbose_hint">Inclui informações do sistema, autotestes do terminal e logs do servidor em nível debug. Vale após Parar → Iniciar.</string>
     <string name="file_saved">Salvo.</string>
     <string name="file_not_saved">Não foi possível salvar o arquivo.</string>
+    <string name="section_phone">Acesso ao celular</string>
+    <string name="setting_phone">Permitir que agentes usem este celular</string>
+    <string name="setting_phone_hint">Desligado por padrão. Permite que os agentes de IA do deck leiam a bateria e dados do aparelho e enviem notificações para este celular. Vale após Parar → Iniciar.</string>
+    <string name="phone_warn_title">Acesso ao celular: leia antes</string>
+    <string name="phone_warn_body">Os agentes de IA do deck poderão ler informações deste celular (bateria, aparelho) e mostrar notificações nele. Mais capacidades podem vir depois. Um agente pode ser enganado por texto em uma página, arquivo ou mensagem (prompt injection) para usar o que ele alcança. Ative somente se entende isso e quer.</string>
+    <string name="phone_continue">Entendo, continuar</string>
+    <string name="phone_confirm_title">Tem certeza?</string>
+    <string name="phone_confirm_body">Você pode desligar aqui a qualquer momento. Os agentes só recebem o que este interruptor permite, e cada pedido fica registrado no log. Ativar o acesso ao celular?</string>
+    <string name="phone_enable">Ativar</string>
+    <string name="phone_notif_off">As notificações estão desligadas para este app. Ligue-as na página que vai abrir.</string>
+    <string name="phone_channel">Notificações dos agentes</string>
 </resources>

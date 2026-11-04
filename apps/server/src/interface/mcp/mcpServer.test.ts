@@ -22,6 +22,7 @@ async function connect() {
     {
       sessions: h.sessions,
       handoffs: h.handoffs,
+      phone: null,
       approvals,
       preview: new PreviewService(h.sessions, h.bus),
       browser: new BrowserService(new FakeBrowserEngine()),

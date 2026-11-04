@@ -44,4 +44,15 @@
     <string name="setting_verbose_hint">Adds system info, terminal self-tests and debug-level server logs to the log. Applies after Stop → Start.</string>
     <string name="file_saved">Saved.</string>
     <string name="file_not_saved">Could not save the file.</string>
+    <string name="section_phone">Phone access</string>
+    <string name="setting_phone">Let agents use this phone</string>
+    <string name="setting_phone_hint">Off by default. Lets the AI agents in the deck read the battery and device info and send notifications to this phone. Applies after Stop → Start.</string>
+    <string name="phone_warn_title">Phone access: read this first</string>
+    <string name="phone_warn_body">AI agents running in the deck will be able to read information from this phone (battery, device) and show notifications on it. More abilities may come later. An agent can be tricked by text in a web page, file or message (prompt injection) into using what it can reach. Turn this on only if you understand that and want it.</string>
+    <string name="phone_continue">I understand, continue</string>
+    <string name="phone_confirm_title">Are you sure?</string>
+    <string name="phone_confirm_body">You can turn this off here at any time. Agents only get what this switch allows, and each request is written to the log. Enable phone access?</string>
+    <string name="phone_enable">Enable</string>
+    <string name="phone_notif_off">Notifications are off for this app. Turn them on in the page that opens.</string>
+    <string name="phone_channel">Agent notifications</string>
 </resources>

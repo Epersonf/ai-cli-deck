@@ -43,4 +43,15 @@
     <string name="setting_verbose_hint">在日志中加入系统信息、终端自检和 debug 级别的服务器日志。“停止 → 启动”后生效。</string>
     <string name="file_saved">已保存。</string>
     <string name="file_not_saved">无法保存文件。</string>
+    <string name="section_phone">手机访问</string>
+    <string name="setting_phone">允许智能体使用此手机</string>
+    <string name="setting_phone_hint">默认关闭。允许 deck 中的 AI 智能体读取电量和设备信息，并向此手机发送通知。停止 → 启动后生效。</string>
+    <string name="phone_warn_title">手机访问：请先阅读</string>
+    <string name="phone_warn_body">deck 中的 AI 智能体将能读取此手机的信息（电量、设备）并显示通知，以后可能增加更多能力。智能体可能被网页、文件或消息中的文字欺骗（提示注入）而滥用其可触及的内容。仅在你理解并确实需要时开启。</string>
+    <string name="phone_continue">我已了解，继续</string>
+    <string name="phone_confirm_title">确定吗？</string>
+    <string name="phone_confirm_body">你可以随时在此关闭。智能体只能获得此开关允许的内容，且每个请求都会写入日志。启用手机访问？</string>
+    <string name="phone_enable">启用</string>
+    <string name="phone_notif_off">此应用的通知已关闭。请在打开的页面中开启。</string>
+    <string name="phone_channel">智能体通知</string>
 </resources>

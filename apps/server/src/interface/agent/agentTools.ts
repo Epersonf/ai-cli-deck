@@ -1,12 +1,12 @@
 import { normalizeUrl } from '@deck/shared';
-import { notFound } from '../../domain/errors.js';
+import { forbidden, notFound } from '../../domain/errors.js';
 import type { Container } from '../container.js';
 
 const TITLE_MAX = 60;
 
 export type AgentDeps = Pick<
   Container,
-  'sessions' | 'handoffs' | 'approvals' | 'preview' | 'browser'
+  'sessions' | 'handoffs' | 'phone' | 'approvals' | 'preview' | 'browser'
 >;
 
 /**
@@ -19,6 +19,11 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     const session = deps.sessions.get(sessionId);
     if (!session) throw notFound(`Session ${sessionId}`);
     return session;
+  };
+
+  const phone = () => {
+    if (!deps.phone) throw forbidden('Phone access is off: turn it on in the Android app settings');
+    return deps.phone;
   };
 
   return {
@@ -65,6 +70,12 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     /** Leaves notes for whoever continues this chat. The deck asks for them; agents never write them unprompted. */
     handoff: (text?: string) =>
       text === undefined ? deps.handoffs.info(sessionId) : deps.handoffs.save(sessionId, text),
+
+    /** True when the Android app let agents use the phone (Settings > Phone access). */
+    phoneEnabled: deps.phone !== null,
+    phoneBattery: () => phone().request('GET', '/battery'),
+    phoneDevice: () => phone().request('GET', '/device'),
+    phoneNotify: (text: string, title = '') => phone().request('POST', '/notify', { title, text }),
 
     proposeWorktree: (reason: string) => {
       const request = deps.approvals.propose(self().id, reason);

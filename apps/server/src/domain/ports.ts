@@ -63,6 +63,11 @@ export interface TemplateStorePort {
   remove(id: string): Promise<void>;
 }
 
+/** The phone the deck runs on (Android app bridge). Only exists when the user turned "Phone access" on. */
+export interface PhonePort {
+  request(method: 'GET' | 'POST', path: string, body?: unknown): Promise<unknown>;
+}
+
 export interface ProfileStorePort {
   load(): Promise<Profile[]>;
   save(profiles: Profile[]): Promise<void>;

@@ -11,6 +11,7 @@ import type { PreviewService } from '../application/PreviewService.js';
 import type { SessionManager } from '../application/SessionManager.js';
 import type { WorkspaceService } from '../application/WorkspaceService.js';
 import type { EventBus } from '../domain/events.js';
+import type { PhonePort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 
 export interface SecurityOptions {
@@ -23,6 +24,8 @@ export interface SecurityOptions {
 export interface Container {
   sessions: SessionManager;
   handoffs: HandoffService;
+  /** Null unless the Android app enabled phone access. */
+  phone: PhonePort | null;
   approvals: ApprovalService;
   workspace: WorkspaceService;
   preview: PreviewService;

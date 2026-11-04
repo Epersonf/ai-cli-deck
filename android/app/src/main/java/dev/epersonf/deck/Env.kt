@@ -26,6 +26,8 @@ class Env(ctx: Context) {
     val exposed: Boolean get() = host != LOOPBACK && host != "localhost"
     /** Extra diagnostics in the log (system info, terminal self-tests, debug-level server log). */
     val verbose: Boolean get() = prefs.getBoolean("verbose", false)
+    /** "Phone access" (battery, notifications...) for the agents: off until the user turns it on and confirms. */
+    val phoneAccess: Boolean get() = prefs.getBoolean("phone_access", false)
     val password: String get() = prefs.getString("password", "") ?: ""
 
     /** libtalloc & friends ship as lib*.so (APK rule); the linker wants their real sonames. */
@@ -39,6 +41,15 @@ class Env(ctx: Context) {
             link.delete()
             android.system.Os.symlink("$nativeDir/$src", link.path)
         }
+    }
+
+    /** What the deck server is told when it starts: its port and bind address, diagnostics, and the phone bridge. */
+    fun serverEnv(phone: PhoneBridge?): Map<String, String> {
+        val extra = mutableMapOf("DECK_PORT" to port.toString(), "DECK_HOST" to LOOPBACK)
+        if (verbose) { extra["DECK_VERBOSE"] = "1"; extra["DECK_LOG_LEVEL"] = "debug" }
+        if (phone != null) { extra["DECK_PHONE_URL"] = phone.url; extra["DECK_PHONE_TOKEN"] = phone.token }
+        if (exposed && password.isNotEmpty()) { extra["DECK_HOST"] = host; extra["DECK_PASSWORD"] = password }
+        return extra
     }
 
     fun prootCommand(script: String, extraEnv: Map<String, String> = emptyMap()): ProcessBuilder {

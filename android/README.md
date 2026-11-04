@@ -33,3 +33,15 @@ for a stable key (needed for in-place updates). Without them the debug key is us
 - Android may still kill background apps: use "Exempt from battery optimization" in the app and, on
   Android 12+, enable *Developer options → Disable child process restrictions*.
 - arm64 only.
+
+## Phone access (off by default)
+
+Settings > Phone access lets the AI agents in the deck use the phone itself. Turning it on shows a warning in plain
+words and asks twice; then it makes sure the permissions the features need are granted (today: notifications).
+Nothing is reachable while it is off, and turning it off takes effect on the next request.
+
+How it works: the app opens a small HTTP server on loopback with a random token and hands the address and token
+only to the deck server (inside proot). The deck server exposes it to agents as `clideck phone battery|device|notify`
+and as one MCP tool, `phone`, which exists only when access is on. Every request is written to the log, and
+notifications are limited to 6 a minute. Today: battery (percent, charging, temperature), device info and
+notifications. Wi-Fi, files and background tasks are planned and will ask for their own permissions.

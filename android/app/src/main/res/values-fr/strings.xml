@@ -43,4 +43,15 @@
     <string name="setting_verbose_hint">Ajoute les infos système, des autotests du terminal et les journaux du serveur en niveau debug. Appliqué après Arrêter → Démarrer.</string>
     <string name="file_saved">Enregistré.</string>
     <string name="file_not_saved">Impossible d’enregistrer le fichier.</string>
+    <string name="section_phone">Accès au téléphone</string>
+    <string name="setting_phone">Autoriser les agents à utiliser ce téléphone</string>
+    <string name="setting_phone_hint">Désactivé par défaut. Permet aux agents IA du deck de lire la batterie et les infos de l’appareil et d’envoyer des notifications à ce téléphone. Appliqué après Arrêter → Démarrer.</string>
+    <string name="phone_warn_title">Accès au téléphone : à lire avant</string>
+    <string name="phone_warn_body">Les agents IA du deck pourront lire des informations de ce téléphone (batterie, appareil) et y afficher des notifications. D’autres capacités pourraient venir. Un agent peut être trompé par du texte dans une page, un fichier ou un message (prompt injection) pour utiliser ce qu’il atteint. Activez seulement si vous le comprenez et le voulez.</string>
+    <string name="phone_continue">J’ai compris, continuer</string>
+    <string name="phone_confirm_title">Êtes-vous sûr ?</string>
+    <string name="phone_confirm_body">Vous pouvez le désactiver ici à tout moment. Les agents n’obtiennent que ce que ce bouton permet, et chaque requête est écrite dans le journal. Activer l’accès au téléphone ?</string>
+    <string name="phone_enable">Activer</string>
+    <string name="phone_notif_off">Les notifications sont désactivées pour cette app. Activez-les dans la page qui s’ouvre.</string>
+    <string name="phone_channel">Notifications des agents</string>
 </resources>

@@ -24,6 +24,8 @@ class DeckService : Service() {
     @Volatile private var generation = 0
     private val locks by lazy { DeckLocks(this) }
     @Volatile private var proc: Process? = null
+    /** Lets the agents reach the phone; only exists while "Phone access" is on. */
+    @Volatile private var phone: PhoneBridge? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -68,12 +70,8 @@ class DeckService : Service() {
             try {
                 setStatus(gen, DeckState.INSTALLING)
                 if (!installer.ensure()) { fails++; countdown(gen, 20); continue }
-                val extra = mutableMapOf("DECK_PORT" to env.port.toString(), "DECK_HOST" to Env.LOOPBACK)
-                if (env.verbose) { extra["DECK_VERBOSE"] = "1"; extra["DECK_LOG_LEVEL"] = "debug" }
-                if (env.exposed && env.password.isNotEmpty()) {
-                    extra["DECK_HOST"] = env.host
-                    extra["DECK_PASSWORD"] = env.password
-                }
+                if (env.phoneAccess && phone == null) phone = PhoneBridge(this, env).also { it.start() }
+                val extra = env.serverEnv(phone)
                 setStatus(gen, DeckState.STARTING)
                 val started = System.currentTimeMillis()
                 log(env.en.getString(R.string.log_starting, java.util.Date().toString()))
@@ -123,6 +121,7 @@ class DeckService : Service() {
         running = false
         generation++
         proc?.let { killHard(it) }
+        phone?.stop(); phone = null
         worker?.interrupt()
         worker = null
         locks.release()
@@ -142,6 +141,7 @@ class DeckService : Service() {
         running = false
         generation++
         proc?.let { killHard(it) }
+        phone?.stop(); phone = null
         locks.release()
         super.onDestroy()
     }

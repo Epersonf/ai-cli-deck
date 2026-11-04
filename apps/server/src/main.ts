@@ -34,6 +34,8 @@ import { createProfileService } from './infrastructure/providers/profileWiring.j
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
 import { HandoffService } from './application/HandoffService.js';
+import { stringEnv } from './infrastructure/config/stringEnv.js';
+import { phoneFromEnv } from './infrastructure/phone/HttpPhoneBridge.js';
 import { FileHandoffStore } from './infrastructure/store/FileHandoffStore.js';
 import { FileScrollbackStore } from './infrastructure/store/FileScrollbackStore.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
@@ -41,13 +43,8 @@ import { runCommand } from './infrastructure/tmux/exec.js';
 import { detectMultiplexer } from './infrastructure/tmux/NoMultiplexer.js';
 import { createApp } from './interface/http/createApp.js';
 
-function stringEnv(): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(process.env).filter((e): e is [string, string] => typeof e[1] === 'string'),
-  );
-}
-
 async function main(): Promise<void> {
+  const phone = phoneFromEnv(process.env); // before sessions copy the environment
   const { config, paths } = await loadConfig(process.env);
   const auth = await AuthService.create({
     store: new JsonAuthStore(join(paths.configDir, 'auth.json')),
@@ -104,6 +101,7 @@ async function main(): Promise<void> {
 
   const app = await createApp({
     sessions,
+    phone,
     handoffs: new HandoffService(sessions, new FileHandoffStore(join(paths.stateDir, 'handoffs'))),
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
     workspace: new WorkspaceService({ sessions, files: new FileReader(), git }),

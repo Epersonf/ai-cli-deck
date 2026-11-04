@@ -11,6 +11,7 @@ export type Command =
   | { name: 'title'; title: string | null }
   | { name: 'meta'; key: string | null; value: string | null }
   | { name: 'handoff'; text: string | null }
+  | { name: 'phone'; action: 'battery' | 'device' | 'notify'; text: string; title: string }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
@@ -49,6 +50,16 @@ export function parseArgs(argv: readonly string[]): Parsed {
       if (verb === 'set' && key) return ok({ name, key, value: value.join(' ') });
       if (verb === 'del' && key) return ok({ name, key, value: '' });
       return fail('usage: clideck meta [get <key> | set <key> "<value>" | del <key>]');
+    }
+    case 'phone': {
+      const [action, ...words] = rest;
+      const titleAt = words.indexOf('--title');
+      const title = titleAt >= 0 ? (words[titleAt + 1] ?? '') : '';
+      const message = (titleAt >= 0 ? words.slice(0, titleAt) : words).join(' ').trim();
+      if (action === 'battery' || action === 'device')
+        return ok({ name, action, text: '', title: '' });
+      if (action === 'notify' && message !== '') return ok({ name, action, text: message, title });
+      return fail('usage: clideck phone battery | device | notify "<text>" [--title "<title>"]');
     }
     case 'handoff':
       return ok({ name, text: text === '' ? null : text });
