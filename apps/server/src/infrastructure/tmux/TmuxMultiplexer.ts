@@ -21,8 +21,15 @@ export function buildTmuxArgs(name: string, spec: LaunchSpec): string[] {
     ...SOCKET_ARGS,
     ...['set-option', '-g', 'status', 'off', ';'],
     ...['set-option', '-g', 'escape-time', '10', ';'],
-    // Stay on the browser terminal's normal screen so xterm keeps scrollback and the wheel scrolls locally.
+    // Stay on the browser terminal's normal screen (no alternate screen switch).
     ...['set-option', '-ga', 'terminal-overrides', ',*:smcup@:rmcup@', ';'],
+    // The wheel goes to tmux, which hands it to a program that asked for the mouse (e.g. an agent
+    // that scrolls its own chat) or else scrolls tmux's history, which holds the whole session.
+    ...['set-option', '-g', 'mouse', 'on', ';'],
+    ...['set-option', '-g', 'history-limit', '20000', ';'],
+    // Text selected with the mouse (tmux copy mode) is sent to the browser's clipboard via OSC 52.
+    ...['set-option', '-g', 'set-clipboard', 'on', ';'],
+    ...['set-option', '-ga', 'terminal-overrides', `,*:Ms=\\E]52;%p1%s;%p2%s\\007`, ';'],
     ...['new-session', '-A', '-s', name, '-c', spec.cwd, ...envFlags],
     spec.command,
     ...spec.args,

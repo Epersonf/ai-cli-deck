@@ -12,7 +12,7 @@ vi.mock('@xterm/xterm', () => ({
     modes = { applicationCursorKeysMode: false };
     loadAddon() {}
     attachCustomKeyEventHandler() {}
-    attachCustomWheelEventHandler() {}
+    parser = { registerOscHandler() {} };
     open() {}
     write() {}
     reset() {}

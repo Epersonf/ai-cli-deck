@@ -70,6 +70,15 @@ describe('tmux and git helpers', () => {
     expect(args.indexOf('status')).toBeLessThan(at);
   });
 
+  it('gives the wheel to tmux (mouse on, deep history) and lets copies reach the browser clipboard', () => {
+    const args = buildTmuxArgs('deck-s1', { command: 'claude', args: [], env: {}, cwd: '/w' });
+    const option = (name: string): string | undefined => args[args.indexOf(name) + 1];
+    expect(option('mouse')).toBe('on');
+    expect(Number(option('history-limit'))).toBeGreaterThanOrEqual(10000);
+    expect(option('set-clipboard')).toBe('on');
+    expect(args.some((a) => a.includes('Ms=') && a.includes(']52;'))).toBe(true);
+  });
+
   it('parses porcelain status', () => {
     const out = '## main...origin/main\n M src/a.ts\n?? new.txt\n';
     expect(parseGitStatus(out)).toEqual({
