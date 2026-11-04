@@ -2,6 +2,8 @@ import { normalizeUrl } from '@deck/shared';
 import { notFound } from '../../domain/errors.js';
 import type { Container } from '../container.js';
 
+const TITLE_MAX = 60;
+
 export type AgentDeps = Pick<Container, 'sessions' | 'approvals' | 'preview' | 'browser'>;
 
 /**
@@ -38,6 +40,13 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
           status: s.status,
           sameFolderAsYou: s.cwd === me.cwd,
         }));
+    },
+
+    /** Reads (no argument) or sets the name shown for this terminal in the deck. Kept tiny on purpose. */
+    title: async (name?: string) => {
+      if (name === undefined) return { title: self().name };
+      const clean = name.replace(/\s+/g, ' ').trim().slice(0, TITLE_MAX);
+      return { title: (await deps.sessions.rename(sessionId, clean === '' ? null : clean)).name };
     },
 
     proposeWorktree: (reason: string) => {

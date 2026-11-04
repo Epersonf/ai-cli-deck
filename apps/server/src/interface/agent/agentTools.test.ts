@@ -42,6 +42,16 @@ describe('agent tools', () => {
     expect(tools.listSessions().map((s) => s.id)).not.toContain(other.id);
   });
 
+  it('reads and sets only its own title, trimmed and capped', async () => {
+    const { tools, h, a, b } = await setup();
+    await expect(tools.title()).resolves.toEqual({ title: null });
+    await expect(tools.title('  Fix   login\nbug ')).resolves.toEqual({ title: 'Fix login bug' });
+    expect(h.sessions.get(a.id)?.name).toBe('Fix login bug');
+    expect(h.sessions.get(b.id)?.name).toBeNull();
+    expect((await tools.title('x'.repeat(200))).title).toHaveLength(60);
+    await expect(tools.title('   ')).resolves.toEqual({ title: null });
+  });
+
   it('describes the calling session', async () => {
     const { tools, a } = await setup();
     expect(tools.whoami()).toMatchObject({ id: a.id, cwd: '/work', port: a.port });

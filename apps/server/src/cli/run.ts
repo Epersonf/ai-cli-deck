@@ -32,6 +32,12 @@ async function execute(
       return show(await call(deck, 'GET', '/whoami'));
     case 'sessions':
       return show(await call(deck, 'GET', '/sessions'));
+    case 'title': {
+      const reply = (await (command.title === null
+        ? call(deck, 'GET', '/title')
+        : call(deck, 'POST', '/title', { title: command.title }))) as { title: string | null };
+      return reply.title ?? '(no title)';
+    }
     case 'preview':
       return show(await call(deck, 'POST', '/preview', { url: command.url }));
     case 'newtab':

@@ -2,30 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { DeckError } from '../../domain/errors.js';
 import type { AgentTools } from '../agent/agentTools.js';
-
-interface TextResult {
-  [key: string]: unknown;
-  content: Array<{ type: 'text'; text: string }>;
-  isError?: boolean;
-}
-
-async function runAsync(action: () => Promise<unknown>): Promise<TextResult> {
-  try {
-    return { content: [{ type: 'text', text: JSON.stringify(await action(), null, 2) }] };
-  } catch (error) {
-    if (!(error instanceof DeckError)) throw error;
-    return { content: [{ type: 'text', text: error.message }], isError: true };
-  }
-}
-
-function run(action: () => unknown): TextResult {
-  try {
-    return { content: [{ type: 'text', text: JSON.stringify(action(), null, 2) }] };
-  } catch (error) {
-    if (!(error instanceof DeckError)) throw error;
-    return { content: [{ type: 'text', text: error.message }], isError: true };
-  }
-}
+import { run, runAsync } from './mcpResult.js';
 
 /** One MCP server per request, bound to the calling session. No tool runs git or writes files. */
 export function buildMcpServer(tools: AgentTools): McpServer {
@@ -35,6 +12,15 @@ export function buildMcpServer(tools: AgentTools): McpServer {
     'list_sessions',
     { description: 'List the other sessions open in the deck (provider, folder, status).' },
     () => run(tools.listSessions),
+  );
+  server.registerTool(
+    'session_title',
+    {
+      description:
+        'Name this terminal in the deck (3-6 words, about the task). Omit title to just read the current name. Call it once the topic is clear and again only if it changes.',
+      inputSchema: { title: z.string().max(200).optional() },
+    },
+    ({ title }) => runAsync(() => tools.title(title)),
   );
   server.registerTool(
     'propose_worktree',

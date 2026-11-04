@@ -7,5 +7,7 @@ export const AGENT_GUIDE = [
   '`clideck worktree "<reason>"` asks the user to approve a git worktree (never create one yourself).',
   'The same actions exist as MCP tools on the "deck" server, including browser_* tools',
   "(navigate, snapshot, click, fill, type, press, screenshot) that drive a real Chromium shown in the user's preview pane.",
+  'Once the first request makes the topic clear, name this terminal with `clideck title "<3-6 words>"`',
+  '(MCP: session_title); rename only if the topic really changes.',
   'Start dev servers on $PORT so sessions do not collide.',
 ].join(' ');

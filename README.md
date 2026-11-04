@@ -135,7 +135,7 @@ each session stays bound to the profile it was started with. They are stored in
 
 ## Talking back to the deck
 
-Inside any session, `clideck help` lists the commands (`preview`, `sessions`, `worktree`, `status`...).
+Inside any session, `clideck help` lists the commands (`title`, `preview`, `sessions`, `worktree`, `status`...).
 Run `clideck install` once to get `/clideck help` as a slash command in Claude Code and Codex.
 Claude sessions also get the MCP server automatically. See [docs/protocol.md](docs/protocol.md).
 

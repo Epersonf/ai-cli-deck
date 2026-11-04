@@ -8,6 +8,7 @@ export type Command =
   | { name: 'port' }
   | { name: 'preview'; url: string }
   | { name: 'newtab'; url: string }
+  | { name: 'title'; title: string | null }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
@@ -39,6 +40,8 @@ export function parseArgs(argv: readonly string[]): Parsed {
       return text === ''
         ? fail(`usage: clideck ${name} <url|port>`)
         : ok({ name, url: normalizeUrl(text) });
+    case 'title':
+      return ok({ name, title: text === '' ? null : text });
     case 'worktree':
       return text === '' ? fail('usage: clideck worktree "<reason>"') : ok({ name, reason: text });
     case 'status':

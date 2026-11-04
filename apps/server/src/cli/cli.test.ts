@@ -31,6 +31,11 @@ describe('parseArgs', () => {
       reason: 'refactor auth module',
     });
     expect(command('status', 'abc123')).toEqual({ name: 'status', requestId: 'abc123' });
+    expect(command('title')).toEqual({ name: 'title', title: null });
+    expect(command('title', 'Fix', 'login', 'bug')).toEqual({
+      name: 'title',
+      title: 'Fix login bug',
+    });
     expect(command('install', '--force')).toEqual({ name: 'install', force: true });
   });
 
@@ -52,6 +57,7 @@ describe('help and slash commands', () => {
       'whoami',
       'sessions',
       'port',
+      'title',
       'preview',
       'newtab',
       'worktree',

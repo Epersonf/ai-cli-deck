@@ -6,6 +6,7 @@ Commands:
   help                     Show this help
   whoami                   This session: id, CLI, folder, preview port
   sessions                 Other sessions open in the deck
+  title ["<name>"]         Name this terminal in the deck (no argument: print the current name)
   port                     Print this session's PORT (use it for dev servers)
   preview <url|port>       Open a localhost page in this session's preview panel
   newtab <url|port>        Offer the user a button to open a page in a new tab
