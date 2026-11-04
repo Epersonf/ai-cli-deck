@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { checkTemplateText, downloadText } from './templateFile';
+import { checkTemplateText, copyText, downloadText } from './templateFile';
 
 afterEach(() => {
   delete (window as { DeckAndroid?: unknown }).DeckAndroid;
@@ -21,5 +21,17 @@ describe('checkTemplateText', () => {
     expect(checkTemplateText(ok)).toMatchObject({ id: 'a' });
     expect(checkTemplateText('{ nope')).toMatch(/Not valid JSON/);
     expect(checkTemplateText('{ "schema": 1 }')).toMatch(/Not a profile template/);
+  });
+});
+
+describe('copyText', () => {
+  it('falls back to the copy command where there is no clipboard API (plain http)', async () => {
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+    const exec = vi.fn(() => true);
+    (document as unknown as { execCommand: unknown }).execCommand = exec;
+    await copyText('hello');
+    expect(exec).toHaveBeenCalledWith('copy');
+    exec.mockReturnValue(false);
+    await expect(copyText('x')).rejects.toThrow(/Download/);
   });
 });

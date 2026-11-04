@@ -6,6 +6,7 @@ import {
   type TemplateInfo,
 } from '@deck/shared';
 import { conflict, invalid, notFound } from '../domain/errors.js';
+import { exportTemplate } from './templateExport.js';
 import type { TemplateStorePort } from '../domain/ports.js';
 
 export interface TemplateServiceDeps {
@@ -35,6 +36,13 @@ export class TemplateService {
 
   get(id: string): ProfileTemplate | undefined {
     return [...this.deps.builtin, ...this.installed].find((t) => t.id === id);
+  }
+
+  /** A template as commented JSON, to use as an example or edit. */
+  exportText(id: string): string {
+    const template = this.get(id);
+    if (!template) throw notFound(`Template ${id}`);
+    return exportTemplate(template);
   }
 
   /** Imports a template written as JSON (comments allowed). Same id as an imported one: it is replaced. */

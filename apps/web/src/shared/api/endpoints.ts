@@ -62,6 +62,12 @@ export const api = {
   templates: () => request(z.array(TemplateInfoSchema), 'GET', '/api/templates'),
   templateSkeleton: () =>
     request(z.object({ text: z.string() }), 'GET', '/api/templates/skeleton').then((r) => r.text),
+  exportTemplate: (id: string) =>
+    request(
+      z.object({ text: z.string() }),
+      'GET',
+      `/api/templates/${encodeURIComponent(id)}/export`,
+    ).then((r) => r.text),
   importTemplate: (text: string) => request(TemplateInfoSchema, 'POST', '/api/templates', { text }),
   removeTemplate: (id: string) =>
     request(z.void(), 'DELETE', `/api/templates/${encodeURIComponent(id)}`),

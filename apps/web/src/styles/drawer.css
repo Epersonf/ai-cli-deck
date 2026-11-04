@@ -209,46 +209,58 @@ button.danger {
   width: auto;
 }
 
-/* Profile templates dialog (settings). */
+/* Profile templates (settings): the dialog scrolls as a whole, never a list inside it. */
 .templates textarea {
-  width: 100%;
-  min-height: 90px;
+  min-height: 160px;
   resize: vertical;
   font-family: ui-monospace, Menlo, Consolas, monospace;
   font-size: 12px;
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--parchment);
+}
+.button-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.button-pair > * {
+  width: 100%;
+  min-width: 0;
+}
+.file-button input {
+  display: none;
 }
 .template-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 6px;
-  margin: 0 0 10px;
+  margin: 0;
   padding: 0;
-  max-height: 32vh;
-  overflow-y: auto;
   list-style: none;
 }
 .template-list li {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  padding: 6px 8px;
-  border: 1px solid var(--brass);
+  padding: 8px 8px 8px 12px;
+  border: 1px solid var(--brass-lo);
   border-radius: 8px;
+  background: var(--ink);
 }
-.template-list li > span {
+.template-info {
+  display: grid;
+  gap: 2px;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.template-info strong {
+  color: var(--brass-hi);
 }
 .warn-text {
   color: var(--amber);
 }
-.file-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  border: 1px solid var(--brass);
-  border-radius: 8px;
-  cursor: pointer;
+.template-info .hint {
+  margin: 0;
+  font-size: 12px;
 }

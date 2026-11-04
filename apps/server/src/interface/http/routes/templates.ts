@@ -13,6 +13,10 @@ export function templateRoutes(app: FastifyInstance, c: Container): void {
 
   app.get('/api/templates/skeleton', () => ({ text: TEMPLATE_SKELETON }));
 
+  app.get('/api/templates/:id/export', (request) => ({
+    text: c.templates.exportText(parseWith(IdParams, request.params).id),
+  }));
+
   app.post('/api/templates', async (request, reply) => {
     const { text } = parseWith(ImportTemplateBodySchema, request.body);
     return reply.code(201).send(await c.templates.install(text));

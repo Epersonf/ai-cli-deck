@@ -38,7 +38,20 @@ export function downloadText(name: string, text: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** Puts text on the clipboard (where saving a file is not possible, e.g. some in-app browsers). */
+/** Puts text on the clipboard. Falls back to the old copy command where the clipboard API is missing (plain http). */
 export async function copyText(text: string): Promise<void> {
-  await navigator.clipboard.writeText(text);
+  try {
+    await navigator.clipboard.writeText(text);
+    return;
+  } catch {
+    // no clipboard API in this context: use a hidden text box
+  }
+  const box = document.createElement('textarea');
+  box.value = text;
+  box.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.append(box);
+  box.select();
+  const copied = document.execCommand('copy');
+  box.remove();
+  if (!copied) throw new Error('Copy is not available here: use Download instead');
 }

@@ -97,7 +97,11 @@ describe('App dialogs', () => {
       'Codex',
       'Custom',
     ]);
-    const importButton = [...document.querySelectorAll('.modal .row button')].find(
+    const open2 = [...document.querySelectorAll('.modal .button-pair button')].find(
+      (b) => b.textContent === 'Import template…',
+    );
+    click(open2 ?? null);
+    const importButton = [...document.querySelectorAll('.modal .button-pair button')].find(
       (b) => b.textContent === 'Import',
     ) as HTMLButtonElement;
     expect(importButton.disabled).toBe(true);
