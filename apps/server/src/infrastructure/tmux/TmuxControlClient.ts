@@ -10,6 +10,9 @@ import { ModeTracker } from './modeTracker.js';
 import { buildReplay, snapshotCommands } from './screenSnapshot.js';
 
 const FAILED: Reply = { ok: false, lines: [] };
+/** A pause in the output this long means the program finished drawing a frame. */
+const QUIET_MS = 40;
+const MAX_WAIT_MS = 400;
 const ignore = (): void => undefined;
 
 export interface ControlClientOptions {
@@ -37,6 +40,8 @@ export class TmuxControlClient implements PtyHandle {
   private readonly waiting: Array<(reply: Reply) => void> = [];
   /** Output parsed from the current chunk, handed on in one piece (and always before a reply). */
   private pending: Uint8Array[] = [];
+  /** When the program last wrote something. */
+  private outputAt = 0;
   private exitCode: number | null | undefined;
 
   constructor(private readonly options: ControlClientOptions) {
@@ -87,10 +92,19 @@ export class TmuxControlClient implements PtyHandle {
       replies.push(reply);
       if (replies.length === commands.length) done(buildReplay(replies, this.modes));
     };
-    this.send(
-      commands,
-      commands.map(() => collect),
-    );
+    // Taken between two frames when possible: halfway through one, the program may rely on state a
+    // snapshot cannot carry (a saved cursor, the colour it set). A program that never pauses waits no more.
+    const asked = Date.now();
+    const take = (): void => {
+      const quiet = Date.now() - this.outputAt;
+      if (quiet >= QUIET_MS || Date.now() - asked >= MAX_WAIT_MS) {
+        this.send(
+          commands,
+          commands.map(() => collect),
+        );
+      } else setTimeout(take, QUIET_MS - quiet);
+    };
+    take();
   }
 
   private send(commands: string[], answers: Array<(reply: Reply) => void>): void {
@@ -106,6 +120,7 @@ export class TmuxControlClient implements PtyHandle {
     if (event.kind === 'output') {
       this.modes.scan(event.data);
       this.pending.push(event.data);
+      this.outputAt = Date.now();
       return;
     }
     this.flush();

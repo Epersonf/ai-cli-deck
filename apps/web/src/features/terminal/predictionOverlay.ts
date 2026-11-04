@@ -18,6 +18,15 @@ export function screenOf(term: Terminal): ScreenView {
           ?.getChars() || ' '
       );
     },
+    faint(x, y) {
+      const buffer = term.buffer.active;
+      return (
+        (buffer
+          .getLine(buffer.baseY + y)
+          ?.getCell(x)
+          ?.isDim() ?? 0) !== 0
+      );
+    },
     alternate: () => term.buffer.active.type === 'alternate',
     atBottom: () => term.buffer.active.viewportY === term.buffer.active.baseY,
   };
@@ -48,22 +57,22 @@ export function createOverlay(term: Terminal) {
         fontSize: `${term.options.fontSize}px`,
         lineHeight: `${ch}px`,
       };
-      const place = (x: number, y: number): HTMLSpanElement => {
+      const background = TERMINAL_THEME.background ?? '#000';
+      const place = (x: number, y: number, width = 1): HTMLSpanElement => {
         const cell = document.createElement('span');
         Object.assign(cell.style, font, {
           left: `${x * cw}px`,
           top: `${y * ch}px`,
-          width: `${cw}px`,
+          width: `${width * cw}px`,
           height: `${ch}px`,
+          // Covers what is drawn below: a placeholder, or the letter a backspace removes.
+          background,
         });
         layer.appendChild(cell);
         return cell;
       };
-      for (const p of view.chars) {
-        const cell = place(p.x, p.y);
-        cell.textContent = p.ch;
-        if (p.erase) cell.style.background = TERMINAL_THEME.background ?? '#000';
-      }
+      if (view.mask) place(view.mask.x, view.mask.y, view.mask.width);
+      for (const p of view.chars) place(p.x, p.y).textContent = p.ch;
       const cursor = place(view.cursor.x, view.cursor.y);
       cursor.className = 'prediction-cursor';
       cursor.style.background = TERMINAL_THEME.cursor ?? '#ffb43a';

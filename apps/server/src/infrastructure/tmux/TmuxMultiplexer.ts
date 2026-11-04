@@ -21,6 +21,8 @@ const SOCKET_ARGS = ['-u', '-L', TMUX_SOCKET];
 const SERVER_OPTIONS = [
   ...['set-option', '-g', 'status', 'off', ';'],
   ...['set-option', '-g', 'mouse', 'off', ';'],
+  // Programs that ask tmux (Claude Code does) then know focus reports reach them: the browser sends them.
+  ...['set-option', '-g', 'focus-events', 'on', ';'],
   // Rebuilds the scrollback of a device that connects later.
   ...['set-option', '-g', 'history-limit', '20000', ';'],
   ...[

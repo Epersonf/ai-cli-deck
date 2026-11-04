@@ -90,6 +90,7 @@ describe('tmux and git helpers', () => {
     );
     const option = (name: string): string | undefined => args[args.indexOf(name) + 1];
     expect(option('mouse')).toBe('off');
+    expect(option('focus-events')).toBe('on');
     expect(Number(option('history-limit'))).toBeGreaterThanOrEqual(10000);
     expect(option('window-style')).toBe('fg=#ecdcb8,bg=#120d08');
   });

@@ -80,7 +80,7 @@ describe('createPredictor', () => {
     typeAndEcho(t, 'a');
     typeAndEcho(t, 'b');
     t.predictor.input('c');
-    t.advance(2000);
+    t.advance(8000);
     expect(t.predictor.tick()).toBe(true);
     expect(t.predictor.view()).toBeNull();
   });

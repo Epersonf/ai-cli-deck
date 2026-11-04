@@ -1,14 +1,15 @@
-import { RESET_KEYS, SECRET_PROMPT, isPredictable } from './predictorTypes';
+import { readScreen } from './predictorScreen';
+import { AGENT_PROMPT, RESET_KEYS, isPredictable } from './predictorTypes';
 import type { Prediction, PredictionView, PredictorOptions } from './predictorTypes';
 
 export { isPredictable };
 export type { Prediction, PredictionView, PredictorOptions, ScreenView } from './predictorTypes';
 
 /**
- * Mosh-style local echo for a high-latency link. Typed characters are predicted at the
- * cursor and drawn as an overlay (never written to the terminal buffer); each one is checked
- * against the real screen when the server's output arrives. It only shows after the server has
- * echoed earlier predictions correctly, so password prompts and full-screen apps stay untouched.
+ * Mosh-style local echo for a slow link or a busy program: typed characters are guessed at the cursor and
+ * drawn as an overlay, checked against the screen as output arrives (a wrong guess just disappears), never
+ * at a password prompt. On a full-screen program a guess shows after one confirmed echo, or at once in an
+ * agent's chat box (its ❯ prompt or faint placeholder), where a CLI still starting up can be seconds late.
  */
 export function createPredictor(options: PredictorOptions) {
   const { screen } = options;
@@ -20,41 +21,54 @@ export function createPredictor(options: PredictorOptions) {
   let needs = 0;
   /** Characters typed on the current line (guards backspace over the prompt). */
   let lineTyped = 0;
-
+  /** The placeholder the guesses cover, and their row's text when last checked. */
+  let mask: PredictionView['mask'] = null;
+  let row = '';
+  let wasAlternate = false;
+  const clear = (): void => {
+    pending = [];
+    mask = null;
+  };
   /** The echo differed from the guess: stop guessing until a few are confirmed again. */
   const give_up = (): void => {
-    pending = [];
+    clear();
     needs = trust;
   };
-  const timeout = (): number => Math.max(2000, (options.latency() ?? 0) * 4);
-  const lineBefore = (x: number, y: number): string => {
-    let text = '';
-    for (let i = 0; i < x; i += 1) text += screen.cell(i, y) || ' ';
-    return text;
-  };
-  const secretPrompt = (x: number, y: number): boolean => SECRET_PROMPT.test(lineBefore(x, y));
+  /** A busy program leaves the row alone, so guesses may wait a while (a redraw without them ends them). */
+  const timeout = (): number => Math.max(8000, (options.latency() ?? 0) * 4);
+  const { blank, rowText, secretPrompt } = readScreen(screen);
   const next = (): { x: number; y: number } => {
     const last = pending[pending.length - 1];
     if (!last) return screen.cursor();
     return { x: last.erase ? last.x : last.x + 1, y: last.y };
   };
+  /** Starts a run of guesses; false in the middle of a line (the program shifts text) or at a password. */
+  const start = (x: number, y: number): boolean => {
+    if (!blank(x, y) || secretPrompt(x, y)) return false;
+    row = rowText(y);
+    // An input that shows its placeholder, or an agent's chat box: what is typed goes there.
+    mask = screen.faint(x, y) ? { x, y, width: screen.cols - x } : null;
+    if (mask || AGENT_PROMPT.test(row)) needs = 0;
+    return true;
+  };
 
   return {
     /** Feed every chunk of user input; returns true when the overlay changed. */
     input(data: string): boolean {
+      const alternate = screen.alternate();
+      if (alternate !== wasAlternate) {
+        wasAlternate = alternate;
+        if (alternate) needs = Math.max(needs, 1); // a new full-screen program: wait for one echo
+      }
       if (isPredictable(data)) {
-        if (screen.alternate() || !screen.atBottom()) {
-          pending = [];
+        if (!screen.atBottom()) {
+          clear();
           return false;
         }
         const base = next();
-        if (pending.length === 0) {
-          // typing in the middle of a line makes the shell shift the text: not predictable
-          if ((screen.cell(base.x, base.y) || ' ') !== ' ' || secretPrompt(base.x, base.y))
-            return false;
-        }
+        if (pending.length === 0 ? !start(base.x, base.y) : !blank(base.x, base.y)) return false;
         if (base.x >= screen.cols - 1) {
-          pending = []; // line wrap behaviour is app-specific: stop guessing
+          clear(); // line wrap behaviour is app-specific: stop guessing
           return true;
         }
         pending.push({ x: base.x, y: base.y, ch: data, at: clock() });
@@ -69,14 +83,15 @@ export function createPredictor(options: PredictorOptions) {
           return true;
         }
         const base = next();
-        if (lineTyped > 0 && base.x > 0 && !screen.alternate() && screen.atBottom()) {
+        if (lineTyped > 0 && base.x > 0 && !alternate && screen.atBottom()) {
+          if (pending.length === 0) row = rowText(base.y);
           pending.push({ x: base.x - 1, y: base.y, ch: ' ', at: clock(), erase: true });
           lineTyped -= 1;
           return true;
         }
       }
       const had = pending.length > 0;
-      pending = [];
+      clear();
       if (RESET_KEYS.has(data.charAt(0))) lineTyped = 0;
       return had;
     },
@@ -89,14 +104,24 @@ export function createPredictor(options: PredictorOptions) {
         const moved =
           cursor.y !== front.y || (front.erase ? cursor.x <= front.x : cursor.x > front.x);
         if (!moved) break;
-        if ((screen.cell(front.x, front.y) || ' ') === front.ch) {
-          pending.shift();
-          if (needs > 0) needs -= 1;
-          changed = true;
-        } else {
+        if ((screen.cell(front.x, front.y) || ' ') !== front.ch) {
           give_up(); // the echo differs from the guess
           return true;
         }
+        pending.shift();
+        if (needs > 0) needs -= 1;
+        changed = true;
+      }
+      const front = pending[0];
+      if (changed) mask = null; // the program has taken over its input (and its placeholder)
+      if (!front) return changed;
+      const now = rowText(front.y);
+      if (changed) row = now;
+      else if (now !== row) {
+        // The program redrew the row without the guesses: it uses those keys for something else.
+        if (screen.alternate()) give_up();
+        else clear();
+        return true;
       }
       return changed;
     },
@@ -105,22 +130,20 @@ export function createPredictor(options: PredictorOptions) {
     tick(): boolean {
       const front = pending[0];
       if (!front || clock() - front.at < timeout()) return false;
-      pending = []; // a slow server, not a wrong guess: no loss of trust
+      // A slow link loses no trust; a full-screen program that never echoed is not guessed again soon.
+      if (screen.alternate()) give_up();
+      else clear();
       return true;
     },
 
-    reset(): void {
-      pending = [];
-    },
+    reset: clear,
 
     hasPending: (): boolean => pending.length > 0,
 
     view(): PredictionView | null {
       const slow = (options.latency() ?? 0) >= threshold;
-      if (!slow || needs > 0 || pending.length === 0) return null;
-      if (screen.alternate() || !screen.atBottom()) return null;
-      const end = next();
-      return { chars: pending, cursor: end };
+      if (!slow || needs > 0 || pending.length === 0 || !screen.atBottom()) return null;
+      return { chars: pending, cursor: next(), mask };
     },
   };
 }

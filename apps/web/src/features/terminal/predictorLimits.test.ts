@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { setup, typeAndEcho } from './predictorFixture';
 
 describe('createPredictor limits', () => {
-  it('stays off on the alternate screen and while scrolled back', () => {
+  it('stays off while scrolled back, and on a new full-screen program until it echoes', () => {
     const t = setup();
     typeAndEcho(t, 'a');
     typeAndEcho(t, 'b');
