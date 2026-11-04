@@ -42,4 +42,6 @@
     <string name="log_copied">Log copied to the clipboard</string>
     <string name="setting_verbose">Verbose logs</string>
     <string name="setting_verbose_hint">Adds system info, terminal self-tests and debug-level server logs to the log. Applies after Stop → Start.</string>
+    <string name="file_saved">Saved.</string>
+    <string name="file_not_saved">Could not save the file.</string>
 </resources>

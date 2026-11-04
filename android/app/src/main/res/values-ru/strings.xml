@@ -41,4 +41,6 @@
     <string name="log_copied">Журнал скопирован в буфер обмена</string>
     <string name="setting_verbose">Подробные журналы</string>
     <string name="setting_verbose_hint">Добавляет сведения о системе, самотесты терминала и журналы сервера уровня debug. Действует после «Остановить → Запустить».</string>
+    <string name="file_saved">Сохранено.</string>
+    <string name="file_not_saved">Не удалось сохранить файл.</string>
 </resources>

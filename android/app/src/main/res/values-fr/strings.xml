@@ -41,4 +41,6 @@
     <string name="log_copied">Journal copié dans le presse-papiers</string>
     <string name="setting_verbose">Journaux détaillés</string>
     <string name="setting_verbose_hint">Ajoute les infos système, des autotests du terminal et les journaux du serveur en niveau debug. Appliqué après Arrêter → Démarrer.</string>
+    <string name="file_saved">Enregistré.</string>
+    <string name="file_not_saved">Impossible d’enregistrer le fichier.</string>
 </resources>

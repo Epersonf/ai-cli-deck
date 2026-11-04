@@ -27,6 +27,7 @@ class DeckActivity : Activity() {
     private lateinit var web: WebView
     private lateinit var splash: View
     private var chooser: ValueCallback<Array<Uri>>? = null
+    private val bridge = DeckBridge(this)
     private val handler = Handler(Looper.getMainLooper())
     private var failed = false
 
@@ -45,6 +46,7 @@ class DeckActivity : Activity() {
             settings.setSupportMultipleWindows(true)
             webViewClient = client(url)
             webChromeClient = chrome()
+            addJavascriptInterface(bridge, "DeckAndroid")
         }
         splash = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
@@ -108,6 +110,7 @@ class DeckActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (bridge.onResult(requestCode, resultCode, data)) return
         if (requestCode == 7) {
             chooser?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
             chooser = null

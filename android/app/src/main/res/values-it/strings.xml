@@ -41,4 +41,6 @@
     <string name="log_copied">Registro copiato negli appunti</string>
     <string name="setting_verbose">Log dettagliati</string>
     <string name="setting_verbose_hint">Aggiunge info di sistema, autotest del terminale e log del server a livello debug. Valido dopo Ferma → Avvia.</string>
+    <string name="file_saved">Salvato.</string>
+    <string name="file_not_saved">Impossibile salvare il file.</string>
 </resources>

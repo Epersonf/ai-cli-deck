@@ -22,8 +22,14 @@ export function checkTemplateText(text: string): ProfileTemplate | string {
   return problems.length > 0 ? `Template problem: ${problems.join('; ')}` : parsed.data;
 }
 
-/** Saves text as a file through the browser. */
+interface AndroidBridge {
+  saveText(name: string, text: string): void;
+}
+
+/** Saves text as a file. Inside the Android app the app's own "save as" picker is used (a WebView cannot download). */
 export function downloadText(name: string, text: string): void {
+  const bridge = (window as { DeckAndroid?: AndroidBridge }).DeckAndroid;
+  if (bridge) return bridge.saveText(name, text);
   const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
   const link = document.createElement('a');
   link.href = url;

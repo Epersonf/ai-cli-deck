@@ -41,4 +41,6 @@
     <string name="log_copied">Log copiado para a área de transferência</string>
     <string name="setting_verbose">Logs detalhados</string>
     <string name="setting_verbose_hint">Inclui informações do sistema, autotestes do terminal e logs do servidor em nível debug. Vale após Parar → Iniciar.</string>
+    <string name="file_saved">Salvo.</string>
+    <string name="file_not_saved">Não foi possível salvar o arquivo.</string>
 </resources>
