@@ -111,9 +111,9 @@
     <string name="cap_contacts">連絡先</string>
     <string name="cap_contacts_hint">連絡先を検索します（検索のたびに「許可」のタップが必要）。</string>
     <string name="cap_sms">SMS</string>
-    <string name="cap_sms_hint">SMS の送信と読み取り（使うたびに「許可」のタップが必要）。</string>
+    <string name="cap_sms_hint">SMS の送信（使うたびに「許可」のタップが必要）。</string>
     <string name="cap_calls">通話</string>
-    <string name="cap_calls_hint">発信と通話履歴の読み取り（使うたびに「許可」のタップが必要）。</string>
+    <string name="cap_calls_hint">発信（使うたびに「許可」のタップが必要）。</string>
     <string name="cap_calendar">カレンダー</string>
     <string name="cap_calendar_hint">予定の読み取りと追加（使うたびに「許可」のタップが必要）。</string>
 </resources>

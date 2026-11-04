@@ -75,7 +75,7 @@ and the briefing tells them the phone exists, so they do not insist they cannot 
 | Medium | Location | Last known fix, or a fresh one. |
 | Medium | Camera, Microphone | Each use needs a tap; files go to /root/inbox. Android only lets the app on screen use them, so open CLI Deck first. |
 | Medium | Bluetooth | Switching needs a tap. |
-| High | Contacts, SMS, Calls, Calendar | Every use needs a tap. Anything read goes to the AI provider. |
+| High | Contacts, SMS, Calls, Calendar | Every use needs a tap. Anything read goes to the AI provider. SMS can only be sent and calls only placed: reading messages or the call log is left out on purpose, because Google Play Protect blocks sideloaded apps that ask for those permissions. |
 
 Not possible without system privileges: toggling mobile data. Generic form: `clideck phone <capability> [action] --option value`,
 for example `clideck phone sms send --to +5511999999999 --text hello`.

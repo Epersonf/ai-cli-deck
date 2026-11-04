@@ -111,9 +111,9 @@
     <string name="cap_contacts">Contacts</string>
     <string name="cap_contacts_hint">Chercher dans vos contacts (chaque recherche exige votre appui sur Autoriser).</string>
     <string name="cap_sms">SMS</string>
-    <string name="cap_sms_hint">Envoyer et lire des SMS (chaque usage exige votre appui sur Autoriser).</string>
+    <string name="cap_sms_hint">Envoyer des SMS (chaque usage exige votre appui sur Autoriser).</string>
     <string name="cap_calls">Appels</string>
-    <string name="cap_calls_hint">Passer des appels et lire l’historique (chaque usage exige votre appui sur Autoriser).</string>
+    <string name="cap_calls_hint">Passer des appels (chaque usage exige votre appui sur Autoriser).</string>
     <string name="cap_calendar">Agenda</string>
     <string name="cap_calendar_hint">Lire et ajouter des événements (chaque usage exige votre appui sur Autoriser).</string>
 </resources>

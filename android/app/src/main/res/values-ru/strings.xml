@@ -111,9 +111,9 @@
     <string name="cap_contacts">Контакты</string>
     <string name="cap_contacts_hint">Искать в контактах (каждый поиск требует вашего нажатия «Разрешить»).</string>
     <string name="cap_sms">SMS</string>
-    <string name="cap_sms_hint">Отправлять и читать SMS (каждое использование требует вашего нажатия «Разрешить»).</string>
+    <string name="cap_sms_hint">Отправлять SMS (каждое использование требует вашего нажатия «Разрешить»).</string>
     <string name="cap_calls">Звонки</string>
-    <string name="cap_calls_hint">Звонить и читать журнал (каждое использование требует вашего нажатия «Разрешить»).</string>
+    <string name="cap_calls_hint">Звонить (каждое использование требует вашего нажатия «Разрешить»).</string>
     <string name="cap_calendar">Календарь</string>
     <string name="cap_calendar_hint">Читать и добавлять события (каждое использование требует вашего нажатия «Разрешить»).</string>
 </resources>

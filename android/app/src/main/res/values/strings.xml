@@ -112,9 +112,9 @@
     <string name="cap_contacts">Contacts</string>
     <string name="cap_contacts_hint">Search your contacts (each search needs your tap on Allow).</string>
     <string name="cap_sms">SMS</string>
-    <string name="cap_sms_hint">Send and read text messages (each use needs your tap on Allow).</string>
+    <string name="cap_sms_hint">Send text messages (each use needs your tap on Allow).</string>
     <string name="cap_calls">Calls</string>
-    <string name="cap_calls_hint">Place calls and read the call log (each use needs your tap on Allow).</string>
+    <string name="cap_calls_hint">Place calls (each use needs your tap on Allow).</string>
     <string name="cap_calendar">Calendar</string>
     <string name="cap_calendar_hint">Read and add events (each use needs your tap on Allow).</string>
 </resources>

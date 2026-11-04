@@ -111,9 +111,9 @@
     <string name="cap_contacts">联系人</string>
     <string name="cap_contacts_hint">搜索联系人（每次搜索都需要你点按“允许”）。</string>
     <string name="cap_sms">短信</string>
-    <string name="cap_sms_hint">发送和读取短信（每次使用都需要你点按“允许”）。</string>
+    <string name="cap_sms_hint">发送短信（每次使用都需要你点按“允许”）。</string>
     <string name="cap_calls">通话</string>
-    <string name="cap_calls_hint">拨打电话并读取通话记录（每次使用都需要你点按“允许”）。</string>
+    <string name="cap_calls_hint">拨打电话（每次使用都需要你点按“允许”）。</string>
     <string name="cap_calendar">日历</string>
     <string name="cap_calendar_hint">读取并添加日程（每次使用都需要你点按“允许”）。</string>
 </resources>

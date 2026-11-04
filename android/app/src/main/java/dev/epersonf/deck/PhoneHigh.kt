@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
-import android.provider.CallLog
 import android.provider.ContactsContract
 import android.telecom.TelecomManager
 import android.telephony.SmsManager
@@ -38,30 +37,19 @@ class PhoneHigh(private val ctx: Context) {
     }
 
     fun sms(action: String, json: JSONObject): JSONObject {
-        if (action == "send") {
-            val text = json.optString("text")
-            if (text.isBlank()) error("text is required")
-            val sms = SmsManager.getDefault()
-            sms.sendMultipartTextMessage(phoneNumber(json.optString("to")), null, sms.divideMessage(text), null, null)
-            return JSONObject().put("sent", true)
-        }
-        val list = rows(Uri.parse("content://sms/inbox"), arrayOf("address", "body", "date"), null, null, "date DESC", json.optInt("limit", 10).coerceIn(1, 20)) {
-            JSONObject().put("from", it.getString(0)).put("text", it.getString(1).take(500)).put("date", it.getLong(2))
-        }
-        return JSONObject().put("messages", list)
+        if (action != "send") error("Reading messages is not available (Play Protect blocks apps that ask for it). Use: sms send")
+        val text = json.optString("text")
+        if (text.isBlank()) error("text is required")
+        val sms = SmsManager.getDefault()
+        sms.sendMultipartTextMessage(phoneNumber(json.optString("to")), null, sms.divideMessage(text), null, null)
+        return JSONObject().put("sent", true)
     }
 
     @Suppress("MissingPermission")
     fun calls(action: String, json: JSONObject): JSONObject {
-        if (action == "place") {
-            (ctx.getSystemService(Context.TELECOM_SERVICE) as TelecomManager).placeCall(Uri.fromParts("tel", phoneNumber(json.optString("number")), null), Bundle())
-            return JSONObject().put("calling", true)
-        }
-        val list = rows(CallLog.Calls.CONTENT_URI, arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION, CallLog.Calls.CACHED_NAME),
-            null, null, "${CallLog.Calls.DATE} DESC", json.optInt("limit", 10).coerceIn(1, 30)) {
-            JSONObject().put("number", it.getString(0)).put("type", it.getInt(1)).put("date", it.getLong(2)).put("seconds", it.getLong(3)).put("name", it.getString(4) ?: JSONObject.NULL)
-        }
-        return JSONObject().put("calls", list)
+        if (action != "place") error("Reading the call log is not available (Play Protect blocks apps that ask for it). Use: calls place")
+        (ctx.getSystemService(Context.TELECOM_SERVICE) as TelecomManager).placeCall(Uri.fromParts("tel", phoneNumber(json.optString("number")), null), Bundle())
+        return JSONObject().put("calling", true)
     }
 
     fun calendar(action: String, json: JSONObject): JSONObject {

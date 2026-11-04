@@ -111,9 +111,9 @@
     <string name="cap_contacts">Contatti</string>
     <string name="cap_contacts_hint">Cercare tra i contatti (ogni ricerca richiede il tuo tocco su Consenti).</string>
     <string name="cap_sms">SMS</string>
-    <string name="cap_sms_hint">Inviare e leggere SMS (ogni uso richiede il tuo tocco su Consenti).</string>
+    <string name="cap_sms_hint">Inviare SMS (ogni uso richiede il tuo tocco su Consenti).</string>
     <string name="cap_calls">Chiamate</string>
-    <string name="cap_calls_hint">Fare chiamate e leggere il registro (ogni uso richiede il tuo tocco su Consenti).</string>
+    <string name="cap_calls_hint">Fare chiamate (ogni uso richiede il tuo tocco su Consenti).</string>
     <string name="cap_calendar">Calendario</string>
     <string name="cap_calendar_hint">Leggere e aggiungere eventi (ogni uso richiede il tuo tocco su Consenti).</string>
 </resources>

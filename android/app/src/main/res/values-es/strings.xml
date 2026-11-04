@@ -111,9 +111,9 @@
     <string name="cap_contacts">Contactos</string>
     <string name="cap_contacts_hint">Buscar en tus contactos (cada búsqueda requiere tu toque en Permitir).</string>
     <string name="cap_sms">SMS</string>
-    <string name="cap_sms_hint">Enviar y leer mensajes de texto (cada uso requiere tu toque en Permitir).</string>
+    <string name="cap_sms_hint">Enviar mensajes de texto (cada uso requiere tu toque en Permitir).</string>
     <string name="cap_calls">Llamadas</string>
-    <string name="cap_calls_hint">Hacer llamadas y leer el historial (cada uso requiere tu toque en Permitir).</string>
+    <string name="cap_calls_hint">Hacer llamadas (cada uso requiere tu toque en Permitir).</string>
     <string name="cap_calendar">Calendario</string>
     <string name="cap_calendar_hint">Leer y añadir eventos (cada uso requiere tu toque en Permitir).</string>
 </resources>
