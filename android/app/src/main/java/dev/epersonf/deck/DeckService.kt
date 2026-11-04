@@ -1,20 +1,11 @@
 package dev.epersonf.deck
 
-import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.IBinder
-import android.os.PowerManager
-import java.io.File
 import java.io.FileWriter
-
-enum class DeckState { STOPPED, INSTALLING, STARTING, RUNNING, RESTARTING }
 
 /** Foreground service: keeps the deck (Node inside proot) alive, restarts it when it exits. */
 class DeckService : Service() {
@@ -24,14 +15,17 @@ class DeckService : Service() {
         private val ANSI = Regex("\u001B\\[[0-9;]*[A-Za-z]")
         const val ACTION_STOP = "dev.epersonf.deck.STOP"
         @Volatile var state = DeckState.STOPPED
-        @Volatile var status: String = ""
+        /** Port while running, seconds left while restarting. */
+        @Volatile var arg = 0
         @Volatile var running = false
     }
 
     private lateinit var env: Env
+    private lateinit var ui: Context
     private var worker: Thread? = null
-    private var wake: PowerManager.WakeLock? = null
-    private var wifi: WifiManager.WifiLock? = null
+    /** Bumped on every stop so a supervisor that is still winding down can never act on a newer run. */
+    @Volatile private var generation = 0
+    private val locks by lazy { DeckLocks(this) }
     @Volatile private var proc: Process? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -39,6 +33,7 @@ class DeckService : Service() {
     override fun onCreate() {
         super.onCreate()
         env = Env(this)
+        ui = Lang.wrap(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -46,128 +41,110 @@ class DeckService : Service() {
             shutdown()
             return START_NOT_STICKY
         }
-        startForeground(1, notification(getString(R.string.state_starting)))
+        startForeground(1, DeckNotification.build(this, ui, DeckState.STARTING.label(ui)))
         if (worker == null) {
             runCatching { env.logFile.delete() }
-            acquireLocks()
+            locks.acquire()
             running = true
-            worker = Thread({ loop() }, "deck-supervisor").also { it.start() }
+            val gen = ++generation
+            worker = Thread({ loop(gen) }, "deck-supervisor").also { it.start() }
         }
         return START_STICKY
     }
+
+    private fun alive(gen: Int) = running && gen == generation
 
     private fun log(line: String) {
         try {
             FileWriter(env.logFile, true).use { it.appendLine(line.replace(ANSI, "")) }
             if (env.logFile.length() > 2_000_000) {
-                val tail = env.logFile.readText().takeLast(500_000)
-                env.logFile.writeText(tail)
+                env.logFile.writeText(env.logFile.readText().takeLast(500_000))
             }
         } catch (_: Exception) {}
     }
 
-    private fun setStatus(st: DeckState, s: String) {
+    private fun setStatus(gen: Int, st: DeckState, a: Int = 0) {
+        if (!alive(gen)) return
         state = st
-        status = s
-        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(1, notification(s))
+        arg = a
+        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(1, DeckNotification.build(this, ui, st.label(ui, a)))
     }
 
-    private fun loop() {
+    private fun loop(gen: Int) {
         var fails = 0
         val installer = Installer(this, env, ::log)
-        while (running) {
+        while (alive(gen)) {
             try {
-                setStatus(DeckState.INSTALLING, getString(R.string.state_installing))
-                if (!installer.ensure()) { fails++; countdown(20); continue }
-                val extra = mutableMapOf("DECK_PORT" to env.port.toString())
+                setStatus(gen, DeckState.INSTALLING)
+                if (!installer.ensure()) { fails++; countdown(gen, 20); continue }
+                val extra = mutableMapOf("DECK_PORT" to env.port.toString(), "DECK_HOST" to Env.LOOPBACK)
                 if (env.exposed && env.password.isNotEmpty()) {
                     extra["DECK_HOST"] = env.host
                     extra["DECK_PASSWORD"] = env.password
-                } else {
-                    extra["DECK_HOST"] = Env.LOOPBACK
                 }
-                setStatus(DeckState.STARTING, getString(R.string.state_starting))
+                setStatus(gen, DeckState.STARTING)
                 val started = System.currentTimeMillis()
                 log(env.en.getString(R.string.log_starting, java.util.Date().toString()))
                 val p = env.prootCommand("bash /opt/run.sh", extra).start()
                 proc = p
-                Thread {
-                    p.inputStream.bufferedReader().forEachLine { l ->
-                        log(l)
-                        if (l.contains("Server listening")) setStatus(DeckState.RUNNING, getString(R.string.state_running, env.port))
-                    }
-                }.start()
+                readOutput(gen, p)
                 val rc = p.waitFor()
                 proc = null
                 val up = (System.currentTimeMillis() - started) / 1000
                 log(env.en.getString(R.string.log_exited, rc, up))
                 fails = if (up < 30) fails + 1 else 0
             } catch (e: Exception) {
+                if (!alive(gen)) break
                 log(env.en.getString(R.string.log_error, e.toString()))
                 fails++
             }
-            if (!running) break
-            countdown(minOf(30, 3 * (fails + 1)))
+            countdown(gen, minOf(30, 3 * (fails + 1)))
         }
-        setStatus(DeckState.STOPPED, getString(R.string.state_stopped))
+        if (gen == generation) state = DeckState.STOPPED
+    }
+
+    /** Pumps the server output into the log. Destroying the process closes the stream: that is not an error. */
+    private fun readOutput(gen: Int, p: Process) {
+        Thread {
+            try {
+                p.inputStream.bufferedReader().forEachLine { l ->
+                    log(l)
+                    if (l.contains("Server listening")) setStatus(gen, DeckState.RUNNING, env.port)
+                }
+            } catch (_: Exception) {}
+        }.start()
     }
 
     /** Live "restarting in Ns" status, updated every second. */
-    private fun countdown(seconds: Int) {
+    private fun countdown(gen: Int, seconds: Int) {
         try {
             for (left in seconds downTo 1) {
-                if (!running) return
-                setStatus(DeckState.RESTARTING, getString(R.string.state_restarting, left))
+                if (!alive(gen)) return
+                setStatus(gen, DeckState.RESTARTING, left)
                 Thread.sleep(1000)
             }
         } catch (_: InterruptedException) {}
     }
 
+    /** Stops the server and the service; the app (its screens) keeps running. */
     private fun shutdown() {
         running = false
+        generation++
         proc?.destroy()
         worker?.interrupt()
         worker = null
-        releaseLocks()
+        locks.release()
         state = DeckState.STOPPED
-        status = getString(R.string.state_stopped)
+        arg = 0
         stopForeground(true)
         stopSelf()
     }
 
     override fun onDestroy() {
         running = false
+        generation++
         proc?.destroy()
-        releaseLocks()
+        locks.release()
         super.onDestroy()
-    }
-
-    private fun acquireLocks() {
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "deck:server").also { it.acquire() }
-        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        @Suppress("DEPRECATION")
-        wifi = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "deck:wifi").also { it.acquire() }
-    }
-
-    private fun releaseLocks() {
-        try { wake?.takeIf { it.isHeld }?.release() } catch (_: Exception) {}
-        try { wifi?.takeIf { it.isHeld }?.release() } catch (_: Exception) {}
-    }
-
-    private fun notification(text: String): Notification {
-        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= 26) {
-            nm.createNotificationChannel(NotificationChannel("deck", getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW))
-        }
-        val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-        val stop = PendingIntent.getService(
-            this, 1, Intent(this, DeckService::class.java).setAction(ACTION_STOP), PendingIntent.FLAG_IMMUTABLE,
-        )
-        val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, "deck") else @Suppress("DEPRECATION") Notification.Builder(this)
-        return b.setContentTitle(getString(R.string.app_name)).setContentText(text)
-            .setSmallIcon(R.drawable.ic_gear).setContentIntent(open)
-            .addAction(Notification.Action.Builder(null, getString(R.string.notif_stop), stop).build())
-            .setOngoing(true).build()
     }
 }

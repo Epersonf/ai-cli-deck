@@ -7,15 +7,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.LinearInterpolator
-import android.view.animation.RotateAnimation
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -26,6 +19,7 @@ class MainActivity : Activity() {
     private lateinit var env: Env
     private lateinit var statusView: TextView
     private lateinit var dot: View
+    private lateinit var toggle: android.widget.Button
     private lateinit var logView: TextView
     private lateinit var logScroll: ScrollView
     private var lastLog = ""
@@ -35,7 +29,8 @@ class MainActivity : Activity() {
 
     private val tick = object : Runnable {
         override fun run() {
-            statusView.text = DeckService.status.ifEmpty { getString(R.string.state_stopped) }
+            statusView.text = DeckService.state.label(this@MainActivity, DeckService.arg)
+            toggle.text = getString(if (DeckService.running) R.string.stop else R.string.start).uppercase()
             val color = when (DeckService.state) {
                 DeckState.RUNNING -> R.color.verdigris
                 DeckState.STOPPED -> R.color.danger
@@ -47,7 +42,7 @@ class MainActivity : Activity() {
             } catch (_: Exception) { "" }
             if (text != lastLog) {
                 lastLog = text
-                logView.text = colorize(text)
+                logView.text = HomeWidgets.colorize(this@MainActivity, text)
                 logScroll.post { logScroll.fullScroll(ScrollView.FOCUS_DOWN) }
             }
             handler.postDelayed(this, 1500)
@@ -61,24 +56,14 @@ class MainActivity : Activity() {
         val pad = Ui.dp(this, 18)
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, pad, pad, pad) }
 
-        root.addView(brand())
+        root.addView(HomeWidgets.brand(this))
         root.addView(statusCard())
         root.addView(Ui.button(this, getString(R.string.open_deck), primary = true) { openDeck() }
             .also { it.layoutParams = Ui.lp(top = 14) })
 
-        val controls = LinearLayout(this).apply { layoutParams = Ui.lp(top = 8) }
-        fun half(label: String, action: () -> Unit) {
-            controls.addView(Ui.button(this, label) { action() }.also {
-                it.layoutParams = LinearLayout.LayoutParams(0, -2, 1f).apply {
-                    marginEnd = Ui.dp(this@MainActivity, 4); marginStart = Ui.dp(this@MainActivity, 4)
-                }
-            })
-        }
-        half(getString(R.string.start)) { startDeck() }
-        half(getString(R.string.stop)) {
-            startService(Intent(this, DeckService::class.java).setAction(DeckService.ACTION_STOP))
-        }
-        root.addView(controls)
+        // One button that switches between START and STOP with the server state.
+        toggle = Ui.button(this, getString(R.string.start)) { toggleDeck() }.also { it.layoutParams = Ui.lp(top = 8) }
+        root.addView(toggle)
         root.addView(Ui.button(this, getString(R.string.settings_open)) {
             startActivity(Intent(this, SettingsActivity::class.java))
         }.also { it.layoutParams = Ui.lp(top = 8) })
@@ -130,41 +115,6 @@ class MainActivity : Activity() {
         return card
     }
 
-    /** Error lines (failures, non-zero exits, shell errors) in red. */
-    private fun colorize(text: String): CharSequence {
-        val errorWords = Regex("error|fail|fatal|exception|not found|invalid|cannot|denied|rc=[1-9]|unexpected", RegexOption.IGNORE_CASE)
-        val sb = SpannableStringBuilder()
-        for (line in text.lines()) {
-            val start = sb.length
-            sb.append(line).append('\n')
-            if (errorWords.containsMatchIn(line)) {
-                sb.setSpan(ForegroundColorSpan(getColor(R.color.danger)), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
-        }
-        return sb
-    }
-
-    /** Spinning brass gear + CLI DECK title, like the web top bar. */
-    private fun brand(): LinearLayout {
-        val box = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        val size = Ui.dp(this, 52)
-        val gear = ImageView(this).apply {
-            setImageResource(R.drawable.ic_gear)
-            layoutParams = LinearLayout.LayoutParams(size, size)
-            startAnimation(RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, .5f).apply {
-                duration = 24000; repeatCount = Animation.INFINITE; interpolator = LinearInterpolator()
-            })
-        }
-        val names = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(Ui.dp(this@MainActivity, 14), 0, 0, 0)
-            addView(Ui.heading(this@MainActivity, getString(R.string.app_name), 24f))
-            addView(Ui.body(this@MainActivity, getString(R.string.tagline), muted = true))
-        }
-        box.addView(gear); box.addView(names)
-        return box
-    }
-
     override fun onResume() { super.onResume(); handler.post(tick) }
     override fun onPause() { super.onPause(); handler.removeCallbacks(tick) }
 
@@ -172,6 +122,19 @@ class MainActivity : Activity() {
         if (!DeckService.running) startDeck()
         startActivity(Intent(this, DeckActivity::class.java))
     }
+
+    private fun toggleDeck() {
+        if (DeckService.running) {
+            startService(Intent(this, DeckService::class.java).setAction(DeckService.ACTION_STOP))
+            // Reflect it at once; the service confirms a moment later.
+            DeckService.running = false
+        } else {
+            startDeck()
+        }
+        tickNow()
+    }
+
+    private fun tickNow() { handler.removeCallbacks(tick); handler.post(tick) }
 
     private fun startDeck() {
         val i = Intent(this, DeckService::class.java)
