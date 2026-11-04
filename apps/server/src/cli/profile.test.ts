@@ -5,25 +5,25 @@ import { describe, expect, it } from 'vitest';
 import { addProfile, parseProfileArgs } from './profileCommand.js';
 
 describe('clideck profile add', () => {
-  it('parses the name and base, and rejects bad input', () => {
+  it('parses the name and template, and rejects bad input', () => {
     expect(parseProfileArgs(['Work', 'claude'])).toEqual({
       label: 'Work',
       base: 'claude',
-      command: '',
-      baseUrl: '',
+      values: {},
     });
     expect(parseProfileArgs(['Mine', 'custom', '--command', 'aider'])).toMatchObject({
-      command: 'aider',
+      values: { command: 'aider' },
     });
     expect(typeof parseProfileArgs(['x', 'gemini'])).toBe('string');
     expect(typeof parseProfileArgs([])).toBe('string');
+    expect(typeof parseProfileArgs(['x', 'custom', '--command'])).toBe('string');
   });
 
-  it('a custom endpoint needs its URL, and only it takes one', () => {
+  it('a custom endpoint needs its URL, and only templates with that field take one', () => {
     const url = 'https://llm.example.com/anthropic';
     expect(parseProfileArgs(['Corp', 'claude-endpoint', '--url', url])).toMatchObject({
       base: 'claude-endpoint',
-      baseUrl: url,
+      values: { baseUrl: url },
     });
     expect(typeof parseProfileArgs(['Corp', 'claude-endpoint'])).toBe('string');
     expect(typeof parseProfileArgs(['Corp', 'claude-endpoint', '--url', 'nope'])).toBe('string');
@@ -33,12 +33,12 @@ describe('clideck profile add', () => {
   it('stores a clean profile with a unique id and no credentials', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'deck-profile-'));
     const env = { DECK_CONFIG_DIR: dir };
-    await addProfile({ label: 'Work', base: 'claude', command: '', baseUrl: '' }, env);
-    await addProfile({ label: 'Work', base: 'codex', command: '', baseUrl: '' }, env);
+    await addProfile({ label: 'Work', base: 'claude', values: {} }, env);
+    await addProfile({ label: 'Work', base: 'codex', values: {} }, env);
     const saved: unknown = JSON.parse(await readFile(join(dir, 'profiles.json'), 'utf8'));
     expect(saved).toEqual([
-      { id: 'work', label: 'Work', base: 'claude', command: '', baseUrl: '' },
-      { id: 'work-2', label: 'Work', base: 'codex', command: '', baseUrl: '' },
+      { id: 'work', label: 'Work', base: 'claude', values: {} },
+      { id: 'work-2', label: 'Work', base: 'codex', values: {} },
     ]);
   });
 });

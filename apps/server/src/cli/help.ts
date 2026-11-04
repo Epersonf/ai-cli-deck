@@ -16,8 +16,8 @@ Commands:
   newtab <url|port>        Offer the user a button to open a page in a new tab
   worktree "<reason>"      Ask the user to create a git worktree (needs approval)
   status <requestId>       Check an approval request: pending, approved or rejected
-  profile add "<name>" <base> [--url <api-base-url>]
-                           Clean terminal profile (claude, claude-endpoint, claude-deepseek, codex, custom)
+  profile add "<name>" <template> [--url <api-base-url>] [--command <program>]
+                           Clean terminal profile from a template (claude, codex, claude-deepseek, ...)
   setup <provider>         Download a CLI (claude, codex...); it signs you in itself on first run
   install [--force]        Add /clideck slash commands for Claude Code and Codex
   ensure-key <ENV> "<label>" [--save <dir>] -- <cmd...>

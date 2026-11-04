@@ -10,3 +10,6 @@ export * from './auth.js';
 export * from './normalizeUrl.js';
 export * from './providerSetup.js';
 export * from './profile.js';
+export * from './jsonc.js';
+export * from './template.js';
+export * from './templateFill.js';

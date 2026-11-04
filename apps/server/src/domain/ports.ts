@@ -4,6 +4,7 @@ import type {
   GitStatus,
   HandoffInfo,
   Profile,
+  ProfileTemplate,
   Session,
 } from '@deck/shared';
 
@@ -52,6 +53,13 @@ export interface HandoffStorePort {
   pathOf(id: string): string;
   write(id: string, text: string): Promise<void>;
   info(id: string): Promise<HandoffInfo | null>;
+  remove(id: string): Promise<void>;
+}
+
+/** Profile templates imported by the user (the built-in ones are code). */
+export interface TemplateStorePort {
+  load(): Promise<ProfileTemplate[]>;
+  save(template: ProfileTemplate): Promise<void>;
   remove(id: string): Promise<void>;
 }
 

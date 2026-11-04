@@ -49,6 +49,7 @@ describe('App dialogs', () => {
     click($('.drawer-back')); // the drawer opens on the active terminal's profile
     const buttons = [...document.querySelectorAll('.drawer > button')];
     click(buttons.find((b) => b.textContent === 'New profile') ?? null);
+    await act(async () => undefined); // the templates arrive
     const fields = [...document.querySelectorAll('.modal input, .modal select')];
     expect(fields).toHaveLength(2);
     const options = [...document.querySelectorAll('.modal option')].map((o) => o.textContent);
@@ -68,6 +69,7 @@ describe('App dialogs', () => {
     click($('.drawer-back')); // the drawer opens on the active terminal's profile
     const buttons = [...document.querySelectorAll('.drawer > button')];
     click(buttons.find((b) => b.textContent === 'New profile') ?? null);
+    await act(async () => undefined); // the templates arrive
     expect($('.modal input[type="url"]')).toBeNull();
     const select = $('.modal select') as HTMLSelectElement;
     await act(async () => {
@@ -77,6 +79,29 @@ describe('App dialogs', () => {
     expect($('.modal input[type="url"]')).not.toBeNull();
     // Create stays disabled until a name and a URL are given.
     expect(($('.modal button.primary') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('lists the profile templates in settings, with import disabled until something is pasted', async () => {
+    await mount();
+    click($('button[aria-label="Settings"]'));
+    const open = [...document.querySelectorAll('.setting button')].find(
+      (b) => b.textContent === 'Manage templates',
+    );
+    click(open ?? null);
+    await act(async () => undefined); // the templates arrive
+    const names = [...document.querySelectorAll('.template-list strong')].map((n) => n.textContent);
+    expect(names).toEqual([
+      'Claude Code',
+      'Claude Code (custom endpoint)',
+      'Claude Code (DeepSeek)',
+      'Codex',
+      'Custom',
+    ]);
+    const importButton = [...document.querySelectorAll('.modal .row button')].find(
+      (b) => b.textContent === 'Import',
+    ) as HTMLButtonElement;
+    expect(importButton.disabled).toBe(true);
+    expect($('.modal')?.textContent).toMatch(/Import only templates you trust/);
   });
 
   it('closes settings with the X button, Escape, or a click outside', async () => {

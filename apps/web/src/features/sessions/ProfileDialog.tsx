@@ -1,8 +1,9 @@
-import { PROFILE_BASES, type ProfileBase } from '@deck/shared';
-import { useState, type FormEvent } from 'react';
+import { fieldProblem } from '@deck/shared';
+import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { useProfiles } from './profilesStore';
+import { fieldTexts, templateName } from './templateName';
 
 interface Props {
   /** Called after a profile is created, so the caller can show it. */
@@ -10,28 +11,34 @@ interface Props {
   onClose(): void;
 }
 
-/** Makes a named, clean terminal. Nothing about logins or keys: that is set up inside it. */
+/** Makes a named, clean terminal from a template. Nothing about logins or keys: that is set up inside it. */
 export function ProfileDialog({ onDone, onClose }: Props) {
   const t = useT();
+  const templates = useProfiles((s) => s.templates);
   const [label, setLabel] = useState('');
-  const [base, setBase] = useState<ProfileBase>('claude');
-  const [command, setCommand] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
+  const [baseId, setBaseId] = useState('claude');
+  const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useEffect(
+    () =>
+      void useProfiles
+        .getState()
+        .refreshTemplates()
+        .catch(() => undefined),
+    [],
+  );
+
+  const template = templates.find((x) => x.id === baseId) ?? templates[0];
+  const invalid = template ? fieldProblem(template, values) !== null : true;
 
   const submit = (event: FormEvent): void => {
     event.preventDefault();
-    if (busy) return;
+    if (busy || !template) return;
     setBusy(true);
     setError(null);
     api
-      .createProfile({
-        label: label.trim(),
-        base,
-        command: base === 'custom' ? command : '',
-        baseUrl: base === 'claude-endpoint' ? baseUrl.trim() : '',
-      })
+      .createProfile({ label: label.trim(), base: template.id, values })
       .then(() => useProfiles.getState().refresh())
       .then(onDone)
       .catch((e: unknown) => (setError(e instanceof Error ? e.message : 'failed'), setBusy(false)));
@@ -55,50 +62,44 @@ export function ProfileDialog({ onDone, onClose }: Props) {
           <label>
             {t('profile.base')}
             <select
-              value={base}
-              onChange={(e) => setBase(PROFILE_BASES.find((b) => b === e.target.value) ?? 'claude')}
+              value={template?.id ?? baseId}
+              onChange={(e) => (setBaseId(e.target.value), setValues({}))}
             >
-              {PROFILE_BASES.map((b) => (
-                <option key={b} value={b}>
-                  {t(`profile.base.${b}`)}
+              {templates.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {templateName(t, x)}
                 </option>
               ))}
             </select>
+            {template && !template.builtin && template.description !== '' && (
+              <span className="hint">{template.description}</span>
+            )}
           </label>
-          {base === 'custom' && (
-            <label>
-              {t('profile.command')}
-              <input
-                value={command}
-                spellCheck={false}
-                onChange={(e) => setCommand(e.target.value)}
-              />
-            </label>
-          )}
-          {base === 'claude-endpoint' && (
-            <label>
-              {t('profile.url')}
-              <input
-                required
-                type="url"
-                value={baseUrl}
-                placeholder="https://llm.example.com/anthropic"
-                spellCheck={false}
-                autoCapitalize="off"
-                inputMode="url"
-                onChange={(e) => setBaseUrl(e.target.value)}
-              />
-              <span className="hint">{t('profile.urlHint')}</span>
-            </label>
-          )}
+          {template?.fields.map((field) => {
+            const text = fieldTexts(t, template, field);
+            return (
+              <label key={field.key}>
+                {text.label}
+                <input
+                  required={field.required}
+                  type={field.type === 'url' ? 'url' : 'text'}
+                  value={values[field.key] ?? ''}
+                  placeholder={field.placeholder}
+                  spellCheck={false}
+                  autoCapitalize="off"
+                  inputMode={field.type === 'url' ? 'url' : undefined}
+                  onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+                />
+                {text.hint !== '' && <span className="hint">{text.hint}</span>}
+              </label>
+            );
+          })}
           {error !== null && <p className="notice error">{error}</p>}
           <div className="row">
             <button
               type="submit"
               className="primary"
-              disabled={
-                busy || label.trim() === '' || (base === 'claude-endpoint' && baseUrl.trim() === '')
-              }
+              disabled={busy || label.trim() === '' || invalid}
             >
               {t('profile.create')}
             </button>

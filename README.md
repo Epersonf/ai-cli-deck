@@ -123,6 +123,15 @@ same thing with the URL and models fixed. The first time such a terminal starts 
 (typed hidden, via `clideck ensure-key`) and remembers it in that profile's own Claude settings
 (`settings.json`, `env`), so later starts need nothing. The key only ever goes to that profile's Claude.
 
+**Profile templates.** A profile is made from a template: a small JSON file (comments allowed) that says
+how to start one kind of AI CLI as a clean terminal: the program, arguments, environment, the variable that
+holds its config folder, the fields to ask for (an API address...), whether to ask for an API key, and how to
+hand it the deck's MCP server. Claude Code, Codex, Claude Code (DeepSeek), the custom endpoint and the custom
+command are templates that ship with the deck and use the same format. Add another CLI in Settings > Manage
+templates: download the commented example, edit it, paste or choose the file and import it. A template makes
+the deck run the program it names, so only import ones you trust. Imported templates live in
+`~/.config/ai-cli-deck/templates/`.
+
 **Profiles are separate worlds.** Each has its own config folder, login, key and endpoint, and an agent
 in one cannot list the terminals of another (`clideck sessions` / the MCP tool only show the same profile).
 They all run as the same operating-system user, so this is separation of configuration and of what the

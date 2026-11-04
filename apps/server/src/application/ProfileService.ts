@@ -1,9 +1,17 @@
-import { isHttpUrl, profileIdFor, type CreateProfileBody, type Profile } from '@deck/shared';
+import {
+  fieldProblem,
+  profileIdFor,
+  type CreateProfileBody,
+  type Profile,
+  type ProfileTemplate,
+} from '@deck/shared';
 import { invalid, notFound } from '../domain/errors.js';
 import type { ProfileStorePort } from '../domain/ports.js';
 
 export interface ProfileServiceDeps {
   store: ProfileStorePort;
+  /** The template a profile is made from, if it exists. */
+  template(id: string): ProfileTemplate | undefined;
   /** Makes a (new or renamed) profile available to the session launcher right away. */
   register(profile: Profile): void;
   /** Takes a deleted profile out of the launcher and the install-status checks. */
@@ -30,6 +38,11 @@ export class ProfileService {
     return this.profiles;
   }
 
+  /** True while a profile is made from this template. */
+  usesTemplate(id: string): boolean {
+    return this.profiles.some((p) => p.base === id);
+  }
+
   has(id: string): boolean {
     return this.profiles.some((p) => p.id === id);
   }
@@ -53,15 +66,24 @@ export class ProfileService {
   }
 
   create(body: CreateProfileBody): Promise<Profile> {
-    const { command = '', baseUrl = '' } = body;
-    if (body.base !== 'custom' && command !== '')
-      return Promise.reject(invalid('Only custom profiles take a command'));
-    if (body.base === 'claude-endpoint' && !isHttpUrl(baseUrl))
-      return Promise.reject(invalid('A custom endpoint needs an http(s) base URL'));
+    const template = this.deps.template(body.base);
+    if (!template) return Promise.reject(invalid(`Unknown template "${body.base}"`));
+    const values = Object.fromEntries(
+      Object.entries(body.values ?? {})
+        .map(([key, value]) => [key, value.trim()] as const)
+        .filter(([, value]) => value !== ''),
+    );
+    const problem = fieldProblem(template, values);
+    if (problem) return Promise.reject(invalid(problem));
     return this.serial(async () => {
       await this.sync();
       const taken = [...this.deps.reservedIds(), ...this.profiles.map((p) => p.id)];
-      const profile: Profile = { ...body, command, baseUrl, id: profileIdFor(body.label, taken) };
+      const profile: Profile = {
+        label: body.label,
+        base: body.base,
+        values,
+        id: profileIdFor(body.label, taken),
+      };
       // A new profile always starts empty, even if an old folder with this id was left behind.
       await this.deps.wipeData(profile.id);
       this.profiles = [...this.profiles, profile];

@@ -26,6 +26,25 @@ const ROUTES: Record<string, unknown> = {
     { id: 'shell', label: 'Shell', status: 'ready', hint: null, canInstall: false },
     { id: 'work', label: 'Work', status: 'ready', hint: null, canInstall: false, profile: true },
   ],
+  '/api/templates': [
+    { schema: 1, id: 'claude', label: 'Claude Code', builtin: true },
+    {
+      schema: 1,
+      id: 'claude-endpoint',
+      label: 'Claude Code (custom endpoint)',
+      builtin: true,
+      fields: [{ key: 'baseUrl', label: 'API base URL', type: 'url', required: true }],
+    },
+    { schema: 1, id: 'claude-deepseek', label: 'Claude Code (DeepSeek)', builtin: true },
+    { schema: 1, id: 'codex', label: 'Codex', builtin: true },
+    {
+      schema: 1,
+      id: 'custom',
+      label: 'Custom command',
+      builtin: true,
+      fields: [{ key: 'command', label: 'Program', required: false }],
+    },
+  ],
   '/api/auth': { required: false, canDisable: true, isDefault: false },
 };
 

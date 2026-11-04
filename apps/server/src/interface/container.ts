@@ -1,5 +1,6 @@
 import type { PublicConfig } from '@deck/shared';
 import type { ProfileService } from '../application/ProfileService.js';
+import type { TemplateService } from '../application/TemplateService.js';
 import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
 import type { AuthService } from '../application/AuthService.js';
@@ -31,6 +32,7 @@ export interface Container {
   publicConfig: PublicConfig;
   providerStatus(id: string): Promise<ProviderStatusInfo>;
   profiles: ProfileService;
+  templates: TemplateService;
   security: SecurityOptions;
   auth: AuthService;
   throttle: LoginThrottle;

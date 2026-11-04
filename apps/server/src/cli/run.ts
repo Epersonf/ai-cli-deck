@@ -3,7 +3,7 @@ import { call, readEnv } from './client.js';
 import { HELP } from './help.js';
 import { installSlashCommands } from './install.js';
 import { parseArgs, type Command } from './parse.js';
-import { addProfile, parseProfileArgs } from './profileCommand.js';
+import { addProfile, knownTemplates, parseProfileArgs } from './profileCommand.js';
 import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
 import { readStdin } from './stdin.js';
@@ -18,7 +18,7 @@ async function execute(
   if (command.name === 'help') return HELP;
   if (command.name === 'setup') return runSetup(command.provider);
   if (command.name === 'profile') {
-    const request = parseProfileArgs(command.args);
+    const request = parseProfileArgs(command.args, await knownTemplates(env));
     return typeof request === 'string' ? request : addProfile(request);
   }
   if (command.name === 'install')

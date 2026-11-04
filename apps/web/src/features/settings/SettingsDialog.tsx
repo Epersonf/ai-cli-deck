@@ -5,6 +5,7 @@ import type { KeysMode } from '../terminal/keysPreference';
 import { KeysSection } from './KeysSection';
 import { LanguageSection } from './LanguageSection';
 import { PasswordDialog } from './PasswordDialog';
+import { TemplatesDialog } from './TemplatesDialog';
 
 interface Props {
   keysMode: KeysMode;
@@ -16,7 +17,9 @@ interface Props {
 export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }: Props) {
   const t = useT();
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   if (passwordOpen) return <PasswordDialog onClose={() => setPasswordOpen(false)} />;
+  if (templatesOpen) return <TemplatesDialog onClose={() => setTemplatesOpen(false)} />;
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()}>
@@ -26,6 +29,13 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
         <div className="setting">
           <h3>{t('shortcuts.title')}</h3>
           <p className="hint">{t('shortcuts.body')}</p>
+        </div>
+        <div className="setting">
+          <h3>{t('templates.title')}</h3>
+          <p className="hint">{t('templates.settingsHint')}</p>
+          <button type="button" onClick={() => setTemplatesOpen(true)}>
+            {t('templates.open')}
+          </button>
         </div>
         <div className="setting">
           <h3>{t('password.title')}</h3>

@@ -1,5 +1,6 @@
 import type { Profile } from '@deck/shared';
 import { describe, expect, it } from 'vitest';
+import { BUILTIN_TEMPLATES } from '../infrastructure/providers/builtinTemplates.js';
 import { ProfileService } from './ProfileService.js';
 
 function setup(reserved: string[] = ['claude']) {
@@ -8,6 +9,7 @@ function setup(reserved: string[] = ['claude']) {
   const removed: string[] = [];
   const wiped: string[] = [];
   const service = new ProfileService({
+    template: (id) => BUILTIN_TEMPLATES.find((t) => t.id === id),
     store: { load: () => Promise.resolve([]), save: (p) => (saved.push(p), Promise.resolve()) },
     register: (p) => registered.push(p),
     unregister: (id) => void removed.push(id),
@@ -34,12 +36,12 @@ describe('ProfileService id collisions', () => {
       id: 'work',
       label: 'Work',
       base: 'claude',
-      command: '',
-      baseUrl: '',
+      values: {},
     };
     let stored: Profile[] = [];
     const registered: string[] = [];
     const service = new ProfileService({
+      template: (id) => BUILTIN_TEMPLATES.find((t) => t.id === id),
       store: {
         load: () => Promise.resolve(stored),
         save: (p) => ((stored = [...p]), Promise.resolve()),
@@ -61,34 +63,33 @@ describe('ProfileService id collisions', () => {
 describe('ProfileService custom endpoint', () => {
   it('requires an http(s) URL for the endpoint base', async () => {
     const { service } = setup([]);
-    await expect(
-      service.create({ label: 'Corp', base: 'claude-endpoint', command: '', baseUrl: '' }),
-    ).rejects.toThrow(/base URL/);
+    await expect(service.create({ label: 'Corp', base: 'claude-endpoint' })).rejects.toThrow(
+      /API base URL/,
+    );
     const ok = await service.create({
       label: 'Corp',
       base: 'claude-endpoint',
-      command: '',
-      baseUrl: 'https://llm.example.com',
+      values: { baseUrl: 'https://llm.example.com' },
     });
-    expect(ok.baseUrl).toBe('https://llm.example.com');
+    expect(ok.values['baseUrl']).toBe('https://llm.example.com');
   });
 });
 
 describe('ProfileService data erasure', () => {
   it('wipes the folder before a new profile starts, so a reused name never inherits a login', async () => {
     const { service, wiped } = setup([]);
-    const first = await service.create({ label: 'Work', base: 'claude', command: '' });
+    const first = await service.create({ label: 'Work', base: 'claude' });
     expect(wiped).toEqual([first.id]);
     await service.remove(first.id);
     await service.purgeData(first.id);
-    const again = await service.create({ label: 'Work', base: 'claude', command: '' });
+    const again = await service.create({ label: 'Work', base: 'claude' });
     expect(again.id).toBe(first.id);
     expect(wiped).toEqual([first.id, first.id, first.id]);
   });
 
   it('refuses to purge a profile that still exists', async () => {
     const { service } = setup([]);
-    const p = await service.create({ label: 'Keep', base: 'claude', command: '' });
+    const p = await service.create({ label: 'Keep', base: 'claude' });
     await expect(service.purgeData(p.id)).rejects.toThrow();
   });
 });
@@ -96,8 +97,8 @@ describe('ProfileService data erasure', () => {
 describe('ProfileService', () => {
   it('creates a profile with a unique id and registers it', async () => {
     const { service, saved, registered } = setup();
-    const a = await service.create({ label: 'Claude', base: 'claude', command: '' });
-    const b = await service.create({ label: 'Claude', base: 'claude', command: '' });
+    const a = await service.create({ label: 'Claude', base: 'claude' });
+    const b = await service.create({ label: 'Claude', base: 'claude' });
     expect([a.id, b.id]).toEqual(['claude-2', 'claude-3']);
     expect(saved.at(-1)).toHaveLength(2);
     expect(registered).toHaveLength(2);
@@ -105,7 +106,7 @@ describe('ProfileService', () => {
 
   it('renames only the label; id and base stay', async () => {
     const { service } = setup([]);
-    const { id } = await service.create({ label: 'Work', base: 'codex', command: '' });
+    const { id } = await service.create({ label: 'Work', base: 'codex' });
     const renamed = await service.rename(id, 'Office');
     expect(renamed).toMatchObject({ id, base: 'codex', label: 'Office' });
     expect(service.list()[0]?.label).toBe('Office');
@@ -113,8 +114,8 @@ describe('ProfileService', () => {
 
   it('deletes a profile, unregisters it and persists the rest', async () => {
     const { service, saved, removed } = setup([]);
-    const a = await service.create({ label: 'A', base: 'claude', command: '' });
-    await service.create({ label: 'B', base: 'codex', command: '' });
+    const a = await service.create({ label: 'A', base: 'claude' });
+    await service.create({ label: 'B', base: 'codex' });
     await service.remove(a.id);
     expect(service.list().map((p) => p.label)).toEqual(['B']);
     expect(saved.at(-1)).toHaveLength(1);
@@ -122,9 +123,12 @@ describe('ProfileService', () => {
     await expect(service.remove(a.id)).rejects.toThrow('not found');
   });
 
-  it('rejects unknown profiles and commands on non-custom bases', async () => {
+  it('rejects unknown profiles, unknown templates and fields the template does not have', async () => {
     const { service } = setup();
     await expect(service.rename('ghost', 'x')).rejects.toThrow('not found');
-    await expect(service.create({ label: 'A', base: 'claude', command: 'rm' })).rejects.toThrow();
+    await expect(service.create({ label: 'A', base: 'nope' })).rejects.toThrow(/template/i);
+    await expect(
+      service.create({ label: 'A', base: 'claude', values: { command: 'rm' } }),
+    ).rejects.toThrow(/Unknown field/);
   });
 });

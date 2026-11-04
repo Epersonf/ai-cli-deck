@@ -9,6 +9,7 @@ import {
   ProviderInfoSchema,
   PublicConfigSchema,
   SessionSchema,
+  TemplateInfoSchema,
   TreeResponseSchema,
   type ApprovalDecision,
   type CreateProfileBody,
@@ -58,6 +59,12 @@ export const api = {
     request(z.void(), 'POST', `${session(id)}/restart`, { resume }),
   renameSession: (id: string, name: string | null) =>
     request(SessionSchema, 'PATCH', session(id), { name }),
+  templates: () => request(z.array(TemplateInfoSchema), 'GET', '/api/templates'),
+  templateSkeleton: () =>
+    request(z.object({ text: z.string() }), 'GET', '/api/templates/skeleton').then((r) => r.text),
+  importTemplate: (text: string) => request(TemplateInfoSchema, 'POST', '/api/templates', { text }),
+  removeTemplate: (id: string) =>
+    request(z.void(), 'DELETE', `/api/templates/${encodeURIComponent(id)}`),
   createProfile: (body: CreateProfileBody) => request(ProfileSchema, 'POST', '/api/profiles', body),
   deleteProfile: (id: string) =>
     request(z.object({ ended: z.number() }), 'DELETE', `/api/profiles/${enc(id)}`),

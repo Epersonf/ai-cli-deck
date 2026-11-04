@@ -12,6 +12,7 @@ import { agentRoutes } from './routes/agent.js';
 import { approvalRoutes } from './routes/approvals.js';
 import { authRoutes } from './routes/auth.js';
 import { forkRoutes } from './routes/fork.js';
+import { templateRoutes } from './routes/templates.js';
 import { sessionRoutes } from './routes/sessions.js';
 import { rawRoutes } from './routes/raw.js';
 import { uploadRoutes } from './routes/upload.js';
@@ -44,6 +45,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   authRoutes(app, c);
   sessionRoutes(app, c);
   forkRoutes(app, c);
+  templateRoutes(app, c);
   workspaceRoutes(app, c);
   rawRoutes(app, c);
   uploadRoutes(app, c);

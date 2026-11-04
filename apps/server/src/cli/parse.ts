@@ -74,7 +74,7 @@ export function parseArgs(argv: readonly string[]): Parsed {
       return rest[0] === 'add'
         ? ok({ name, args: rest.slice(1) })
         : fail(
-            'usage: clideck profile add "<name>" <claude|claude-endpoint|claude-deepseek|codex|custom> [--url <api-base-url>]',
+            'usage: clideck profile add "<name>" <template> [--<field> <value>]... (see clideck profile add with no template)',
           );
     case 'ensure-key': {
       const parsed = parseEnsureKey(rest);
