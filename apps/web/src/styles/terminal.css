@@ -27,7 +27,7 @@
   mix-blend-mode: multiply;
 }
 .terminal-host {
-  touch-action: pan-y;
+  touch-action: none; /* a drag is handled by touchScroll.ts */
   position: absolute;
   inset: 6px;
 }

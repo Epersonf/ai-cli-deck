@@ -11,6 +11,7 @@ import { attachLocalEcho } from './localEcho';
 import { RestartBar } from './RestartBar';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { createSizeSync, type SizeSync } from './sizeSync';
+import { attachTouchScroll } from './touchScroll';
 import type { ModifiersApi } from './useModifiers';
 
 export interface TerminalApi {
@@ -97,6 +98,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     window.addEventListener('focus', claimIfActive);
 
     const detachPaste = attachImagePaste(element, term, sessionId);
+    const detachTouch = attachTouchScroll(term, element);
 
     let frame = 0;
     const observer = new ResizeObserver(() => {
@@ -107,6 +109,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
 
     return () => {
       detachPaste();
+      detachTouch();
       window.clearInterval(probe);
       window.removeEventListener('focus', claimIfActive);
       echo.dispose();
