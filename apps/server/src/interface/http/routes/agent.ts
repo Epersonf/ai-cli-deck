@@ -23,6 +23,10 @@ const WifiConnectBody = z.object({
   password: z.string().max(100).optional(),
 });
 const WifiEnableBody = z.object({ on: z.boolean() });
+const PhoneCallBody = z.object({
+  path: z.string().min(2).max(40),
+  args: z.record(z.string(), z.unknown()).optional(),
+});
 const ReasonBody = z.object({ reason: z.string().min(1).max(500) });
 
 /** HTTP face of the agent tools, used by the `clideck` command. Loopback only. */
@@ -50,6 +54,11 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
   );
   app.get(`${base}/phone/battery`, (request) => tools(request.params).phoneBattery());
   app.get(`${base}/phone/device`, (request) => tools(request.params).phoneDevice());
+  app.get(`${base}/phone/capabilities`, (request) => tools(request.params).phoneCapabilities());
+  app.post(`${base}/phone/call`, (request) => {
+    const { path, args } = parseWith(PhoneCallBody, request.body);
+    return tools(request.params).phoneCall(path, args);
+  });
   app.get(`${base}/phone/wifi`, (request) => tools(request.params).phoneWifi());
   app.get(`${base}/phone/wifi/scan`, (request) => tools(request.params).phoneWifiScan());
   app.post(`${base}/phone/wifi/connect`, (request) => {

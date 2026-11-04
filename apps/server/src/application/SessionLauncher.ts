@@ -4,6 +4,7 @@ import { invalid } from '../domain/errors.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
 import type { LaunchSpec, MultiplexerPort, PtyHandle, PtyPort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
+import { agentGuide } from '../infrastructure/providers/agentGuide.js';
 
 export interface LauncherDeps {
   pty: PtyPort;
@@ -16,6 +17,8 @@ export interface LauncherDeps {
   binDir: string | null;
   baseEnv: Record<string, string>;
   defaultShell: string;
+  /** True when the Android app lets agents use the phone: the briefing then tells them so. */
+  phoneEnabled?(): boolean;
 }
 
 export const tmuxNameFor = (sessionId: string): string => `${TMUX_PREFIX}${sessionId}`;
@@ -46,6 +49,7 @@ export class SessionLauncher {
       command,
       args,
       defaultShell: this.deps.defaultShell,
+      guide: agentGuide({ phone: this.deps.phoneEnabled?.() ?? false }),
     };
     const parts = provider.buildCommand(ctx);
     const mcp = provider.buildMcpConfig(ctx);

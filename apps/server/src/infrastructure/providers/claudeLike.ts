@@ -5,12 +5,10 @@ import type {
   ProviderContext,
 } from '../../domain/provider.js';
 
-import { AGENT_GUIDE } from './agentGuide.js';
-
 export function claudeMcpConfig(ctx: ProviderContext): McpInjection {
   const config = { mcpServers: { deck: { type: 'http', url: ctx.mcpUrl } } };
   return {
-    args: ['--mcp-config', JSON.stringify(config), '--append-system-prompt', AGENT_GUIDE],
+    args: ['--mcp-config', JSON.stringify(config), '--append-system-prompt', ctx.guide],
     env: {},
   };
 }

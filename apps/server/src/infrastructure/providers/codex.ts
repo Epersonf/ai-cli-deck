@@ -1,5 +1,4 @@
 import type { Provider } from '../../domain/provider.js';
-import { AGENT_GUIDE } from './agentGuide.js';
 
 export const codex: Provider = {
   id: 'codex',
@@ -10,7 +9,7 @@ export const codex: Provider = {
       '-c',
       `mcp_servers.deck.url=${JSON.stringify(ctx.mcpUrl)}`,
       '-c',
-      `developer_instructions=${JSON.stringify(AGENT_GUIDE)}`,
+      `developer_instructions=${JSON.stringify(ctx.guide)}`,
     ],
     env: {},
   }),

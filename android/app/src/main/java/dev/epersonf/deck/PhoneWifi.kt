@@ -21,6 +21,11 @@ class PhoneWifi(private val ctx: Context) {
     private val locationOk: Boolean
         get() = ctx.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
+    private val locationServiceOn: Boolean
+        get() = (ctx.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager).let {
+            it.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) || it.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER)
+        }
+
     fun status(): JSONObject {
         val info = wm.connectionInfo
         val ip = info?.ipAddress ?: 0
@@ -31,6 +36,12 @@ class PhoneWifi(private val ctx: Context) {
             .put("linkMbps", info?.linkSpeed ?: JSONObject.NULL)
             .put("ip", if (ip == 0) JSONObject.NULL else "${ip and 255}.${ip shr 8 and 255}.${ip shr 16 and 255}.${ip shr 24 and 255}")
             .put("locationPermission", locationOk)
+            .put("locationServiceOn", locationServiceOn)
+            .put("hint", when {
+                !locationOk -> "Grant the location permission to CLI Deck to see the network name"
+                !locationServiceOn -> "Turn Location on in Android quick settings: without it Android hides the network name"
+                else -> JSONObject.NULL
+            })
     }
 
     /** Networks in range, strongest first (one entry per name). Android limits how often a scan may run. */

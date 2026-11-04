@@ -10,7 +10,7 @@ export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools):
       'phone',
       {
         description:
-          'The phone the deck runs on (enabled by the user). action: battery, device, notify (text, title?), wifi_status, wifi_scan, wifi_connect (ssid, password?), wifi_on, wifi_off. Wi-Fi changes wait for the person to tap Allow on the phone.',
+          'The phone the deck runs on (enabled by the user). Start with action help to see what is allowed. Others: battery, device, notify (text, title?), wifi_status/scan/connect/on/off, and call (path like /sms/send, /location or /camera/photo, args {name: value}) for any capability that help lists. Risky actions wait for the person to tap Allow on the phone.',
         inputSchema: {
           action: z.enum([
             'battery',
@@ -21,14 +21,18 @@ export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools):
             'wifi_connect',
             'wifi_on',
             'wifi_off',
+            'help',
+            'call',
           ]),
+          path: z.string().max(40).optional(),
+          args: z.record(z.string(), z.string()).optional(),
           ssid: z.string().max(64).optional(),
           password: z.string().max(100).optional(),
           text: z.string().max(400).optional(),
           title: z.string().max(80).optional(),
         },
       },
-      ({ action, text, title, ssid, password }) =>
+      ({ action, text, title, ssid, password, path, args }) =>
         runAsync(async () => {
           switch (action) {
             case 'battery':
@@ -45,6 +49,10 @@ export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools):
               return tools.phoneWifiEnable(true);
             case 'wifi_off':
               return tools.phoneWifiEnable(false);
+            case 'help':
+              return tools.phoneCapabilities();
+            case 'call':
+              return tools.phoneCall(path ?? '', args);
             default:
               return tools.phoneNotify(text ?? '', title);
           }

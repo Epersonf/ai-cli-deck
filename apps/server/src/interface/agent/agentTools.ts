@@ -1,5 +1,5 @@
 import { normalizeUrl } from '@deck/shared';
-import { forbidden, notFound } from '../../domain/errors.js';
+import { forbidden, invalid, notFound } from '../../domain/errors.js';
 import type { BatteryRule } from '../../application/batteryRule.js';
 import type { Container } from '../container.js';
 
@@ -78,6 +78,13 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     phoneEnabled: deps.phone !== null,
     phoneBattery: () => phone().request('GET', '/battery'),
     phoneDevice: () => phone().request('GET', '/device'),
+    /** What the phone lets agents do right now (the user's checkboxes), for `clideck phone help`. */
+    phoneCapabilities: () => phone().request('GET', '/capabilities'),
+    /** Any enabled capability: `path` like /sms/send, `args` its options. The app enforces the checkboxes and taps. */
+    phoneCall: (path: string, args: Record<string, unknown> = {}) => {
+      if (!/^\/[a-z]+(\/[a-z]+)?$/.test(path)) throw invalid('Not a phone request');
+      return phone().request('POST', path, args, ASK_MS);
+    },
     phoneWifi: () => phone().request('GET', '/wifi'),
     phoneWifiScan: () => phone().request('GET', '/wifi/scan', undefined, 20_000),
     // These wait for the person to tap Allow on the phone.

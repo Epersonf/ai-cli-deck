@@ -1,6 +1,12 @@
 package dev.epersonf.deck
 
+import android.app.Activity
+import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.view.Window
+import android.widget.ScrollView
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
@@ -73,6 +79,33 @@ object Ui {
         val p = dp(ctx, 12)
         setPadding(p, p, p, p)
         background = gradient(c(ctx, R.color.ink), c(ctx, R.color.ink), dp(ctx, 6).toFloat(), c(ctx, R.color.brass_lo))
+    }
+
+    /** A modal in the app's look (leather panel, brass double border, brass buttons), never the grey system dialog. */
+    fun dialog(act: Activity, title: String, message: String, yes: String, no: String?, onYes: () -> Unit, onNo: () -> Unit = {}): Dialog {
+        val dialog = Dialog(act)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val p = dp(act, 18)
+        val col = LinearLayout(act).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(p, p, p, p)
+            background = gradient(c(act, R.color.leather2), c(act, R.color.leather), dp(act, 12).toFloat(), c(act, R.color.brass), 4)
+        }
+        col.addView(heading(act, title, 15f))
+        col.addView(body(act, message).apply { textSize = 14f; layoutParams = lp(top = 12) })
+        val row = LinearLayout(act).apply { orientation = LinearLayout.HORIZONTAL; layoutParams = lp(top = 16) }
+        fun cell(b: Button, first: Boolean) = row.addView(b.apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { if (!first) leftMargin = dp(act, 8) }
+        })
+        if (no != null) cell(button(act, no) { dialog.dismiss(); onNo() }, true)
+        cell(button(act, yes, primary = true) { dialog.dismiss(); onYes() }, no == null)
+        col.addView(row)
+        dialog.setContentView(ScrollView(act).apply { addView(col) })
+        dialog.setCancelable(false)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.show()
+        dialog.window?.setLayout((act.resources.displayMetrics.widthPixels * 0.92).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
+        return dialog
     }
 
     fun dot(ctx: Context, color: Int): View = View(ctx).apply {

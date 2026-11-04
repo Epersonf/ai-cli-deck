@@ -21,7 +21,7 @@ export type Command =
   | ({ name: 'ensure-key' } & EnsureKey);
 
 const PHONE_USAGE =
-  'usage: clideck phone battery | device | notify "<text>" [--title "<title>"] | wifi status|scan|on|off|connect "<ssid>" [--password P]';
+  'usage: clideck phone help | battery | device | notify "<text>" | wifi ... | <capability> [action] [--option value]  (clideck phone help lists what is enabled)';
 
 function parseWifi(words: readonly string[]): Parsed {
   const [verb = 'status', ...args] = words;
@@ -80,6 +80,11 @@ export function parseArgs(argv: readonly string[]): Parsed {
       if (action === 'notify' && message !== '')
         return ok({ name, action, text: message, title, args: [] });
       if (action === 'wifi') return parseWifi(words);
+      if (action === 'notify') return fail(PHONE_USAGE);
+      if (action === 'help') return ok({ name, action: 'help', text: '', title: '', args: [] });
+      // Anything else is a capability of the phone: `clideck phone sms send --to N --text T`.
+      if (action && /^[a-z]+$/.test(action))
+        return ok({ name, action: 'call', text: '', title: '', args: [action, ...words] });
       return fail(PHONE_USAGE);
     }
     case 'handoff':

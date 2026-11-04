@@ -28,8 +28,8 @@ class Env(ctx: Context) {
     val verbose: Boolean get() = prefs.getBoolean("verbose", false)
     /** "Phone access" (battery, notifications...) for the agents: off until the user turns it on and confirms. */
     val phoneAccess: Boolean get() = prefs.getBoolean("phone_access", false)
-    /** Wi-Fi for the agents (needs "Phone access" too): own switch, own permission. */
-    val phoneWifi: Boolean get() = phoneAccess && prefs.getBoolean("phone_wifi", false)
+    /** One capability of the phone for the agents (needs "Phone access" too): its own checkbox in the settings. */
+    fun cap(id: String): Boolean = phoneAccess && prefs.getBoolean("cap_$id", false)
     /** "off", "shared" (only the folder "CLI Deck" of the phone storage) or "all" (the whole storage). */
     val phoneFiles: String get() = if (phoneAccess) prefs.getString("phone_files", "off") ?: "off" else "off"
     val password: String get() = prefs.getString("password", "") ?: ""

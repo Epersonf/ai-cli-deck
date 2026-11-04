@@ -1,34 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ApprovalService } from '../../application/ApprovalService.js';
-import { BrowserService } from '../../application/BrowserService.js';
-import { PreviewService } from '../../application/PreviewService.js';
-import { FakeBrowserEngine } from '../../testing/fakeBrowser.js';
-import { createHarness, customBody } from '../../testing/harness.js';
+import { setupAgents as setup } from '../../testing/agentKit.js';
+import { customBody } from '../../testing/harness.js';
 import { createAgentTools } from './agentTools.js';
-
-async function setup() {
-  const h = createHarness();
-  const approvals = new ApprovalService({
-    sessions: h.sessions,
-    worktrees: { add: () => Promise.reject(new Error('git must not run')) },
-    system: h.system,
-    bus: h.bus,
-  });
-  const preview = new PreviewService(h.sessions, h.bus);
-  const a = await h.sessions.create(customBody('/work', true));
-  const b = await h.sessions.create(customBody('/work', false));
-  const c = await h.sessions.create(customBody('/other', false));
-  const deps = {
-    sessions: h.sessions,
-    handoffs: h.handoffs,
-    phone: null,
-    tasks: h.tasks,
-    approvals,
-    preview,
-    browser: new BrowserService(new FakeBrowserEngine()),
-  };
-  return { h, a, b, c, deps, tools: createAgentTools(deps, a.id) };
-}
 
 describe('agent tools', () => {
   it('lists other sessions and flags the ones in the same folder', async () => {
@@ -53,55 +26,6 @@ describe('agent tools', () => {
     expect(h.sessions.get(b.id)?.name).toBeNull();
     expect((await tools.title('x'.repeat(200))).title).toHaveLength(60);
     await expect(tools.title('   ')).resolves.toEqual({ title: null });
-  });
-
-  it('keeps the phone out of reach unless the Android app enabled it', async () => {
-    const { tools } = await setup();
-    expect(tools.phoneEnabled).toBe(false);
-    expect(() => tools.phoneBattery()).toThrow(/Phone access is off/);
-    expect(() => tools.phoneNotify('hi')).toThrow(/Phone access is off/);
-  });
-
-  it('reads the battery and shows notifications through the phone bridge when enabled', async () => {
-    const { deps, a } = await setup();
-    const calls: unknown[][] = [];
-    const phone = {
-      request: (method: string, path: string, body?: unknown) => {
-        calls.push([method, path, body]);
-        return Promise.resolve({ ok: true });
-      },
-    };
-    const tools = createAgentTools({ ...deps, phone: phone as never }, a.id);
-    expect(tools.phoneEnabled).toBe(true);
-    await tools.phoneBattery();
-    await tools.phoneNotify('battery low', 'Phone');
-    expect(calls).toEqual([
-      ['GET', '/battery', undefined],
-      ['POST', '/notify', { title: 'Phone', text: 'battery low' }],
-    ]);
-  });
-
-  it('Wi-Fi: reading is quick, changing waits long for the person to tap Allow on the phone', async () => {
-    const { deps, a } = await setup();
-    const calls: unknown[][] = [];
-    const phone = {
-      request: (method: string, path: string, body?: unknown, timeoutMs?: number) => {
-        calls.push([method, path, body, timeoutMs]);
-        return Promise.resolve({});
-      },
-    };
-    const tools = createAgentTools({ ...deps, phone: phone as never }, a.id);
-    await tools.phoneWifi();
-    await tools.phoneWifiConnect('Home', 'secret');
-    await tools.phoneWifiEnable(false);
-    expect(calls[0]).toEqual(['GET', '/wifi', undefined, undefined]);
-    expect(calls[1]).toEqual([
-      'POST',
-      '/wifi/connect',
-      { ssid: 'Home', password: 'secret' },
-      45_000,
-    ]);
-    expect(calls[2]).toEqual(['POST', '/wifi/enable', { on: false }, 45_000]);
   });
 
   it('describes the calling session', async () => {

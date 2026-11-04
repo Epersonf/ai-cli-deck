@@ -1,7 +1,6 @@
 import { join } from 'node:path';
 import { fieldVars, fillText, type Profile, type ProfileTemplate } from '@deck/shared';
 import type { Provider, ProviderContext } from '../../domain/provider.js';
-import { AGENT_GUIDE } from './agentGuide.js';
 
 /** Everything a template may refer to with `{name}`, for one launch. */
 function varsFor(
@@ -18,8 +17,8 @@ function varsFor(
     mcpUrl: ctx.mcpUrl,
     mcpUrlJson: JSON.stringify(ctx.mcpUrl),
     mcpConfig,
-    guide: AGENT_GUIDE,
-    guideJson: JSON.stringify(AGENT_GUIDE),
+    guide: ctx.guide,
+    guideJson: JSON.stringify(ctx.guide),
     ...fieldVars(template, profile.values),
   };
 }

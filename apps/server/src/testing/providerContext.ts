@@ -1,3 +1,4 @@
+import { AGENT_GUIDE } from '../infrastructure/providers/agentGuide.js';
 import type { ProviderContext } from '../domain/provider.js';
 
 export const providerCtx: ProviderContext = {
@@ -8,4 +9,5 @@ export const providerCtx: ProviderContext = {
   command: null,
   args: [],
   defaultShell: 'bash',
+  guide: AGENT_GUIDE,
 };

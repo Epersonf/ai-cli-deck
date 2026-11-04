@@ -7,6 +7,8 @@ export interface ProviderContext {
   args: readonly string[];
   /** The platform's default shell (bash, zsh, cmd.exe, ...). */
   defaultShell: string;
+  /** The briefing about the deck for the agent (mentions the phone only when phone access is on). */
+  guide: string;
 }
 
 export interface CommandParts {

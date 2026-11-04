@@ -54,6 +54,11 @@ describe('parseArgs', () => {
     expect(parseArgs(['phone', 'wifi', 'connect'])).toMatchObject({ ok: false });
     expect(parseArgs(['phone', 'wifi', 'dance'])).toMatchObject({ ok: false });
     expect(parseArgs(['phone', 'notify'])).toMatchObject({ ok: false });
+    expect(command('phone', 'help')).toMatchObject({ action: 'help' });
+    expect(command('phone', 'sms', 'send', '--to', '+55', '--text', 'hi')).toMatchObject({
+      action: 'call',
+      args: ['sms', 'send', '--to', '+55', '--text', 'hi'],
+    });
   });
 
   it('reports usage errors', () => {

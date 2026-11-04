@@ -57,3 +57,25 @@ notifications, plus two opt-in capabilities with their own switch, warning and p
   Newer Android also needs "Allow access to all files" for the app; the settings screen opens that page when needed.
 
 Background tasks (the drawer) and "notify me when a terminal goes quiet" are described in the main README.
+
+## Capabilities (phase 4)
+
+Every capability is its own checkbox under Settings > Phone access, grouped by risk, off by default, each with its own
+warning and permission request (and, where noted, a tap on Allow for every single use). The master switch alone grants
+nothing. Agents see exactly what is enabled with `clideck phone help` (or the MCP tool `phone` with action `help`),
+and the briefing tells them the phone exists, so they do not insist they cannot reach it.
+
+| Risk | Capability | Notes |
+| --- | --- | --- |
+| Low | Clipboard | Reading only works while CLI Deck is on screen (Android rule). |
+| Low | Vibrate, Flashlight, Volume, Speak aloud | |
+| Low | Brightness | Needs "Modify system settings" (a special page). |
+| Low | Share to the deck | "Send to CLI Deck" in the share sheet; items land in /root/inbox. |
+| Medium | Wi-Fi | Changes need a tap. The network name needs location permission and Location switched on. |
+| Medium | Location | Last known fix, or a fresh one. |
+| Medium | Camera, Microphone | Each use needs a tap; files go to /root/inbox. Android only lets the app on screen use them, so open CLI Deck first. |
+| Medium | Bluetooth | Switching needs a tap. |
+| High | Contacts, SMS, Calls, Calendar | Every use needs a tap. Anything read goes to the AI provider. |
+
+Not possible without system privileges: toggling mobile data. Generic form: `clideck phone <capability> [action] --option value`,
+for example `clideck phone sms send --to +5511999999999 --text hello`.

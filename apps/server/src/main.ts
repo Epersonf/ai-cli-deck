@@ -84,6 +84,7 @@ async function main(): Promise<void> {
     binDir: join(here, '..', 'bin'),
     baseEnv: stringEnv(),
     defaultShell: shellName,
+    phoneEnabled: () => phone !== null,
   });
   const sessions = new SessionManager({
     launcher,

@@ -105,11 +105,17 @@ class SettingsActivity : Activity() {
             .putBoolean("autostart", auto.isChecked)
             .putBoolean("verbose", verbose.isChecked)
             .putBoolean("phone_access", phone.enabled)
-            .putBoolean("phone_wifi", phone.wifiEnabled)
+            .also { e -> PhoneCaps.all.forEach { e.putBoolean("cap_${it.id}", it.id in phone.selected()) } }
             .putString("phone_files", phone.filesMode)
             .also { if (newLang == null) it.remove("lang") else it.putString("lang", newLang) }
             .apply()
         toast(R.string.setting_saved)
+        // "Send to CLI Deck" shows up in the share sheet only while its checkbox is on.
+        packageManager.setComponentEnabledSetting(
+            android.content.ComponentName(this, ShareReceiverActivity::class.java),
+            if (phone.enabled && "share" in phone.selected()) android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED else android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            android.content.pm.PackageManager.DONT_KILL_APP,
+        )
         if (langChanged) {
             startActivity(Intent(this, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
