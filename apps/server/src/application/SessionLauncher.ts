@@ -26,7 +26,16 @@ const DEFAULT_SIZE = { cols: 80, rows: 24 };
 export class SessionLauncher {
   constructor(private readonly deps: LauncherDeps) {}
 
-  buildSpec(session: Session, command: string | null, args: readonly string[]): LaunchSpec {
+  /**
+   * `inheritFrom`: a plain terminal opened from a session of that profile takes the profile's environment
+   * (not its CLI), so tools used there see the same accounts.
+   */
+  buildSpec(
+    session: Session,
+    command: string | null,
+    args: readonly string[],
+    inheritFrom?: string,
+  ): LaunchSpec {
     const provider = this.deps.providers.get(session.provider);
     if (!provider) throw invalid(`Unknown provider "${session.provider}"`);
     const ctx = {
@@ -40,6 +49,9 @@ export class SessionLauncher {
     };
     const parts = provider.buildCommand(ctx);
     const mcp = provider.buildMcpConfig(ctx);
+    const inherited = inheritFrom
+      ? (this.deps.providers.get(inheritFrom)?.shellEnv?.(ctx) ?? {})
+      : {};
     const spec: LaunchSpec = {
       command: parts.command,
       args: [...parts.args, ...mcp.args],
@@ -49,6 +61,7 @@ export class SessionLauncher {
         ...utf8Locale(this.deps.baseEnv),
         TERM: 'xterm-256color',
         COLORTERM: 'truecolor',
+        ...inherited,
         ...parts.env,
         ...mcp.env,
         PORT: String(session.port),
@@ -79,7 +92,12 @@ export class SessionLauncher {
     return this.deps.pty.spawn(this.deps.mux.attach(tmuxNameFor(session.id), spec), DEFAULT_SIZE);
   }
 
-  launch(session: Session, command: string | null, args: readonly string[]): PtyHandle {
-    return this.deps.pty.spawn(this.buildSpec(session, command, args), DEFAULT_SIZE);
+  launch(
+    session: Session,
+    command: string | null,
+    args: readonly string[],
+    inheritFrom?: string,
+  ): PtyHandle {
+    return this.deps.pty.spawn(this.buildSpec(session, command, args, inheritFrom), DEFAULT_SIZE);
   }
 }

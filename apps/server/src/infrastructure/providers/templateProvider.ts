@@ -38,15 +38,21 @@ export function createTemplateProvider(
     const vars = varsFor(template, profile, home, ctx);
     return (text: string): string => fillText(text, vars);
   };
+  const envFor = (ctx: ProviderContext): Record<string, string> => {
+    const sub = fill(ctx);
+    const env = Object.fromEntries(Object.entries(template.env).map(([k, v]) => [k, sub(v)]));
+    if (template.home) env[template.home.env] = home;
+    return env;
+  };
   return {
     id: profile.id,
     label: profile.label,
+    shellEnv: (ctx) => envFor(ctx),
     buildCommand: (ctx) => {
       const sub = fill(ctx);
       const program = sub(template.command).trim() || ctx.defaultShell;
       const args = [...template.args.map(sub), ...ctx.args];
-      const env = Object.fromEntries(Object.entries(template.env).map(([k, v]) => [k, sub(v)]));
-      if (template.home) env[template.home.env] = home;
+      const env = envFor(ctx);
       const key = template.apiKey;
       if (key === null) return { command: program, args, env };
       const save = key.remember ? ['--save', home] : [];

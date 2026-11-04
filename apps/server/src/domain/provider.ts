@@ -25,6 +25,12 @@ export interface Provider {
   readonly label: string;
   buildCommand(ctx: ProviderContext): CommandParts;
   buildMcpConfig(ctx: ProviderContext): McpInjection;
+  /**
+   * The environment of this profile's world (its config folder, endpoint...), without the CLI itself.
+   * A plain terminal opened from one of its sessions gets exactly this, so tools run there (git, gcloud...)
+   * see the same accounts as the profile's agent.
+   */
+  shellEnv?(ctx: ProviderContext): Record<string, string>;
 }
 
 export interface ProviderRegistry {

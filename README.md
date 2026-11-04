@@ -132,6 +132,11 @@ templates: download the commented example, edit it, paste or choose the file and
 the deck run the program it names, so only import ones you trust. Imported templates live in
 `~/.config/ai-cli-deck/templates/`.
 
+A plain terminal opened from a profile's session (the "open a terminal here" button, for git commit, push and
+the like) is a simple shell in that folder that inherits the profile's environment variables (its config
+folder, endpoint and whatever the template sets in `env`), so tools run there use the same accounts as the
+profile's agent. It does not run the CLI or ask for the key.
+
 **Profiles are separate worlds.** Each has its own config folder, login, key and endpoint, and an agent
 in one cannot list the terminals of another (`clideck sessions` / the MCP tool only show the same profile).
 They all run as the same operating-system user, so this is separation of configuration and of what the

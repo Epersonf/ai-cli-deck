@@ -47,7 +47,8 @@ export async function restartSession(
   const note = session.meta[RESUME_KEY];
   const args = resume && note ? splitArgs(note) : [];
   await ctx.mux.kill(tmuxNameFor(id));
-  ctx.start(session, () => ctx.launcher.launch(session, null, args));
+  const from = ctx.reg.inheritFrom(session.parentId);
+  ctx.start(session, () => ctx.launcher.launch(session, null, args, from));
 }
 
 /** Ends a session and, with it, the sub-terminals opened from it. */

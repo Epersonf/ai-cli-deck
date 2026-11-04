@@ -30,10 +30,11 @@ export function createHarness(options: HarnessOptions = {}) {
   const bus = new EventBus();
   const events: DeckEvent[] = [];
   bus.subscribe((e) => events.push(e));
+  const providers = createProviderRegistry();
   const launcher = new SessionLauncher({
     pty: ptyPort,
     mux,
-    providers: createProviderRegistry(),
+    providers,
     mcpBaseUrl: 'http://127.0.0.1:7842/mcp',
     deckUrl: 'http://127.0.0.1:7842',
     binDir: '/deck/bin',
@@ -52,7 +53,19 @@ export function createHarness(options: HarnessOptions = {}) {
   });
   const handoffStore = new FakeHandoffs();
   const handoffs = new HandoffService(sessions, handoffStore, () => Promise.resolve());
-  return { sessions, handoffs, handoffStore, ptyPort, mux, store, scrollback, system, bus, events };
+  return {
+    providers,
+    sessions,
+    handoffs,
+    handoffStore,
+    ptyPort,
+    mux,
+    store,
+    scrollback,
+    system,
+    bus,
+    events,
+  };
 }
 
 export const customBody = (cwd = '/work', useWorktree = false) => ({

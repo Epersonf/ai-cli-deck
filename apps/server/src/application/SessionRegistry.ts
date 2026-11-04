@@ -42,6 +42,11 @@ export class SessionRegistry {
     return this.require(id).session.parentId ?? id;
   }
 
+  /** The profile a plain terminal opened from `parentId` takes its environment from. */
+  inheritFrom(parentId: string | null): string | undefined {
+    return parentId ? this.get(parentId)?.provider : undefined;
+  }
+
   childrenOf(id: string): Session[] {
     return this.list().filter((s) => s.parentId === id);
   }

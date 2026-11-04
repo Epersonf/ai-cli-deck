@@ -51,7 +51,7 @@ export class SessionManager {
 
   async create(body: CreateSessionBody): Promise<Session> {
     const { system, ports, mux } = this.deps;
-    // A sub-terminal hangs off the main session of its family, never off another sub-terminal.
+    // A sub-terminal hangs off its family's main session, never off another sub-terminal.
     const parentId = body.parentId ? this.reg.rootOf(body.parentId) : null;
     const cwd = resolveCwd(body.cwd, system.homeDir());
     if (!(await system.isDirectory(cwd))) throw invalid(`Not a directory: ${cwd}`);
@@ -61,7 +61,8 @@ export class SessionManager {
       persistent: mux.available,
     });
     try {
-      this.start(session, () => this.deps.launcher.launch(session, body.command, body.args));
+      const from = this.reg.inheritFrom(parentId);
+      this.start(session, () => this.deps.launcher.launch(session, body.command, body.args, from));
     } catch (error) {
       ports.release(session.port);
       throw error;
@@ -70,9 +71,7 @@ export class SessionManager {
     return this.get(session.id) ?? session;
   }
 
-  restore(): Promise<void> {
-    return restoreSessions(this.lifecycle());
-  }
+  readonly restore = (): Promise<void> => restoreSessions(this.lifecycle());
 
   restart(id: string, resume: boolean): Promise<void> {
     return restartSession(this.lifecycle(), id, resume);
