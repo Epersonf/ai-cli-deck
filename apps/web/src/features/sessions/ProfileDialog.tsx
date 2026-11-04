@@ -16,6 +16,7 @@ export function ProfileDialog({ onDone, onClose }: Props) {
   const [label, setLabel] = useState('');
   const [base, setBase] = useState<ProfileBase>('claude');
   const [command, setCommand] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -25,7 +26,12 @@ export function ProfileDialog({ onDone, onClose }: Props) {
     setBusy(true);
     setError(null);
     api
-      .createProfile({ label: label.trim(), base, command: base === 'custom' ? command : '' })
+      .createProfile({
+        label: label.trim(),
+        base,
+        command: base === 'custom' ? command : '',
+        baseUrl: base === 'claude-endpoint' ? baseUrl.trim() : '',
+      })
       .then(() => useProfiles.getState().refresh())
       .then(onDone)
       .catch((e: unknown) => (setError(e instanceof Error ? e.message : 'failed'), setBusy(false)));
@@ -69,9 +75,31 @@ export function ProfileDialog({ onDone, onClose }: Props) {
               />
             </label>
           )}
+          {base === 'claude-endpoint' && (
+            <label>
+              {t('profile.url')}
+              <input
+                required
+                type="url"
+                value={baseUrl}
+                placeholder="https://llm.example.com/anthropic"
+                spellCheck={false}
+                autoCapitalize="off"
+                inputMode="url"
+                onChange={(e) => setBaseUrl(e.target.value)}
+              />
+              <span className="hint">{t('profile.urlHint')}</span>
+            </label>
+          )}
           {error !== null && <p className="notice error">{error}</p>}
           <div className="row">
-            <button type="submit" className="primary" disabled={busy || label.trim() === ''}>
+            <button
+              type="submit"
+              className="primary"
+              disabled={
+                busy || label.trim() === '' || (base === 'claude-endpoint' && baseUrl.trim() === '')
+              }
+            >
               {t('profile.create')}
             </button>
             <button type="button" onClick={onClose}>

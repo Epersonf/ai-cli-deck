@@ -58,6 +58,22 @@ describe('App dialogs', () => {
     expect(document.querySelector('.modal')?.textContent).not.toMatch(/api key|password/i);
   });
 
+  it('the custom endpoint base asks for the API base URL', async () => {
+    await mount();
+    click($('button[aria-label="All terminals"]'));
+    const buttons = [...document.querySelectorAll('.drawer > button')];
+    click(buttons.find((b) => b.textContent === 'New profile') ?? null);
+    expect($('.modal input[type="url"]')).toBeNull();
+    const select = $('.modal select') as HTMLSelectElement;
+    await act(async () => {
+      select.value = 'claude-endpoint';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect($('.modal input[type="url"]')).not.toBeNull();
+    // Create stays disabled until a name and a URL are given.
+    expect(($('.modal button.primary') as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('closes settings with the X button, Escape, or a click outside', async () => {
     await mount();
     const open = (): void => click($('button[aria-label="Settings"]'));
