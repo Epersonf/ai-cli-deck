@@ -1,10 +1,6 @@
+import type { ChatEntry, ChatFilesPort, ChatReader, ChatTurn } from '../domain/chat.js';
 import type { Session } from '@deck/shared';
-import type {
-  HandoffStorePort,
-  ScrollbackStorePort,
-  SessionStorePort,
-  SystemPort,
-} from '../domain/ports.js';
+import type { ScrollbackStorePort, SessionStorePort, SystemPort } from '../domain/ports.js';
 
 export { FakeMux, FakePty, FakePtyPort } from './fakeTerminal.js';
 
@@ -56,25 +52,37 @@ export class FakeSystem implements SystemPort {
   }
 }
 
-export class FakeHandoffs implements HandoffStorePort {
-  readonly files = new Map<string, { text: string; updatedAt: string }>();
-  private clock = 0;
-  pathOf(id: string): string {
-    return `/handoffs/${id}.md`;
+/** Chat notes in memory: what CLIs reported, and the transcripts written for another AI. */
+export class FakeChatFiles implements ChatFilesPort {
+  readonly reports = new Map<string, { id: string; path: string }>();
+  readonly transcripts = new Map<string, string>();
+  reportFile(id: string): string {
+    return `/reports/${id}.json`;
   }
-  write(id: string, text: string): Promise<void> {
-    this.files.set(id, {
-      text,
-      updatedAt: new Date(Date.UTC(2026, 0, 1, 0, 0, ++this.clock)).toISOString(),
-    });
+  reported(id: string) {
+    return Promise.resolve(this.reports.get(id) ?? null);
+  }
+  forget(id: string): Promise<void> {
+    this.reports.delete(id);
     return Promise.resolve();
   }
-  info(id: string) {
-    const file = this.files.get(id);
-    return Promise.resolve(file ? { updatedAt: file.updatedAt, bytes: file.text.length } : null);
+  writeTranscript(cwd: string, name: string, text: string): Promise<string> {
+    const relative = `.deck/chats/${name}`;
+    this.transcripts.set(`${cwd}/${relative}`, text);
+    return Promise.resolve(relative);
   }
-  remove(id: string): Promise<void> {
-    this.files.delete(id);
-    return Promise.resolve();
+}
+
+/** A CLI's chat files in memory: `chats` is what it lists, `turns` what each one says. */
+export class FakeChatReader implements ChatReader {
+  chats: ChatEntry[] = [];
+  readonly turns = new Map<string, ChatTurn[]>();
+  list(): Promise<ChatEntry[]> {
+    return Promise.resolve(
+      [...this.chats].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()),
+    );
+  }
+  read(entry: ChatEntry): Promise<ChatTurn[]> {
+    return Promise.resolve(this.turns.get(entry.id) ?? []);
   }
 }

@@ -9,7 +9,7 @@ const ASK_MS = 45_000;
 
 export type AgentDeps = Pick<
   Container,
-  'sessions' | 'handoffs' | 'phone' | 'tasks' | 'approvals' | 'preview' | 'browser'
+  'sessions' | 'phone' | 'tasks' | 'approvals' | 'preview' | 'browser'
 >;
 
 /**
@@ -66,18 +66,14 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     },
 
     /**
-     * Notes kept with this session, e.g. the id of its chat so it can be resumed. No key: all of them;
-     * a key alone: that value; key and value: save it (an empty value removes it).
+     * Notes kept with this session. No key: all of them; a key alone: that value; key and value: save it
+     * (an empty value removes it).
      */
     meta: async (key?: string, value?: string) => {
       if (key === undefined) return self().meta;
       if (value === undefined) return { [key]: self().meta[key] ?? null };
       return deps.sessions.setMeta(sessionId, key, value);
     },
-
-    /** Leaves notes for whoever continues this chat. The deck asks for them; agents never write them unprompted. */
-    handoff: (text?: string) =>
-      text === undefined ? deps.handoffs.info(sessionId) : deps.handoffs.save(sessionId, text),
 
     /** True when the Android app let agents use the phone (Settings > Phone access). */
     phoneEnabled: deps.phone !== null,

@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { fieldVars, fillText, type Profile, type ProfileTemplate } from '@deck/shared';
 import type { Provider, ProviderContext } from '../../domain/provider.js';
+import { chatSupport } from '../chats/chatSupport.js';
 
 /** Everything a template may refer to with `{name}`, for one launch. */
 function varsFor(
@@ -62,5 +63,7 @@ export function createTemplateProvider(
       };
     },
     buildMcpConfig: (ctx) => ({ args: template.mcpArgs.map(fill(ctx)), env: {} }),
+    // A profile with its own config folder keeps its chats there.
+    chat: chatSupport(template.chat, template.home ? home : null),
   };
 }

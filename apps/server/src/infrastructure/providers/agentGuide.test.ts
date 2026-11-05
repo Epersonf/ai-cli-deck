@@ -6,7 +6,6 @@ describe('agent briefing', () => {
     const guide = agentGuide({ phone: false });
     for (const word of [
       'clideck title',
-      'clideck resume',
       'clideck preview',
       'clideck task run',
       'clideck sessions',

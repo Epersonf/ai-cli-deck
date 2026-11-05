@@ -52,6 +52,9 @@ export function buildTmuxArgs(
     '-C',
     ...SERVER_OPTIONS,
     ...['new-session', '-A', '-s', name, ...geometry, '-c', spec.cwd, ...envFlags],
+    // tmux tells its programs they run inside it; here the browser terminal gets their output as written,
+    // so they must not adapt to tmux (Claude Code's "tmux detected" tips, wrapped escape sequences).
+    ...['env', '-u', 'TMUX', '-u', 'TMUX_PANE'],
     spec.command,
     ...spec.args,
   ];

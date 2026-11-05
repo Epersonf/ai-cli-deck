@@ -39,15 +39,24 @@ export function terminalSocket(app: FastifyInstance, c: Container): void {
     });
     socket.on('close', unsubscribe);
 
+    // The terminal can be removed while a device is still connected to it: tell that device, never throw
+    // (an exception in a socket handler would take the whole deck down).
+    const gone = (): boolean => {
+      if (c.sessions.get(id)) return false;
+      socket.close(CLOSE_NOT_FOUND, 'session not found');
+      return true;
+    };
+
     socket.on('message', (raw) => {
       const message = parseClientMessage(raw.toString());
-      if (!message) return;
+      if (!message || gone()) return;
       if (message.type === 'input') c.sessions.sendInput(id, message.data);
       else if (message.type === 'resize') c.sessions.resize(id, message.cols, message.rows);
       else json({ type: 'pong' });
     });
 
     c.sessions.snapshot(id, (screen) => {
+      if (gone()) return;
       json({ type: 'status', session: c.sessions.get(id) ?? session });
       const size = c.sessions.sizeOf(id);
       if (size) json({ type: 'size', ...size });

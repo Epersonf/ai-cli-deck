@@ -5,10 +5,8 @@ import type {
   GitDiff,
   GitReview,
   GitStatus,
-  HandoffInfo,
   Profile,
   ProfileTemplate,
-  QuickPrompt,
   Session,
 } from '@deck/shared';
 
@@ -57,14 +55,6 @@ export interface SessionStorePort {
 export interface ScrollbackStorePort {
   load(id: string): Promise<Uint8Array | null>;
   save(id: string, data: Uint8Array): Promise<void>;
-  remove(id: string): Promise<void>;
-}
-
-/** The handoff note an agent writes when its chat is about to be forked or moved (one file per session). */
-export interface HandoffStorePort {
-  pathOf(id: string): string;
-  write(id: string, text: string): Promise<void>;
-  info(id: string): Promise<HandoffInfo | null>;
   remove(id: string): Promise<void>;
 }
 
@@ -120,12 +110,6 @@ export interface GitReviewPort {
   /** Commits exactly these changes; returns git's summary. */
   commit(root: string, message: string, changes: readonly GitChange[]): Promise<string>;
   push(root: string): Promise<string>;
-}
-
-/** The quick prompts list; null until the user saved one. */
-export interface PromptStorePort {
-  load(): Promise<QuickPrompt[] | null>;
-  save(prompts: readonly QuickPrompt[]): Promise<void>;
 }
 
 export interface SystemPort {

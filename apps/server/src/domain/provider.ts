@@ -1,3 +1,5 @@
+import type { ChatSupport } from './chat.js';
+
 export interface ProviderContext {
   sessionId: string;
   cwd: string;
@@ -33,6 +35,8 @@ export interface Provider {
    * see the same accounts as the profile's agent.
    */
   shellEnv?(ctx: ProviderContext): Record<string, string>;
+  /** How its conversations are continued and handed over; absent: the deck can only start new ones. */
+  readonly chat?: ChatSupport | null;
 }
 
 export interface ProviderRegistry {

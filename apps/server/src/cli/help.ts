@@ -7,9 +7,6 @@ Commands:
   whoami                   This session: id, CLI, folder, preview port
   sessions                 Other sessions open in the deck
   title ["<name>"]         Name this terminal in the deck (no argument: print the current name)
-  resume "<args>"          Save how to continue this chat, e.g. resume "--resume <chat id>" (ids only)
-  fork "<args>"            Save the arguments that make your CLI fork this chat (same profile)
-  handoff "<text>"|-       Leave notes for whoever continues this chat; only when the deck asks ("-" reads stdin)
   task run "<cmd>" | battery --below N | list | stop <id> | log <id>
                            Background jobs: a command that keeps running, or a watcher that notifies the phone
   phone battery|device|notify "<text>"

@@ -150,14 +150,25 @@ each session stays bound to the profile it was started with. They are stored in
 ## Talking back to the deck
 
 Inside any session, `clideck help` lists the commands (`title`, `preview`, `sessions`, `worktree`, `status`...).
-Agents can also name their terminal (`clideck title`) and save how to continue their chat
-(`clideck resume "--resume <chat id>"`; `clideck meta` keeps other small notes). The deck stores
-only that pointer, never the conversation: when a terminal has ended, **Resume chat** restarts the same CLI,
-folder and profile with those arguments and the CLI reloads its own saved chat.
-To fork a chat or move it to another profile, use ⋮ > Fork or move. In the same profile, if the agent saved
-how its CLI forks (`clideck fork "<args>"`), the CLI copies the chat itself. Otherwise the running agent is
-asked once, by a `[deck]` message, to leave handoff notes (`clideck handoff`, a file under the deck state
-folder, never in your repo) and the new chat starts from them. Agents never write handoffs on their own.
+Agents can also name their terminal (`clideck title`); `clideck meta` keeps small notes.
+
+## Conversations: continue, fork, move to another AI
+
+The deck knows each terminal's conversation without asking the agent (no tokens spent): Claude Code reports
+its chat id through a start hook the deck passes it, and for Codex the deck finds the chat in Codex's own
+files (the one this terminal touched). A profile template says how its CLI continues chats (`chat` block:
+`format`, `resume`, `fork`, `last`, `prompt`), so any CLI can be added the same way.
+
+- **An ended terminal** offers **Continue conversation** (the CLI's own resume, e.g. `claude --resume <id>`,
+  `codex resume <id>`), **New conversation**, and **Continue with another AI**.
+- **Another AI** gets the conversation so far as a transcript (requests, answers, one line per action) written
+  to `.deck/chats/` in the project folder (listed in the repository's local git exclude, never committed); its
+  first message asks it to read that file. For a CLI whose chat files the deck cannot read, the transcript is
+  what the terminal showed.
+- **⋮ > Fork or move** does the same for a running terminal: in the same profile the CLI forks the chat itself.
+- **New session** lists the saved conversations of the chosen profile in the chosen folder: any of them
+  continues in a new terminal.
+
 **Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
 under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs
 Phone access, see android/README.md); `clideck task list|stop|log`. The terminal menu has "Notify me when it goes

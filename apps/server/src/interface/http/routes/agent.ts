@@ -13,7 +13,6 @@ const UrlBody = z.object({ url: z.string().min(1) });
 const TitleBody = z.object({ title: z.string().max(200) });
 const MetaQuery = z.object({ key: z.string().min(1).optional() });
 const MetaBody = z.object({ key: z.string().min(1), value: z.string() });
-const HandoffBody = z.object({ text: z.string() });
 const NotifyBody = z.object({
   text: z.string().min(1).max(400),
   title: z.string().max(80).optional(),
@@ -48,10 +47,6 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
     const { key, value } = parseWith(MetaBody, request.body);
     return tools(request.params).meta(key, value);
   });
-  app.get(`${base}/handoff`, (request) => tools(request.params).handoff());
-  app.put(`${base}/handoff`, (request) =>
-    tools(request.params).handoff(parseWith(HandoffBody, request.body).text),
-  );
   app.get(`${base}/phone/battery`, (request) => tools(request.params).phoneBattery());
   app.get(`${base}/phone/device`, (request) => tools(request.params).phoneDevice());
   app.get(`${base}/phone/capabilities`, (request) => tools(request.params).phoneCapabilities());

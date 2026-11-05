@@ -1,4 +1,5 @@
 import type { Provider } from '../../domain/provider.js';
+import { CODEX_CHAT, chatSupport } from '../chats/chatSupport.js';
 
 export const codex: Provider = {
   id: 'codex',
@@ -13,4 +14,5 @@ export const codex: Provider = {
     ],
     env: {},
   }),
+  chat: chatSupport(CODEX_CHAT, null),
 };

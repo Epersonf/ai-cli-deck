@@ -64,7 +64,17 @@ export const TEMPLATE_SKELETON = `{
 
   // "claude" or "codex" if "clideck setup" can download your CLI by installing one of those; otherwise null
   // (the profile then shows as missing until "command" is found in PATH).
-  "install": null
+  "install": null,
+
+  // How the CLI keeps and continues its conversations, so a restarted terminal picks its chat up again and a
+  // chat can move to another AI. Use null if the CLI cannot continue chats. Every part is optional:
+  //   "format": "claude" or "codex" when the CLI stores chats like one of those (the deck then reads them:
+  //             it knows each terminal's chat, lists them and hands them over); null otherwise
+  //   "resume": arguments that continue one chat, with {chatId}       e.g. ["--resume", "{chatId}"]
+  //   "fork":   arguments that copy a chat into a new one, {chatId}   e.g. ["--resume", "{chatId}", "--fork-session"]
+  //   "last":   arguments that continue the latest chat in the folder e.g. ["--continue"]
+  //   "prompt": arguments that start with a first message, {prompt}  e.g. ["{prompt}"] (empty: the deck types it)
+  "chat": { "format": null, "resume": [], "fork": [], "last": ["--continue"], "prompt": ["{prompt}"] }
 
   // Placeholders usable in command, args, env values, apiKey.label and mcpArgs:
   //   {home}            this profile's own folder

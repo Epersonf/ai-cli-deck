@@ -11,7 +11,7 @@ import type {
 import type { PortAllocator } from './PortAllocator.js';
 import { resolveCwd } from './cwd.js';
 import { ScreenSaver } from './ScreenSaver.js';
-import { wirePty } from './ptyWiring.js';
+import { startRuntime, type StartOptions } from './startRuntime.js';
 import type { SessionLauncher } from './SessionLauncher.js';
 import { newSession } from './newSession.js';
 import { withMeta } from './sessionMeta.js';
@@ -21,7 +21,7 @@ import {
   restoreSessions,
   type LifecycleCtx,
 } from './sessionLifecycle.js';
-import { SessionRegistry, type Runtime } from './SessionRegistry.js';
+import { SessionRegistry } from './SessionRegistry.js';
 
 export interface SessionManagerDeps {
   launcher: SessionLauncher;
@@ -72,13 +72,15 @@ export class SessionManager {
 
   readonly restore = (): Promise<void> => restoreSessions(this.lifecycle());
 
-  restart(id: string, resume: boolean): Promise<void> {
-    return restartSession(this.lifecycle(), id, resume);
+  /** Starts an ended session again, with `args` for its CLI (possibly another profile's CLI). */
+  restart(id: string, plan: { provider: string; args: readonly string[] }): Promise<void> {
+    return restartSession(this.lifecycle(), id, plan);
   }
 
   private lifecycle(): LifecycleCtx {
     const { launcher, mux, store, ports } = this.deps;
-    const start = (session: Session, spawn: () => PtyHandle): void => this.start(session, spawn);
+    const start = (session: Session, spawn: () => PtyHandle, options?: StartOptions): void =>
+      this.start(session, spawn, options);
     return { reg: this.reg, launcher, mux, store, ports, screens: this.screens, start };
   }
 
@@ -138,12 +140,9 @@ export class SessionManager {
     void this.reg.persist();
   }
 
-  private start(session: Session, spawn: () => PtyHandle): void {
-    const pty = spawn();
-    const runtime: Runtime = { ...this.reg.runtimeOf(session), pty };
-    this.reg.runtimes.set(session.id, runtime);
-    const touched = (): void => this.screens.touch(session.id);
-    wirePty(pty, runtime.ring, session.id, this.deps.bus, () => this.reg.ended(runtime), touched);
-    this.reg.update(session.id, { status: 'running' });
+  private start(session: Session, spawn: () => PtyHandle, options?: StartOptions): void {
+    const { bus, system } = this.deps;
+    const deps = { reg: this.reg, bus, screens: this.screens, now: () => system.now() };
+    startRuntime(deps, session, spawn, options);
   }
 }

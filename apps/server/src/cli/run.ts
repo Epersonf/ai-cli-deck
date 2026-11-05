@@ -6,7 +6,6 @@ import { parseArgs, type Command } from './parse.js';
 import { addProfile, knownTemplates, parseProfileArgs } from './profileCommand.js';
 import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
-import { readStdin } from './stdin.js';
 import { phoneCommand } from './phoneCommand.js';
 import { runTask } from './taskCommand.js';
 
@@ -39,11 +38,6 @@ async function execute(
       return runTask(deck, command.action, command.args);
     case 'phone':
       return phoneCommand(deck, command);
-    case 'handoff': {
-      if (command.text === null) return show(await call(deck, 'GET', '/handoff'));
-      const text = command.text === '-' ? await readStdin() : command.text;
-      return show(await call(deck, 'PUT', '/handoff', { text }));
-    }
     case 'meta': {
       if (command.value !== null && command.key !== null)
         return show(await call(deck, 'PUT', '/meta', { key: command.key, value: command.value }));

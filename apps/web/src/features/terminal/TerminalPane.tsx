@@ -1,7 +1,6 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
-import { QuickPrompts } from '../prompts/QuickPrompts';
-import { sendPrompt } from '../prompts/promptsStore';
+import { useRef, type KeyboardEvent } from 'react';
 import { ExtraKeys } from './ExtraKeys';
+import { useTerminalSearch } from './searchStore';
 import type { TerminalApi } from './terminalApi';
 import { TerminalSearch } from './TerminalSearch';
 import { TerminalView } from './TerminalView';
@@ -18,12 +17,11 @@ interface Props {
 const isSearchKey = (e: KeyboardEvent): boolean =>
   (e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyF';
 
-/** One terminal plus its bars (search, quick prompts, extra keys); stays mounted while hidden so output keeps flowing. */
+/** One terminal plus its extra-keys bar; stays mounted while hidden so output keeps flowing. */
 export function TerminalPane({ sessionId, visible, extraKeys, showKeys }: Props) {
   const mods = useModifiers();
   const api = useRef<TerminalApi | null>(null);
-  const [searching, setSearching] = useState(false);
-  const send = (data: string): void => api.current?.send(data);
+  const searching = useTerminalSearch((s) => s.openFor === sessionId);
   return (
     <section
       className={`pane terminal-pane${visible ? '' : ' hidden'}`}
@@ -31,23 +29,18 @@ export function TerminalPane({ sessionId, visible, extraKeys, showKeys }: Props)
         if (!isSearchKey(e)) return;
         e.preventDefault();
         e.stopPropagation();
-        setSearching(true);
+        useTerminalSearch.getState().toggle(sessionId);
       }}
     >
-      {searching && <TerminalSearch api={api} onClose={() => setSearching(false)} />}
+      {searching && (
+        <TerminalSearch api={api} onClose={() => useTerminalSearch.getState().close()} />
+      )}
       <TerminalView sessionId={sessionId} visible={visible} mods={mods} apiRef={api} />
-      <QuickPrompts
-        onSearch={() => setSearching((open) => !open)}
-        onPrompt={(prompt) => {
-          const terminal = api.current;
-          if (terminal) sendPrompt(prompt, terminal.paste, terminal.send);
-        }}
-      />
       {showKeys && (
         <ExtraKeys
           keys={extraKeys}
           mods={mods}
-          send={send}
+          send={(data) => api.current?.send(data)}
           applicationCursor={() => api.current?.applicationCursor() ?? false}
         />
       )}

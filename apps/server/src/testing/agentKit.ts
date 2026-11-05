@@ -20,7 +20,6 @@ export async function setupAgents() {
   const c = await h.sessions.create(customBody('/other', false));
   const deps = {
     sessions: h.sessions,
-    handoffs: h.handoffs,
     phone: null,
     tasks: h.tasks,
     approvals,

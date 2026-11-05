@@ -1,4 +1,5 @@
 import type { CommandParts, Provider, ProviderContext } from '../../domain/provider.js';
+import { CLAUDE_CHAT, chatSupport } from '../chats/chatSupport.js';
 import { claudeEndpointParts } from './claudeEndpoint.js';
 import { claudeMcpConfig } from './claudeLike.js';
 
@@ -23,4 +24,5 @@ export const claudeDeepseek: Provider = {
   label: 'Claude Code (DeepSeek)',
   buildCommand: (ctx) => deepseekParts(ctx, null),
   buildMcpConfig: claudeMcpConfig,
+  chat: chatSupport(CLAUDE_CHAT, null),
 };

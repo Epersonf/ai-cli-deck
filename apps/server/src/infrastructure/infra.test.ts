@@ -75,7 +75,10 @@ describe('tmux and git helpers', () => {
     ]);
     expect(args).toContain('A=1');
     expect(args).not.toContain('TMUX=x');
-    expect(args.slice(args.indexOf('claude'), args.indexOf('claude') + 2)).toEqual([
+    // The program is told it is not inside tmux: the browser terminal gets its output as written.
+    expect(args.slice(args.indexOf('env'), args.indexOf('claude') + 2)).toEqual([
+      'env',
+      ...['-u', 'TMUX', '-u', 'TMUX_PANE'],
       'claude',
       '-x',
     ]);

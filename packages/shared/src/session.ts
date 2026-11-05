@@ -25,7 +25,7 @@ export const SessionSchema = z.object({
   name: z.string().nullable().default(null),
   /** Set for a sub-terminal opened from another session (e.g. a plain shell in a folder, for git). */
   parentId: z.string().nullable().default(null),
-  /** Small notes the agent keeps for itself (e.g. the id of its chat). Only `resume` means something to the deck. */
+  /** Small notes kept with the session: the deck's own (`runAt`, `chat`, see CHAT_META) and the agent's. */
   meta: z.record(z.string(), z.string()).default({}),
 });
 export type Session = z.infer<typeof SessionSchema>;
@@ -41,21 +41,12 @@ export const CreateSessionBodySchema = z.object({
 });
 export type CreateSessionBody = z.infer<typeof CreateSessionBodySchema>;
 
-/** Key whose value is the argument list that makes the session's own CLI continue its chat. */
-export const RESUME_KEY = 'resume';
-/** Key whose value is the argument list that makes the session's own CLI fork its chat (same profile). */
-export const FORK_KEY = 'fork';
 export const META_LIMITS = {
   keys: 12,
   keyLength: 32,
   valueLength: 500,
   totalLength: 3000,
 } as const;
-
-export const RestartSessionBodySchema = z.object({
-  /** true: continue the chat saved under the "resume" note; false: start a fresh chat. */
-  resume: z.boolean().default(true),
-});
 
 export const ProviderStatusSchema = z.enum(['ready', 'missing']);
 export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;
@@ -82,14 +73,4 @@ export const RenameSessionBodySchema = z.object({
     .max(60)
     .transform((value) => (value === '' ? null : value))
     .nullable(),
-});
-
-export const HandoffInfoSchema = z.object({ updatedAt: z.string(), bytes: z.number().int() });
-export type HandoffInfo = z.infer<typeof HandoffInfoSchema>;
-
-export const ForkSessionBodySchema = z.object({
-  /** Profile of the new terminal; the same one when omitted. */
-  provider: z.string().min(1).optional(),
-  /** Start from the handoff note when the CLI cannot fork natively. */
-  useHandoff: z.boolean().default(true),
 });

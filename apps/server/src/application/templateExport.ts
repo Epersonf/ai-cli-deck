@@ -23,6 +23,10 @@ const NOTES: ReadonlyArray<readonly [keyof ProfileTemplate, string]> = [
   ],
   ['mcpArgs', "Arguments that hand the CLI the deck's MCP server and briefing."],
   ['install', '"claude" or "codex" if `clideck setup` can download your CLI that way, else null.'],
+  [
+    'chat',
+    'How the CLI continues its chats (null: only new ones). "format" ("claude", "codex" or null) lets the deck read them; "resume" and "fork" use {chatId}, "last" continues the latest one here, "prompt" starts with a first message ({prompt}).',
+  ],
 ];
 
 const PLACEHOLDERS = `  // Placeholders usable in command, args, env values, apiKey.label and mcpArgs:

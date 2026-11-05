@@ -18,12 +18,12 @@ describe('terminal size shared by several devices', () => {
     expect(h.ptyPort.spawned[0]?.pty.size).toEqual({ cols: 50, rows: 30 });
   });
 
-  it('forgets the size when the session is restarted (the new process starts at the default)', async () => {
+  it('keeps the size when the session is restarted (the new process starts at it, not at 80x24)', async () => {
     const h = createHarness();
     const { id } = await h.sessions.create({ ...customBody(), provider: 'claude', command: null });
     h.sessions.resize(id, 120, 40);
     h.ptyPort.spawned[0]?.pty.exit(0);
-    await h.sessions.restart(id, false);
-    expect(h.sessions.sizeOf(id)).toBeNull();
+    await h.sessions.restart(id, { provider: 'claude', args: [] });
+    expect(h.sessions.sizeOf(id)).toEqual({ cols: 120, rows: 40 });
   });
 });

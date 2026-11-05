@@ -61,7 +61,7 @@ The token goes in the `x-deck-token` header (or `?token=` for WebSockets and med
 ## Agent endpoints (loopback only)
 
 - MCP, Streamable HTTP, stateless: `POST /mcp/<sessionId>` with tools `list_sessions`,
-  `session_title({title?})`, `session_meta({key?,value?})`, `session_handoff({text?})`, `task({action,...})`, `phone({action,...})`, `propose_worktree({reason})`, `open_preview({url})`, `suggest_new_tab({url})`,
+  `session_title({title?})`, `session_meta({key?,value?})`, `task({action,...})`, `phone({action,...})`, `propose_worktree({reason})`, `open_preview({url})`, `suggest_new_tab({url})`,
   `get_request_status({requestId})`.
 - `clideck` uses `GET|POST /agent/<sessionId>/{whoami,sessions,preview,newtab,worktree,requests/:id}`.
 

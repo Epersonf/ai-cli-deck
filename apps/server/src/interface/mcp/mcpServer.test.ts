@@ -21,7 +21,6 @@ async function connect() {
   const tools = createAgentTools(
     {
       sessions: h.sessions,
-      handoffs: h.handoffs,
       phone: null,
       tasks: h.tasks,
       approvals,
@@ -57,7 +56,6 @@ describe('MCP server', () => {
       'list_sessions',
       'open_preview',
       'propose_worktree',
-      'session_handoff',
       'session_meta',
       'session_title',
       'suggest_new_tab',

@@ -10,6 +10,7 @@ import './styles/dialogs.css';
 import './styles/drawer.css';
 import './styles/explorer.css';
 import './styles/terminal.css';
+import './styles/localEcho.css';
 import './styles/files.css';
 import './styles/tools.css';
 import './styles/subtabs.css';
@@ -17,6 +18,7 @@ import './styles/viewer.css';
 import './styles/preview.css';
 import './styles/changes.css';
 import './styles/terminalTools.css';
+import './styles/chats.css';
 import './styles/approvals.css';
 
 initToken();

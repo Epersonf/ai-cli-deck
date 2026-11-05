@@ -1,5 +1,6 @@
 import { ProfileTemplateSchema, type ProfileTemplate } from '@deck/shared';
 import type { z } from 'zod';
+import { CLAUDE_CHAT, CODEX_CHAT } from '../chats/chatSupport.js';
 
 /** How Claude Code is handed the deck's MCP server and briefing. */
 const CLAUDE_MCP = ['--mcp-config', '{mcpConfig}', '--append-system-prompt', '{guide}'];
@@ -24,6 +25,7 @@ export const BUILTIN_TEMPLATES: readonly ProfileTemplate[] = [
     home: { env: 'CLAUDE_CONFIG_DIR' },
     mcpArgs: CLAUDE_MCP,
     install: 'claude',
+    chat: CLAUDE_CHAT,
   }),
   make({
     id: 'claude-endpoint',
@@ -49,6 +51,7 @@ export const BUILTIN_TEMPLATES: readonly ProfileTemplate[] = [
     },
     mcpArgs: CLAUDE_MCP,
     install: 'claude',
+    chat: CLAUDE_CHAT,
   }),
   make({
     id: 'claude-deepseek',
@@ -64,6 +67,7 @@ export const BUILTIN_TEMPLATES: readonly ProfileTemplate[] = [
     apiKey: { env: 'ANTHROPIC_AUTH_TOKEN', label: 'DeepSeek API key', remember: true },
     mcpArgs: CLAUDE_MCP,
     install: 'claude',
+    chat: CLAUDE_CHAT,
   }),
   make({
     id: 'codex',
@@ -73,6 +77,7 @@ export const BUILTIN_TEMPLATES: readonly ProfileTemplate[] = [
     home: { env: 'CODEX_HOME' },
     mcpArgs: CODEX_MCP,
     install: 'codex',
+    chat: CODEX_CHAT,
   }),
   make({
     id: 'custom',

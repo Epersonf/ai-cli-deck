@@ -27,19 +27,10 @@ export function buildMcpServer(tools: AgentTools): McpServer {
     'session_meta',
     {
       description:
-        'Notes kept with this session. Save how to resume this chat: key "resume", value = the arguments for your CLI (e.g. "--resume <chat id>"). Ids only, never content. No args: read all; key only: read; key+value: save (empty value removes).',
+        'Short notes kept with this session (ids, never content). No args: read all; key only: read; key+value: save (empty value removes).',
       inputSchema: { key: z.string().min(1).optional(), value: z.string().optional() },
     },
     ({ key, value }) => runAsync(() => tools.meta(key, value)),
-  );
-  server.registerTool(
-    'session_handoff',
-    {
-      description:
-        'Write the handoff notes for whoever continues this chat (done, what is left, decisions, key files). Only when the deck asks you to. No text: check whether one exists.',
-      inputSchema: { text: z.string().max(8000).optional() },
-    },
-    ({ text }) => runAsync(() => tools.handoff(text)),
   );
   server.registerTool(
     'propose_worktree',

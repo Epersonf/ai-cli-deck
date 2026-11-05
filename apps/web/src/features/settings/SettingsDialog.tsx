@@ -4,7 +4,6 @@ import { ModalTitle } from '../../shared/ui/ModalTitle';
 import type { KeysMode } from '../terminal/keysPreference';
 import { KeysSection } from './KeysSection';
 import { LanguageSection } from './LanguageSection';
-import { PromptsDialog } from '../prompts/PromptsDialog';
 import { PasswordDialog } from './PasswordDialog';
 import { TemplatesDialog } from './TemplatesDialog';
 
@@ -19,9 +18,7 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
   const t = useT();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
-  const [promptsOpen, setPromptsOpen] = useState(false);
   if (passwordOpen) return <PasswordDialog onClose={() => setPasswordOpen(false)} />;
-  if (promptsOpen) return <PromptsDialog onClose={() => setPromptsOpen(false)} />;
   if (templatesOpen) return <TemplatesDialog onClose={() => setTemplatesOpen(false)} />;
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -32,13 +29,6 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
         <div className="setting">
           <h3>{t('shortcuts.title')}</h3>
           <p className="hint">{t('shortcuts.body')}</p>
-        </div>
-        <div className="setting">
-          <h3>{t('prompts.title')}</h3>
-          <p className="hint">{t('prompts.settingsHint')}</p>
-          <button type="button" onClick={() => setPromptsOpen(true)}>
-            {t('prompts.open')}
-          </button>
         </div>
         <div className="setting">
           <h3>{t('templates.title')}</h3>

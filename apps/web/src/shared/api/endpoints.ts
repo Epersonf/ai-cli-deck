@@ -4,7 +4,6 @@ import {
   LoginResponseSchema,
   FileContentSchema,
   GitStatusSchema,
-  HandoffInfoSchema,
   ProfileSchema,
   ProviderInfoSchema,
   PublicConfigSchema,
@@ -52,13 +51,6 @@ export const api = {
   /** A plain shell in a folder of this session, opened as a sub-terminal. */
   openTerminal: (id: string, path: string) =>
     request(SessionSchema, 'POST', `${session(id)}/terminal`, { path }),
-  requestHandoff: (id: string) => request(z.void(), 'POST', `${session(id)}/handoff/request`),
-  handoff: (id: string) =>
-    request(z.object({ info: HandoffInfoSchema.nullable() }), 'GET', `${session(id)}/handoff`),
-  fork: (id: string, body: { provider: string; useHandoff: boolean }) =>
-    request(SessionSchema, 'POST', `${session(id)}/fork`, body),
-  restartSession: (id: string, resume: boolean) =>
-    request(z.void(), 'POST', `${session(id)}/restart`, { resume }),
   renameSession: (id: string, name: string | null) =>
     request(SessionSchema, 'PATCH', session(id), { name }),
   templates: () => request(z.array(TemplateInfoSchema), 'GET', '/api/templates'),

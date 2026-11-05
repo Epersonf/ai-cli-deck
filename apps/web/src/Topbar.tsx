@@ -4,7 +4,8 @@ import { useProfiles } from './features/sessions/profilesStore';
 import { useActiveSession } from './features/sessions/sessionsStore';
 import { useT } from './shared/i18n/store';
 import { Gear } from './shared/ui/Gear';
-import { MenuIcon } from './shared/ui/Icons';
+import { useTerminalSearch } from './features/terminal/searchStore';
+import { MenuIcon, SearchIcon } from './shared/ui/Icons';
 
 interface Props {
   wide: boolean;
@@ -47,6 +48,17 @@ export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSetti
           aria-pressed={splitOn}
         >
           <span className="icon-split" aria-hidden />
+        </button>
+      )}
+      {active && (
+        <button
+          type="button"
+          className="tool"
+          onClick={() => useTerminalSearch.getState().toggle(active.id)}
+          title={t('search.open')}
+          aria-label={t('search.open')}
+        >
+          <SearchIcon />
         </button>
       )}
       <button

@@ -1,10 +1,12 @@
-import type { CreateSessionBody, ProviderInfo } from '@deck/shared';
+import type { CreateSessionBody, ProviderInfo, Session } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
+import { chatApi } from '../../shared/api/chatApi';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { choices, pickDefault } from './profileChoices';
 import { ProviderPicker } from './ProviderPicker';
 import { loadRecent, rememberFolder } from './recentFolders';
+import { SavedChats } from './SavedChats';
 import { SessionOptions } from './SessionOptions';
 import { useSessions } from './sessionsStore';
 import { splitArgs } from './splitArgs';
@@ -36,11 +38,12 @@ export function NewSessionDialog({ defaultCwd, profileId, onProfile, onClose }: 
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'failed'));
   }, []);
 
-  const launch = async (body: CreateSessionBody, remember: boolean): Promise<void> => {
+  /** Creates the terminal (a new chat, or a saved one continued) and shows it. */
+  const start = async (create: () => Promise<Session>, remember: boolean): Promise<void> => {
     setBusy(true);
     setError(null);
     try {
-      const session = await api.createSession(body);
+      const session = await create();
       if (remember) rememberFolder(session.cwd);
       useSessions.getState().upsert(session);
       useSessions.getState().select(session.id);
@@ -54,29 +57,27 @@ export function NewSessionDialog({ defaultCwd, profileId, onProfile, onClose }: 
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     const command = options.command.trim();
-    void launch(
-      {
-        provider,
-        cwd: cwd.trim(),
-        useWorktree: options.useWorktree,
-        command: command === '' ? null : command,
-        args: splitArgs(options.args),
-      },
-      true,
-    );
+    const body: CreateSessionBody = {
+      provider,
+      cwd: cwd.trim(),
+      useWorktree: options.useWorktree,
+      command: command === '' ? null : command,
+      args: splitArgs(options.args),
+    };
+    void start(() => api.createSession(body), true);
   };
 
-  const install = (): void =>
-    void launch(
-      {
-        provider: 'shell',
-        cwd: cwd.trim() || defaultCwd || '~',
-        useWorktree: false,
-        command: 'clideck',
-        args: ['setup', providers.find((p) => p.id === provider)?.setupId ?? provider],
-      },
-      false,
-    );
+  const install = (): void => {
+    const setup = providers.find((p) => p.id === provider)?.setupId ?? provider;
+    const body: CreateSessionBody = {
+      provider: 'shell',
+      cwd: cwd.trim() || defaultCwd || '~',
+      useWorktree: false,
+      command: 'clideck',
+      args: ['setup', setup],
+    };
+    void start(() => api.createSession(body), false);
+  };
 
   const missing = providers.find((p) => p.id === provider)?.status === 'missing';
   return (
@@ -116,6 +117,14 @@ export function NewSessionDialog({ defaultCwd, profileId, onProfile, onClose }: 
             ))}
           </datalist>
         </label>
+        <SavedChats
+          provider={provider}
+          cwd={cwd}
+          disabled={busy}
+          onOpen={(chatId) =>
+            void start(() => chatApi.open({ provider, cwd: cwd.trim(), chatId }), true)
+          }
+        />
         <SessionOptions provider={provider} values={options} onChange={setOptions} />
         {error !== null && <p className="notice error">{error}</p>}
         <div className="row">

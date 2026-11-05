@@ -1,5 +1,6 @@
 import type { Session } from '@deck/shared';
-import { HandoffService } from '../application/HandoffService.js';
+import { ChatActions } from '../application/ChatActions.js';
+import { ChatService } from '../application/ChatService.js';
 import { TaskService } from '../application/TaskService.js';
 import { PortAllocator } from '../application/PortAllocator.js';
 import { SessionLauncher } from '../application/SessionLauncher.js';
@@ -7,7 +8,8 @@ import { SessionManager } from '../application/SessionManager.js';
 import { EventBus, type DeckEvent } from '../domain/events.js';
 import { createProviderRegistry } from '../infrastructure/providers/registry.js';
 import {
-  FakeHandoffs,
+  FakeChatFiles,
+  FakeChatReader,
   FakeMux,
   FakePtyPort,
   FakeScrollback,
@@ -40,6 +42,7 @@ export function createHarness(options: HarnessOptions = {}) {
     binDir: '/deck/bin',
     baseEnv: { PATH: '/bin' },
     defaultShell: 'bash',
+    chatReportFile: (id) => `/reports/${id}.json`,
   });
   const sessions = new SessionManager({
     launcher,
@@ -51,8 +54,18 @@ export function createHarness(options: HarnessOptions = {}) {
     bus,
     replayBytes: 1024,
   });
-  const handoffStore = new FakeHandoffs();
-  const handoffs = new HandoffService(sessions, handoffStore, () => Promise.resolve());
+  const chatFiles = new FakeChatFiles();
+  const reader = new FakeChatReader();
+  const readers = { claude: reader, codex: reader };
+  const chats = new ChatService({ sessions, providers, readers, files: chatFiles, bus });
+  const chatActions = new ChatActions({
+    chats,
+    sessions,
+    files: chatFiles,
+    providers,
+    now: () => system.now(),
+    wait: () => Promise.resolve(),
+  });
   const tasks = new TaskService({
     sessions,
     bus,
@@ -67,8 +80,10 @@ export function createHarness(options: HarnessOptions = {}) {
     tasks,
     providers,
     sessions,
-    handoffs,
-    handoffStore,
+    chats,
+    chatActions,
+    chatFiles,
+    reader,
     ptyPort,
     mux,
     store,

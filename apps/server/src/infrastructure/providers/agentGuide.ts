@@ -9,9 +9,7 @@ export function agentGuide(options: { phone: boolean }): string {
     'The shell command `clideck` talks to it (`clideck help` lists everything); the same actions exist as MCP tools on the "deck" server.',
     'IMPORTANT, do this in your FIRST turn of a new chat, as soon as you know what the user wants:',
     'run `clideck title "<3-6 word topic>"` (MCP: session_title) so the terminal gets a name. Do not wait to be reminded.',
-    'Rename only if the topic really changes. If your chat id is easy to find, also run',
-    '`clideck resume "<arguments of your own CLI that continue this chat>"` (and `clideck fork "<arguments that fork it>"`',
-    'if your CLI can fork): ids only, never conversation content. Skip these when resuming a chat that already has them.',
+    'Rename only if the topic really changes.',
     'Other commands you should know exist:',
     '`clideck preview <port|url>` shows a localhost app in the user\'s preview pane, `clideck newtab <url>` offers an "open in new tab" button,',
     '`clideck task run "<command>"` keeps a command running in the background (the user sees it in the deck; `task list|log|stop`),',
@@ -24,7 +22,6 @@ export function agentGuide(options: { phone: boolean }): string {
           '`clideck task battery --below 10` can notify the phone later without you waiting.',
         ]
       : []),
-    'Write a handoff (`clideck handoff "<text>"`) ONLY when a message from [deck] asks you to, never on your own.',
     'Start dev servers on $PORT so sessions do not collide.',
   ].join(' ');
 }

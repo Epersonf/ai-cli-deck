@@ -20,6 +20,7 @@ import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.j
 import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
 import { workspaceServices } from './infrastructure/workspaceWiring.js';
+import { chatServices, createChatFiles } from './infrastructure/chatWiring.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
@@ -28,10 +29,8 @@ import { createProfileService } from './infrastructure/providers/profileWiring.j
 import { createProviderRegistry } from './infrastructure/providers/registry.js';
 import { NodePtyAdapter } from './infrastructure/pty/NodePtyAdapter.js';
 import { createTaskService } from './infrastructure/tasks/taskWiring.js';
-import { HandoffService } from './application/HandoffService.js';
 import { stringEnv } from './infrastructure/config/stringEnv.js';
 import { phoneFromEnv } from './infrastructure/phone/HttpPhoneBridge.js';
-import { FileHandoffStore } from './infrastructure/store/FileHandoffStore.js';
 import { FileScrollbackStore } from './infrastructure/store/FileScrollbackStore.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
 import { runCommand } from './infrastructure/tmux/exec.js';
@@ -73,6 +72,7 @@ async function main(): Promise<void> {
     status: statusResolver,
     defaultShell: shellName,
   });
+  const chatFiles = createChatFiles(paths.stateDir);
   const launcher = new SessionLauncher({
     mux,
     providers: providers,
@@ -82,6 +82,7 @@ async function main(): Promise<void> {
     baseEnv: stringEnv(),
     defaultShell: shellName,
     phoneEnabled: () => phone !== null,
+    chatReportFile: (id) => chatFiles.reportFile(id),
   });
   const sessions = new SessionManager({
     launcher,
@@ -107,9 +108,9 @@ async function main(): Promise<void> {
   const app = await createApp({
     sessions,
     phone,
-    handoffs: new HandoffService(sessions, new FileHandoffStore(join(paths.stateDir, 'handoffs'))),
+    ...chatServices({ files: chatFiles, sessions, providers, bus, system }),
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
-    ...workspaceServices({ sessions, git, configDir: paths.configDir }),
+    ...workspaceServices({ sessions, git }),
     preview: new PreviewService(sessions, bus),
     providers: providers,
     bus,

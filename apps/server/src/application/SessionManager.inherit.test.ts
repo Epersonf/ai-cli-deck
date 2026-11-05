@@ -46,7 +46,7 @@ describe('plain terminals opened from a profile session', () => {
       parentId: main.id,
     });
     h.ptyPort.spawned[1]?.pty.exit(0);
-    await h.sessions.restart(sub.id, false);
+    await h.sessions.restart(sub.id, { provider: 'shell', args: [] });
     expect(h.ptyPort.spawned[2]?.spec.env['ANTHROPIC_BASE_URL']).toBe('https://llm.example.com');
     await h.sessions.create({ ...customBody(), provider: 'shell', command: null });
     expect(h.ptyPort.spawned[3]?.spec.env['ANTHROPIC_BASE_URL']).toBeUndefined();

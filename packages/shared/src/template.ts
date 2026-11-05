@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ChatFormatSchema } from './chat.js';
 
 const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
@@ -13,6 +14,23 @@ export const TemplateFieldSchema = z.object({
   placeholder: z.string().max(100).default(''),
 });
 export type TemplateField = z.infer<typeof TemplateFieldSchema>;
+
+const chatArgs = z.array(z.string().max(500)).max(10).default([]);
+
+/** How a CLI keeps and continues its conversations. The deck uses whatever is given. */
+export const TemplateChatSchema = z.object({
+  /** Built-in reader of the CLI's chat files: the deck then knows, lists and hands over its chats. */
+  format: ChatFormatSchema.nullable().default(null),
+  /** Continue one chat (`{chatId}`). */
+  resume: chatArgs,
+  /** Fork one chat into a new one (`{chatId}`). */
+  fork: chatArgs,
+  /** Continue the CLI's latest chat in this folder, when its id is not known. */
+  last: chatArgs,
+  /** Start a new chat whose first message is `{prompt}`; empty: the deck types the message instead. */
+  prompt: chatArgs,
+});
+export type TemplateChat = z.infer<typeof TemplateChatSchema>;
 
 /**
  * How to start one kind of AI CLI as a clean profile. Pure data (JSON): the deck runs `command`
@@ -53,6 +71,8 @@ export const ProfileTemplateSchema = z.object({
   mcpArgs: z.array(z.string().max(500)).max(20).default([]),
   /** Built-in CLI that `clideck setup` can download for this template (so the profile shows "install"). */
   install: z.enum(['claude', 'codex']).nullable().default(null),
+  /** How its conversations are continued, forked and handed over (null: the deck can only start new ones). */
+  chat: TemplateChatSchema.nullable().default(null),
 });
 export type ProfileTemplate = z.infer<typeof ProfileTemplateSchema>;
 

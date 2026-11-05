@@ -24,6 +24,17 @@
   colours from `window-style`), so xterm keeps quiet on those (`upstreamReplies.ts`). Drawing through
   `tmux attach` instead meant two scrollbacks (tmux's and xterm's) and lost `ESC [3J`, so every redraw of
   an agent's chat piled up again in the browser's scrollback.
+- **Programs are told they are not in tmux.** They start under `env -u TMUX -u TMUX_PANE`: their output
+  reaches xterm.js as written, so they must not adapt to tmux (wrapped escape sequences, tmux tips).
+- **Conversations belong to the CLIs; the deck only finds them.** `ChatService` knows each terminal's
+  chat without asking the agent: Claude Code reports it through a `SessionStart` hook passed with
+  `--settings` (it writes the hook's JSON to `$DECK_CHAT_FILE`); otherwise the deck reads the CLI's own chat
+  files (`claudeChats`, `codexChats`) and takes the one this terminal's run touched (`meta.runAt`),
+  skipping chats other terminals are on. On exit the id is kept in `meta.chat`. `ChatActions` restarts
+  with the CLI's resume arguments, forks natively, or hands the chat to another profile as a Markdown
+  transcript in `<cwd>/.deck/chats/` (listed in `.git/info/exclude`) plus a first message asking to read
+  it. Templates describe this in their `chat` block, so a new CLI needs no code. Restarting keeps the
+  terminal size and may change the profile.
 - **Reattach without a provider.** After a server restart, live `deck-*` tmux sessions are
   re-attached with a control-mode `attach-session` (the provider is not needed again).
 - **Screens survive a dead machine.** `ScreenSaver` writes each live session's screen (tmux

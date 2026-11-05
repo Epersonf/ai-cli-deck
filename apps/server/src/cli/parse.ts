@@ -10,7 +10,6 @@ export type Command =
   | { name: 'newtab'; url: string }
   | { name: 'title'; title: string | null }
   | { name: 'meta'; key: string | null; value: string | null }
-  | { name: 'handoff'; text: string | null }
   | { name: 'task'; action: string; args: string[] }
   | { name: 'phone'; action: string; text: string; title: string; args: string[] }
   | { name: 'worktree'; reason: string }
@@ -87,16 +86,6 @@ export function parseArgs(argv: readonly string[]): Parsed {
         return ok({ name, action: 'call', text: '', title: '', args: [action, ...words] });
       return fail(PHONE_USAGE);
     }
-    case 'handoff':
-      return ok({ name, text: text === '' ? null : text });
-    case 'fork':
-      return text === ''
-        ? fail('usage: clideck fork "<arguments that fork this chat>"')
-        : ok({ name: 'meta', key: 'fork', value: text });
-    case 'resume':
-      return text === ''
-        ? fail('usage: clideck resume "<arguments that continue this chat>"')
-        : ok({ name: 'meta', key: 'resume', value: text });
     case 'title':
       return ok({ name, title: text === '' ? null : text });
     case 'worktree':

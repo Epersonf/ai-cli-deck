@@ -18,6 +18,8 @@ export interface LauncherDeps {
   defaultShell: string;
   /** True when the Android app lets agents use the phone: the briefing then tells them so. */
   phoneEnabled?(): boolean;
+  /** The file a session's CLI writes its current chat to (see ChatSupport.track). */
+  chatReportFile?(sessionId: string): string;
 }
 
 export const tmuxNameFor = (sessionId: string): string => `${TMUX_PREFIX}${sessionId}`;
@@ -55,9 +57,11 @@ export class SessionLauncher {
     const inherited = inheritFrom
       ? (this.deps.providers.get(inheritFrom)?.shellEnv?.(ctx) ?? {})
       : {};
+    const track = provider.chat?.track ?? [];
+    const report = this.deps.chatReportFile?.(session.id);
     const spec: LaunchSpec = {
       command: parts.command,
-      args: [...parts.args, ...mcp.args],
+      args: [...parts.args, ...mcp.args, ...track],
       cwd: session.cwd,
       env: {
         ...this.deps.baseEnv,
@@ -72,6 +76,7 @@ export class SessionLauncher {
         DECK_URL: this.deps.deckUrl,
         DECK_SESSION_ID: session.id,
         DECK_MCP_URL: ctx.mcpUrl,
+        ...(report ? { DECK_CHAT_FILE: report } : {}),
       },
     };
     return spec;
@@ -105,8 +110,9 @@ export class SessionLauncher {
     command: string | null,
     args: readonly string[],
     inheritFrom?: string,
+    size: { cols: number; rows: number } = DEFAULT_SIZE,
   ): PtyHandle {
     const spec = this.buildSpec(session, command, args, inheritFrom);
-    return this.deps.mux.launch(tmuxNameFor(session.id), spec, DEFAULT_SIZE);
+    return this.deps.mux.launch(tmuxNameFor(session.id), spec, size);
   }
 }

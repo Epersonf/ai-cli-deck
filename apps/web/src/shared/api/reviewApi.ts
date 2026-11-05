@@ -1,10 +1,4 @@
-import {
-  GitDiffSchema,
-  GitResultSchema,
-  GitReviewSchema,
-  QuickPromptsSchema,
-  type QuickPrompt,
-} from '@deck/shared';
+import { GitDiffSchema, GitResultSchema, GitReviewSchema } from '@deck/shared';
 import { z } from 'zod';
 import { request } from './client';
 
@@ -19,11 +13,4 @@ export const gitApi = {
   commit: (id: string, message: string, paths: readonly string[]) =>
     request(GitResultSchema, 'POST', `${base(id)}/commit`, { message, paths }),
   push: (id: string) => request(GitResultSchema, 'POST', `${base(id)}/push`, {}),
-};
-
-/** The quick prompts, shared by every device. */
-export const promptsApi = {
-  list: () => request(QuickPromptsSchema, 'GET', '/api/prompts').then((r) => r.prompts),
-  save: (prompts: readonly QuickPrompt[]) =>
-    request(QuickPromptsSchema, 'PUT', '/api/prompts', { prompts }).then((r) => r.prompts),
 };
