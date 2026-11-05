@@ -7,6 +7,7 @@ export type DeckEvent =
   | { kind: 'approval'; request: ApprovalRequest }
   | { kind: 'preview'; sessionId: string; url: string }
   | { kind: 'new-tab'; sessionId: string; url: string }
+  | { kind: 'agent-browser'; sessionId: string }
   | { kind: 'input'; sessionId: string }
   | { kind: 'size'; sessionId: string; cols: number; rows: number };
 

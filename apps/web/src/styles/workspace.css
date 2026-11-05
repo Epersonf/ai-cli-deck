@@ -29,8 +29,15 @@
 .bottom-nav button,
 .right-tabs button {
   flex: 1;
+  /* four tabs share a phone's width: they shrink instead of pushing the page sideways */
+  min-width: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-variant: small-caps;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
 }
 .bottom-nav button.active,
 .right-tabs button.active {

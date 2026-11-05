@@ -1,4 +1,5 @@
-import { DeckError, invalid, unavailable } from '../domain/errors.js';
+import { unavailable } from '../domain/errors.js';
+import { applyInput, asBadRequest } from './browserInput.js';
 import {
   toHttpUrl,
   type BrowserEngine,
@@ -17,7 +18,11 @@ export class BrowserService {
   private error: string | null = null;
   private idle: NodeJS.Timeout | null = null;
 
-  constructor(private readonly engine: BrowserEngine) {}
+  /** `startUrl` is the page a session's browser opens first: what its preview shows. */
+  constructor(
+    private readonly engine: BrowserEngine,
+    private readonly startUrl: (sessionId: string) => string | null = () => null,
+  ) {}
 
   status(): BrowserStatus {
     return {
@@ -49,10 +54,17 @@ export class BrowserService {
     this.touch();
     let page = this.pages.get(sessionId);
     if (!page) {
-      page = this.engine.newPage();
+      page = this.open(sessionId);
       this.pages.set(sessionId, page);
       page.catch(() => this.pages.delete(sessionId));
     }
+    return page;
+  }
+
+  private async open(sessionId: string): Promise<PageDriver> {
+    const page = await this.engine.newPage();
+    const start = this.startUrl(sessionId);
+    if (start) await page.goto(start).catch(() => undefined); // a dev server still starting is fine
     return page;
   }
 
@@ -63,7 +75,7 @@ export class BrowserService {
   }
 
   async navigate(sessionId: string, raw: string): Promise<PageInfo> {
-    return this.safe(async () => {
+    return asBadRequest(async () => {
       const page = await this.page(sessionId);
       await page.goto(toHttpUrl(raw));
       return this.info(page);
@@ -71,43 +83,41 @@ export class BrowserService {
   }
 
   async state(sessionId: string): Promise<PageInfo> {
-    return this.safe(async () => {
+    return asBadRequest(async () => {
       return this.info(await this.page(sessionId));
     });
   }
 
   async screenshot(sessionId: string): Promise<Buffer> {
-    return this.safe(async () => {
+    return asBadRequest(async () => {
       return (await this.page(sessionId)).screenshot();
     });
   }
 
   async outline(sessionId: string): Promise<PageInfo & { outline: string }> {
-    return this.safe(async () => {
+    return asBadRequest(async () => {
       const page = await this.page(sessionId);
       return { ...(await this.info(page)), outline: await page.outline() };
     });
   }
 
   async input(sessionId: string, input: BrowserInput): Promise<PageInfo> {
-    return this.act(sessionId, (page) => {
-      switch (input.kind) {
-        case 'click':
-          return page.clickAt(input.x, input.y);
-        case 'type':
-          return page.type(input.text);
-        case 'key':
-          return page.press(input.key);
-        case 'scroll':
-          return page.scroll(input.dy);
-        case 'back':
-          return page.back();
-        case 'forward':
-          return page.forward();
-        case 'reload':
-          return page.reload();
-      }
-    });
+    return this.act(sessionId, (page) => applyInput(page, input));
+  }
+
+  /** Fits the page to the device showing it. */
+  async resize(sessionId: string, width: number, height: number): Promise<PageInfo> {
+    return this.act(sessionId, (page) => page.resize(width, height));
+  }
+
+  /** Streams the page while someone watches; resolves to the function that stops it. */
+  async watch(sessionId: string, onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>> {
+    return asBadRequest(async () =>
+      (await this.page(sessionId)).screencast((jpeg) => {
+        this.touch(); // someone is looking: not idle
+        onFrame(jpeg);
+      }),
+    );
   }
 
   async click(sessionId: string, target: string): Promise<PageInfo> {
@@ -119,26 +129,15 @@ export class BrowserService {
   }
 
   private act(sessionId: string, job: (page: PageDriver) => Promise<void>): Promise<PageInfo> {
-    return this.safe(async () => {
+    return asBadRequest(async () => {
       const page = await this.page(sessionId);
       await job(page);
       return this.info(page);
     });
   }
 
-  /** Browser failures (timeouts, bad selectors, navigation errors) become short 400s, not 500s. */
-  private async safe<T>(action: () => Promise<T>): Promise<T> {
-    try {
-      return await action();
-    } catch (e) {
-      if (e instanceof DeckError) throw e;
-      const text = e instanceof Error ? e.message : 'Browser error';
-      throw invalid(text.split('\n')[0] ?? 'Browser error');
-    }
-  }
-
   private async info(page: PageDriver): Promise<PageInfo> {
-    return { url: page.url(), title: await page.title() };
+    return { url: page.url(), title: await page.title(), ...page.size() };
   }
 
   async shutdown(): Promise<void> {

@@ -13,6 +13,10 @@ export const ru: Messages = {
   'nav.terminal': 'Терминал',
   'nav.files': 'Файлы',
   'nav.preview': 'Предпросмотр',
+  'preview.modeFrame': 'Iframe',
+  'preview.modeBrowser': 'Браузер',
+  'preview.modeHint':
+    'Iframe: рисует это устройство, быстрее всего для простых проверок. Браузер: Chromium deck, который агент тоже видит и которым управляет.',
   'common.save': 'Сохранить',
   'nav.changes': 'Изменения',
   'search.placeholder': 'Найти в терминале',

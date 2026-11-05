@@ -28,6 +28,11 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
     if (!deps.phone) throw forbidden('Phone access is off: turn it on in the Android app settings');
     return deps.phone;
   };
+  /** The agent acts in the session's Chromium: the session's devices switch the preview to it. */
+  const shown = <T>(job: () => Promise<T>): Promise<T> => {
+    deps.preview.agentBrowsing(sessionId);
+    return job();
+  };
 
   return {
     whoami: () => {
@@ -112,14 +117,17 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
       url: deps.preview.suggestNewTab(self().id, normalizeUrl(url)),
     }),
 
-    browserNavigate: (url: string) => deps.browser.navigate(sessionId, url),
+    browserNavigate: (url: string) => shown(() => deps.browser.navigate(sessionId, url)),
     browserOutline: () => deps.browser.outline(sessionId),
     browserScreenshot: () => deps.browser.screenshot(sessionId),
-    browserClick: (target: string) => deps.browser.click(sessionId, target),
-    browserFill: (target: string, text: string) => deps.browser.fill(sessionId, target, text),
-    browserType: (text: string) => deps.browser.input(sessionId, { kind: 'type', text }),
-    browserPress: (key: string) => deps.browser.input(sessionId, { kind: 'key', key }),
-    browserScroll: (dy: number) => deps.browser.input(sessionId, { kind: 'scroll', dy }),
+    browserClick: (target: string) => shown(() => deps.browser.click(sessionId, target)),
+    browserFill: (target: string, text: string) =>
+      shown(() => deps.browser.fill(sessionId, target, text)),
+    browserType: (text: string) =>
+      shown(() => deps.browser.input(sessionId, { kind: 'type', text })),
+    browserPress: (key: string) => shown(() => deps.browser.input(sessionId, { kind: 'key', key })),
+    browserScroll: (dy: number) =>
+      shown(() => deps.browser.input(sessionId, { kind: 'scroll', dy })),
 
     requestStatus: (requestId: string) => {
       const request = deps.approvals.get(requestId);

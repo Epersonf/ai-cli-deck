@@ -48,6 +48,8 @@ describe('BrowserService', () => {
     expect(await browser.navigate('s1', '3000')).toEqual({
       url: 'http://localhost:3000/',
       title: 'Fake page',
+      width: 1000,
+      height: 720,
     });
     await browser.input('s1', { kind: 'click', x: 10, y: 20 });
     await browser.click('s1', 'text=Go');
@@ -71,5 +73,18 @@ describe('BrowserService', () => {
     page.clickTarget = () => Promise.reject(new Error('Timeout 8000ms exceeded.\nCall log: ...'));
     engine.newPage = () => Promise.resolve(page);
     await expect(browser.click('s1', '#missing')).rejects.toThrow('Timeout 8000ms exceeded.');
+  });
+});
+
+describe('BrowserService live view', () => {
+  it('opens on the preview address, streams frames and fits the page to the device', async () => {
+    const engine = new FakeBrowserEngine();
+    const browser = new BrowserService(engine, () => 'http://localhost:5173/');
+    const frames: string[] = [];
+    const stop = await browser.watch('s1', (jpeg) => frames.push(jpeg.toString()));
+    expect(frames).toEqual(['frame']);
+    await browser.resize('s1', 390, 700);
+    await stop();
+    expect(engine.log).toEqual(['goto http://localhost:5173/', 'resize 390x700', 'stop']);
   });
 });

@@ -7,8 +7,22 @@ export interface PreviewState {
   reloadKey: number;
 }
 
+/** `frame`: the page in an iframe on this device (fast). `browser`: the deck's Chromium, which the agent drives too. */
+export type PreviewMode = 'frame' | 'browser';
+const MODE_KEY = 'deck-preview-mode';
+const savedMode = (): PreviewMode => {
+  try {
+    return localStorage.getItem(MODE_KEY) === 'browser' ? 'browser' : 'frame';
+  } catch {
+    return 'frame';
+  }
+};
+
 interface PreviewStore {
   byId: Record<string, PreviewState>;
+  /** Per session; a session not listed uses the mode last picked on this device. */
+  mode: Record<string, PreviewMode>;
+  setMode(sessionId: string, mode: PreviewMode, remember?: boolean): void;
   newTab: Record<string, string | null>;
   open(sessionId: string, url: string): boolean;
   back(sessionId: string): void;
@@ -33,6 +47,16 @@ export const usePreview = create<PreviewStore>()((set, get) => {
     set({ byId: { ...get().byId, [id]: fn(get().byId[id] ?? EMPTY) } });
   return {
     byId: {},
+    mode: {},
+    setMode(sessionId, mode, remember = true) {
+      set({ mode: { ...get().mode, [sessionId]: mode } });
+      if (!remember) return;
+      try {
+        localStorage.setItem(MODE_KEY, mode);
+      } catch {
+        // only this page load remembers it
+      }
+    },
     newTab: {},
     open(sessionId, url) {
       const safe = previewable(url, window.location.origin);
@@ -51,3 +75,6 @@ export const usePreview = create<PreviewStore>()((set, get) => {
     suggestNewTab: (id, url) => set({ newTab: { ...get().newTab, [id]: url } }),
   };
 });
+
+export const modeOf = (mode: Record<string, PreviewMode>, sessionId: string): PreviewMode =>
+  mode[sessionId] ?? savedMode();

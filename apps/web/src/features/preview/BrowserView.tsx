@@ -1,61 +1,74 @@
-import { BROWSER_VIEWPORT } from '@deck/shared';
 import {
-  useCallback,
   useEffect,
   useRef,
   useState,
   type FormEvent,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react';
-import { api, type BrowserInput, type PageInfo } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
-import { useBrowserFrames } from './useBrowserFrames';
+import { textChange } from '../terminal/mobileKeyboard';
+import { useBrowserStream } from './useBrowserStream';
+import { usePageGestures } from './usePageGestures';
 
 interface Props {
   sessionId: string;
   visible: boolean;
   /** Address the agent (or a terminal link) asked to show. */
   requested: string | null;
+  toggle: ReactNode;
 }
 
-/** The session's real Chromium: a live picture you can click, scroll and type into. */
-export function BrowserView({ sessionId, visible, requested }: Props) {
+/**
+ * The session's real Chromium, live: the page is sized to this pane, frames stream as it changes, a tap
+ * clicks, a drag scrolls, and the text box types as you write. The agent drives this same page.
+ */
+export function BrowserView({ sessionId, visible, requested, toggle }: Props) {
   const t = useT();
-  const [page, setPage] = useState<PageInfo | null>(null);
+  const { frame, page, error, send, resize } = useBrowserStream(sessionId, visible);
+  const screen = useRef<HTMLDivElement>(null);
+  const image = useRef<HTMLImageElement>(null);
   const [draft, setDraft] = useState('');
   const [typed, setTyped] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const editing = useRef(false);
 
-  const track = useCallback(
-    (job: Promise<PageInfo>): void => {
-      job
-        .then((info) => {
-          setPage(info);
-          setError(null);
-          if (!editing.current) setDraft(info.url === 'about:blank' ? '' : info.url);
-        })
-        .catch((e: unknown) => setError(e instanceof Error ? e.message : 'failed'));
-    },
-    [setPage],
-  );
-  const send = (input: BrowserInput): void => track(api.browserInput(sessionId, input));
-
   useEffect(() => {
-    if (requested !== null) track(api.browserNavigate(sessionId, requested));
-  }, [sessionId, requested, track]);
+    if (requested !== null) send({ kind: 'navigate', url: requested });
+  }, [requested, send]);
+  useEffect(() => {
+    if (page && !editing.current) setDraft(page.url === 'about:blank' ? '' : page.url);
+  }, [page]);
+  useEffect(() => {
+    const element = screen.current;
+    if (!element || !visible) return;
+    const fit = (): void => resize(element.clientWidth, element.clientHeight);
+    const observer = new ResizeObserver(fit);
+    observer.observe(element);
+    fit();
+    return () => observer.disconnect();
+  }, [visible, resize]);
 
-  const refresh = useCallback(() => track(api.browserState(sessionId)), [sessionId, track]);
-  const frame = useBrowserFrames(sessionId, visible, refresh);
+  const gestures = usePageGestures(() => {
+    const rect = image.current?.getBoundingClientRect();
+    if (!rect || !page || rect.width === 0) return null;
+    return { scale: page.width / rect.width, left: rect.left, top: rect.top };
+  }, send);
 
-  const submit = (event: FormEvent): void => {
+  const navigate = (event: FormEvent): void => {
     event.preventDefault();
     editing.current = false;
-    if (draft.trim() !== '') track(api.browserNavigate(sessionId, draft));
+    if (draft.trim() !== '') send({ kind: 'navigate', url: draft });
   };
-  const sendText = (event: FormEvent): void => {
+  /** Types into the page as the box changes, so the phone keyboard's suggestions work too. */
+  const typeLive = (value: string): void => {
+    for (const part of textChange(typed, value).split(/(\x7f)/)) {
+      if (part === '\x7f') send({ kind: 'key', key: 'Backspace' });
+      else if (part !== '') send({ kind: 'type', text: part });
+    }
+    setTyped(value);
+  };
+  const enter = (event: FormEvent): void => {
     event.preventDefault();
-    if (typed !== '') send({ kind: 'type', text: typed });
     send({ kind: 'key', key: 'Enter' });
     setTyped('');
   };
@@ -68,7 +81,8 @@ export function BrowserView({ sessionId, visible, requested }: Props) {
 
   return (
     <>
-      <form className="preview-bar" onSubmit={submit}>
+      <form className="preview-bar" onSubmit={navigate}>
+        {toggle}
         <button type="button" onClick={() => send({ kind: 'back' })} aria-label={t('common.back')}>
           ←
         </button>
@@ -96,35 +110,17 @@ export function BrowserView({ sessionId, visible, requested }: Props) {
         />
       </form>
       {error !== null && <p className="notice error">{error}</p>}
-      <div
-        className="browser-screen"
-        tabIndex={0}
-        onKeyDown={onKey}
-        onWheel={(event) => send({ kind: 'scroll', dy: event.deltaY })}
-      >
+      <div ref={screen} className="browser-screen" tabIndex={0} onKeyDown={onKey}>
         {frame !== null && (
-          <img
-            src={frame}
-            alt={page?.title ?? ''}
-            draggable={false}
-            onClick={(event) => {
-              const box = event.currentTarget.getBoundingClientRect();
-              send({
-                kind: 'click',
-                x: ((event.clientX - box.left) / box.width) * BROWSER_VIEWPORT.width,
-                y: ((event.clientY - box.top) / box.height) * BROWSER_VIEWPORT.height,
-              });
-            }}
-          />
+          <img ref={image} src={frame} alt={page?.title ?? ''} draggable={false} {...gestures} />
         )}
       </div>
-      <form className="browser-type" onSubmit={sendText}>
+      <form className="browser-type" onSubmit={enter}>
         <input
           value={typed}
-          onChange={(event) => setTyped(event.target.value)}
+          onChange={(event) => typeLive(event.target.value)}
           placeholder={t('preview.typeHere')}
           autoCapitalize="off"
-          autoCorrect="off"
           spellCheck={false}
         />
         <button type="submit">↵</button>

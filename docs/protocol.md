@@ -67,3 +67,18 @@ The token goes in the `x-deck-token` header (or `?token=` for WebSockets and med
 
 Both are thin wrappers over the same `createAgentTools`, so they behave identically. No tool runs
 git or writes files: `propose_worktree` only creates a pending request.
+
+## Live browser (`/ws/browser/:sessionId`)
+
+The preview's Browser mode shows the session's Chromium (the one the agent drives with the `browser_*`
+MCP tools) over its own socket, same token rule as the terminal socket.
+
+- **Server to device:** a binary message is one JPEG frame, sent only when the page changed (Chromium's
+  screencast; a frame is skipped while the socket is backed up). JSON messages are
+  `{type:"page", url, title, width, height}` (re-read about once a second while frames flow) and
+  `{type:"error", message}`.
+- **Device to server:** JSON input in page (CSS) pixels: `click {x,y}`, `scroll {dy, dx?}`,
+  `type {text}`, `key {key}`, `back` / `forward` / `reload`, `navigate {url}`, and `resize {width,height}`
+  so the page is laid out at the size of the pane showing it.
+- When the agent acts in the browser, the terminal socket sends `preview-browser`, and the session's
+  devices switch the preview to Browser mode to show it.

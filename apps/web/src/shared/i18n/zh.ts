@@ -12,6 +12,10 @@ export const zh: Messages = {
   'nav.terminal': '终端',
   'nav.files': '文件',
   'nav.preview': '预览',
+  'preview.modeFrame': 'Iframe',
+  'preview.modeBrowser': '浏览器',
+  'preview.modeHint':
+    'Iframe：由本设备绘制，简单测试最快。浏览器：deck 的 Chromium，代理也能查看和控制。',
   'common.save': '保存',
   'nav.changes': '更改',
   'search.placeholder': '在终端中查找',

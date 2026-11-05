@@ -19,6 +19,11 @@ export class PreviewService {
     return safe;
   }
 
+  /** The agent drives the session's Chromium: its devices switch the preview to it. */
+  agentBrowsing(sessionId: string): void {
+    this.bus.publish({ kind: 'agent-browser', sessionId });
+  }
+
   suggestNewTab(sessionId: string, url: string): string {
     const safe = parseLocalUrl(url);
     if (safe === null) throw invalid('URL must be http(s) on localhost');

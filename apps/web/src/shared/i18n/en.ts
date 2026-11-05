@@ -11,6 +11,10 @@ export const en = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Files',
   'nav.preview': 'Preview',
+  'preview.modeFrame': 'Iframe',
+  'preview.modeBrowser': 'Browser',
+  'preview.modeHint':
+    'Iframe: drawn by this device, fastest for simple checks. Browser: the deck’s Chromium, which the agent can see and control too.',
   'common.save': 'Save',
   'nav.changes': 'Changes',
   'search.placeholder': 'Find in terminal',

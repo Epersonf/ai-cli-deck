@@ -34,6 +34,11 @@ export function dispatchMessage(
         if (useSessions.getState().activeId === sessionId) showSidePane('preview');
       }
       break;
+    case 'preview-browser':
+      // The agent is driving the browser: show it doing so (without changing this device's default).
+      usePreview.getState().setMode(sessionId, 'browser', false);
+      if (useSessions.getState().activeId === sessionId) showSidePane('preview');
+      break;
     case 'new-tab':
       usePreview.getState().suggestNewTab(sessionId, message.url);
       break;

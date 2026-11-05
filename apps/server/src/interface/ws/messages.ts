@@ -21,6 +21,8 @@ export function eventToMessage(event: DeckEvent, sessionId: string): ServerMessa
       return event.sessionId === sessionId
         ? { type: 'size', cols: event.cols, rows: event.rows }
         : null;
+    case 'agent-browser':
+      return event.sessionId === sessionId ? { type: 'preview-browser' } : null;
     case 'new-tab':
       return event.sessionId === sessionId ? { type: 'new-tab', url: event.url } : null;
   }

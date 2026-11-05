@@ -4,8 +4,6 @@ import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
 import { MCP_PATH, SETUP_SPECS } from '@deck/shared';
 import { ApprovalService } from './application/ApprovalService.js';
-import { BrowserService } from './application/BrowserService.js';
-import { PlaywrightEngine } from './infrastructure/browser/PlaywrightEngine.js';
 import { PortAllocator } from './application/PortAllocator.js';
 import { PreviewService } from './application/PreviewService.js';
 import { SessionLauncher } from './application/SessionLauncher.js';
@@ -113,7 +111,6 @@ async function main(): Promise<void> {
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
     ...workspaceServices({ sessions, git, configDir: paths.configDir }),
     preview: new PreviewService(sessions, bus),
-    browser: new BrowserService(new PlaywrightEngine()),
     providers: providers,
     bus,
     providerStatus: (id) => statusResolver.resolve(id),

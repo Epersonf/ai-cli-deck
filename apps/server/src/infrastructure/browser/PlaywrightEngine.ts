@@ -3,59 +3,9 @@ import { existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { chromium, type Browser, type Page } from 'playwright-core';
+import { chromium, type Browser } from 'playwright-core';
 import { VIEWPORT, type BrowserEngine, type PageDriver } from '../../application/browserTypes.js';
-
-const NAV_TIMEOUT_MS = 20_000;
-const ACTION_TIMEOUT_MS = 8_000;
-const OUTLINE_LIMIT = 16_000;
-
-class PlaywrightPage implements PageDriver {
-  constructor(private readonly page: Page) {}
-  async goto(url: string): Promise<void> {
-    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS });
-  }
-  async back(): Promise<void> {
-    await this.page.goBack({ timeout: NAV_TIMEOUT_MS });
-  }
-  async forward(): Promise<void> {
-    await this.page.goForward({ timeout: NAV_TIMEOUT_MS });
-  }
-  async reload(): Promise<void> {
-    await this.page.reload({ timeout: NAV_TIMEOUT_MS });
-  }
-  url(): string {
-    return this.page.url();
-  }
-  title(): Promise<string> {
-    return this.page.title();
-  }
-  screenshot(): Promise<Buffer> {
-    return this.page.screenshot({ type: 'jpeg', quality: 70 });
-  }
-  async outline(): Promise<string> {
-    const text = await this.page.locator('body').ariaSnapshot({ timeout: ACTION_TIMEOUT_MS });
-    return text.length > OUTLINE_LIMIT ? `${text.slice(0, OUTLINE_LIMIT)}\n… (truncated)` : text;
-  }
-  async clickAt(x: number, y: number): Promise<void> {
-    await this.page.mouse.click(x, y);
-  }
-  async clickTarget(target: string): Promise<void> {
-    await this.page.locator(target).first().click({ timeout: ACTION_TIMEOUT_MS });
-  }
-  async fill(target: string, text: string): Promise<void> {
-    await this.page.locator(target).first().fill(text, { timeout: ACTION_TIMEOUT_MS });
-  }
-  async type(text: string): Promise<void> {
-    await this.page.keyboard.type(text);
-  }
-  async press(key: string): Promise<void> {
-    await this.page.keyboard.press(key);
-  }
-  async scroll(dy: number): Promise<void> {
-    await this.page.mouse.wheel(0, dy);
-  }
-}
+import { PlaywrightPage } from './PlaywrightPage.js';
 
 /**
  * Chromium (headless shell) driven through Playwright. The browser is NOT bundled: it is
@@ -78,14 +28,13 @@ export class PlaywrightEngine implements BrowserEngine {
     if (!existsSync(this.browsersDir)) return null;
     const dir = readdirSync(this.browsersDir).find((n) => n.startsWith('chromium_headless_shell-'));
     if (!dir) return null;
-    const arch = process.arch === 'arm64' ? 'arm64' : 'x64';
-    const file = join(
-      this.browsersDir,
-      dir,
-      `chrome-headless-shell-linux-${arch}`,
-      'chrome-headless-shell',
-    );
-    return existsSync(file) ? file : null;
+    // The folder inside is named per platform (chrome-headless-shell-linux64, -linux-arm64, ...).
+    const root = join(this.browsersDir, dir);
+    for (const sub of readdirSync(root).filter((n) => n.startsWith('chrome-headless-shell'))) {
+      const file = join(root, sub, 'chrome-headless-shell');
+      if (existsSync(file)) return file;
+    }
+    return null;
   }
 
   /** Playwright's package "exports" hide cli.js, so find the package folder through package.json. */

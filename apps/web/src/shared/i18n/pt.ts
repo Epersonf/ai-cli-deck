@@ -13,6 +13,10 @@ export const pt: Messages = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Arquivos',
   'nav.preview': 'Prévia',
+  'preview.modeFrame': 'Iframe',
+  'preview.modeBrowser': 'Browser',
+  'preview.modeHint':
+    'Iframe: desenhado por este aparelho, mais rápido para testes simples. Browser: o Chromium do deck, que a IA também vê e controla.',
   'common.save': 'Salvar',
   'nav.changes': 'Alterações',
   'search.placeholder': 'Buscar no terminal',

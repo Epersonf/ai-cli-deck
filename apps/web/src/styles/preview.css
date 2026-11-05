@@ -1,5 +1,7 @@
 .preview-bar {
   display: flex;
+  /* on a phone the address goes to its own line instead of being squeezed */
+  flex-wrap: wrap;
   gap: 6px;
   padding: 6px 8px;
   background: var(--leather-2);
@@ -7,7 +9,7 @@
   align-items: center;
 }
 .preview-bar input {
-  flex: 1;
+  flex: 1 1 160px;
   min-width: 0;
 }
 .preview-pane iframe {
@@ -20,7 +22,7 @@
 .browser-screen {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   background: #fff;
   outline: none;
   display: flex;
@@ -33,6 +35,8 @@
   display: block;
   cursor: pointer;
   user-select: none;
+  /* every touch goes to the page: a drag scrolls it, not this pane */
+  touch-action: none;
 }
 .browser-type {
   display: flex;
@@ -44,4 +48,24 @@
 .browser-type input {
   flex: 1;
   min-width: 0;
+}
+
+/* Iframe / Browser switch at the start of the preview bar. */
+.mode-switch {
+  display: flex;
+  flex-shrink: 0;
+}
+.mode-switch button {
+  padding: 4px 10px;
+  border-radius: 0;
+}
+.mode-switch button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+.mode-switch button:last-child {
+  border-radius: 0 8px 8px 0;
+}
+.mode-switch button.active {
+  background: var(--brass-grad);
+  color: var(--ink);
 }

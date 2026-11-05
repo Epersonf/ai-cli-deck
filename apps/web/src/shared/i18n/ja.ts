@@ -13,6 +13,10 @@ export const ja: Messages = {
   'nav.terminal': 'ターミナル',
   'nav.files': 'ファイル',
   'nav.preview': 'プレビュー',
+  'preview.modeFrame': 'Iframe',
+  'preview.modeBrowser': 'ブラウザ',
+  'preview.modeHint':
+    'Iframe：この端末で描画、簡単な確認に最速。ブラウザ：deck の Chromium で、エージェントも見て操作できます。',
   'common.save': '保存',
   'nav.changes': '変更',
   'search.placeholder': 'ターミナル内を検索',

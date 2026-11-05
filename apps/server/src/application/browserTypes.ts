@@ -17,7 +17,12 @@ export interface PageDriver {
   fill(target: string, text: string): Promise<void>;
   type(text: string): Promise<void>;
   press(key: string): Promise<void>;
-  scroll(dy: number): Promise<void>;
+  scroll(dy: number, dx?: number): Promise<void>;
+  /** The page's size in CSS pixels; `resize` fits it to the device showing it. */
+  size(): { width: number; height: number };
+  resize(width: number, height: number): Promise<void>;
+  /** Streams a JPEG each time the page changes; resolves to the function that stops it. */
+  screencast(onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>>;
 }
 
 /** The real browser (Chromium) behind the pages; a fake in tests. */
@@ -38,7 +43,7 @@ export type BrowserInput =
   | { kind: 'click'; x: number; y: number }
   | { kind: 'type'; text: string }
   | { kind: 'key'; key: string }
-  | { kind: 'scroll'; dy: number }
+  | { kind: 'scroll'; dy: number; dx?: number | undefined }
   | { kind: 'back' | 'forward' | 'reload' };
 
 export const VIEWPORT = BROWSER_VIEWPORT;
@@ -68,4 +73,7 @@ export function toHttpUrl(raw: string): string {
 export interface PageInfo {
   url: string;
   title: string;
+  /** The page size in CSS pixels (what click coordinates refer to). */
+  width: number;
+  height: number;
 }

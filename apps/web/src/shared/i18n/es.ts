@@ -13,6 +13,10 @@ export const es: Messages = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Archivos',
   'nav.preview': 'Vista previa',
+  'preview.modeFrame': 'Iframe',
+  'preview.modeBrowser': 'Navegador',
+  'preview.modeHint':
+    'Iframe: lo dibuja este dispositivo, más rápido para pruebas simples. Navegador: el Chromium del deck, que el agente también ve y controla.',
   'common.save': 'Guardar',
   'nav.changes': 'Cambios',
   'search.placeholder': 'Buscar en la terminal',

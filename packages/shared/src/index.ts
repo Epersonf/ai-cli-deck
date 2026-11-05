@@ -16,3 +16,4 @@ export * from './templateFill.js';
 export * from './task.js';
 export * from './gitReview.js';
 export * from './quickPrompt.js';
+export * from './browserProtocol.js';
