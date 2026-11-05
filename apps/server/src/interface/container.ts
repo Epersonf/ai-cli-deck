@@ -11,8 +11,9 @@ import type { BrowserService } from '../application/BrowserService.js';
 import type { PreviewService } from '../application/PreviewService.js';
 import type { SessionManager } from '../application/SessionManager.js';
 import type { WorkspaceService } from '../application/WorkspaceService.js';
+import type { GitReviewService } from '../application/GitReviewService.js';
 import type { EventBus } from '../domain/events.js';
-import type { PhonePort } from '../domain/ports.js';
+import type { PhonePort, PromptStorePort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 
 export interface SecurityOptions {
@@ -29,6 +30,8 @@ export interface Container {
   phone: PhonePort | null;
   approvals: ApprovalService;
   workspace: WorkspaceService;
+  gitReview: GitReviewService;
+  prompts: PromptStorePort;
   preview: PreviewService;
   browser: BrowserService;
   providers: ProviderRegistry;

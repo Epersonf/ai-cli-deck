@@ -1,4 +1,5 @@
 import { FitAddon } from '@xterm/addon-fit';
+import { SearchAddon } from '@xterm/addon-search';
 import { Unicode11Addon } from '@xterm/addon-unicode11';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { WebLinksAddon } from '@xterm/addon-web-links';
@@ -22,7 +23,7 @@ export function createTerminal(
   element: HTMLElement,
   sessionId: string,
   upstream: () => boolean,
-): { term: Terminal; fit: FitAddon } {
+): { term: Terminal; fit: FitAddon; search: SearchAddon } {
   const term = new Terminal({
     fontSize: FONT_SIZE,
     fontFamily:
@@ -46,7 +47,9 @@ export function createTerminal(
   term.attachCustomKeyEventHandler((event) => !isPasteShortcut(event));
   attachClipboardOsc(term);
   tameMobileKeyboard(term);
-  return { term, fit };
+  const search = new SearchAddon();
+  term.loadAddon(search);
+  return { term, fit, search };
 }
 
 /** The GPU renderer keeps big redraws smooth; xterm's DOM renderer takes over without WebGL or if it is lost. */

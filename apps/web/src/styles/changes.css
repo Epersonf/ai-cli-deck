@@ -1,0 +1,122 @@
+/* The git review pane. */
+.changes-pane {
+  margin: 8px;
+  border: 3px double var(--brass);
+  border-radius: 12px;
+  background: var(--leather);
+  overflow: auto;
+  box-shadow: inset 0 0 30px rgb(0 0 0 / 50%);
+}
+.changes-pane.hidden {
+  display: none;
+}
+.app.wide .changes-pane {
+  margin: 0;
+}
+.changes-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--leather-2);
+  border-bottom: 1px solid var(--brass-lo);
+}
+.changes-repo {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--brass-hi);
+}
+.changes-pane > .hint,
+.changes-output {
+  margin: 10px;
+  white-space: pre-wrap;
+  font: 12px var(--mono);
+}
+.changes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.change {
+  border-bottom: 1px solid rgb(185 138 62 / 25%);
+}
+.change-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+}
+.change-code {
+  width: 1.4em;
+  text-align: center;
+  font: bold 12px var(--mono);
+  color: var(--amber);
+}
+.change-code.code-A,
+.change-code.code-new {
+  color: var(--verdigris);
+}
+.change-code.code-D,
+.change-code.code-U {
+  color: var(--danger);
+}
+.change-path {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--parchment);
+  font: 13px var(--mono);
+  display: block;
+  text-align: left;
+  justify-content: flex-start;
+  overflow-wrap: anywhere;
+  box-shadow: none;
+}
+.diff {
+  margin: 0;
+  padding: 6px 0;
+  overflow-x: auto;
+  background: var(--ink);
+  font: 12px/1.45 var(--mono);
+}
+.diff span {
+  display: block;
+  padding: 0 10px;
+  white-space: pre;
+  color: var(--parchment);
+}
+.diff .add {
+  background: rgb(95 179 161 / 16%);
+  color: #b9e6d9;
+}
+.diff .del {
+  background: rgb(224 97 79 / 16%);
+  color: #f2b6ab;
+}
+.diff .hunk {
+  color: var(--brass);
+}
+.diff .meta {
+  color: var(--muted);
+}
+.commit-box {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--leather-2);
+  border-top: 1px solid var(--brass-lo);
+}
+.commit-box textarea {
+  flex: 1;
+  min-height: 2.6em;
+}

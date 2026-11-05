@@ -100,7 +100,7 @@ export function App() {
       />
       {!wide && sessions.length > 0 && (
         <PaneTabs
-          views={['terminal', 'files', 'preview']}
+          views={['terminal', 'files', 'changes', 'preview']}
           active={view}
           className="bottom-nav"
           onSelect={setView}

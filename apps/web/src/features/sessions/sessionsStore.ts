@@ -2,7 +2,7 @@ import type { Session } from '@deck/shared';
 import { create } from 'zustand';
 import { api } from '../../shared/api/endpoints';
 
-export type View = 'terminal' | 'files' | 'preview';
+export type View = 'terminal' | 'files' | 'changes' | 'preview';
 
 interface SessionsState {
   sessions: Session[];

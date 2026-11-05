@@ -9,7 +9,7 @@ export const clampRatio = (ratio: number): number =>
 
 const LayoutSchema = z.object({
   showRight: z.boolean().catch(true),
-  rightView: z.enum(['files', 'preview']).catch('files'),
+  rightView: z.enum(['files', 'changes', 'preview']).catch('files'),
   ratio: z.number().catch(DEFAULT_RATIO).transform(clampRatio),
 });
 

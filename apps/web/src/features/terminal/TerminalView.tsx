@@ -13,13 +13,11 @@ import { TerminalBadges } from './TerminalBadges';
 import { NO_MODS, applyModifiersToText } from './keymap';
 import { createSizeSync, type SizeSync } from './sizeSync';
 import { resyncWhenShown } from './scrollbarSync';
+import { terminalApi, type TerminalApi } from './terminalApi';
 import { attachTouchScroll } from './touchScroll';
 import type { ModifiersApi } from './useModifiers';
 
-export interface TerminalApi {
-  send(data: string): void;
-  applicationCursor(): boolean;
-}
+export type { TerminalApi } from './terminalApi';
 
 interface Props {
   sessionId: string;
@@ -45,7 +43,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     if (!element) return;
     // True once the server says tmux sits in between: tmux then answers the program's queries itself.
     let upstream = false;
-    const { term, fit } = createTerminal(element, sessionId, () => upstream);
+    const { term, fit, search } = createTerminal(element, sessionId, () => upstream);
     termRef.current = term;
 
     const meter = createLatencyMeter();
@@ -86,7 +84,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     );
     syncRef.current = sync;
     const send = (data: string): void => socket.send({ type: 'input', data });
-    apiRef.current = { send, applicationCursor: () => term.modes.applicationCursorKeysMode };
+    apiRef.current = terminalApi(term, search, send);
     const probe = window.setInterval(() => {
       meter.ping();
       socket.send({ type: 'ping' });

@@ -10,7 +10,6 @@ import { PortAllocator } from './application/PortAllocator.js';
 import { PreviewService } from './application/PreviewService.js';
 import { SessionLauncher } from './application/SessionLauncher.js';
 import { SessionManager } from './application/SessionManager.js';
-import { WorkspaceService } from './application/WorkspaceService.js';
 import { EventBus } from './domain/events.js';
 
 /** How often changed terminal screens are written to disk. */
@@ -22,7 +21,7 @@ import { JsonAuthStore } from './infrastructure/auth/JsonAuthStore.js';
 import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.js';
 import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
-import { FileReader } from './infrastructure/fs/FileReader.js';
+import { workspaceServices } from './infrastructure/workspaceWiring.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
@@ -112,7 +111,7 @@ async function main(): Promise<void> {
     phone,
     handoffs: new HandoffService(sessions, new FileHandoffStore(join(paths.stateDir, 'handoffs'))),
     approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
-    workspace: new WorkspaceService({ sessions, files: new FileReader(), git }),
+    ...workspaceServices({ sessions, git, configDir: paths.configDir }),
     preview: new PreviewService(sessions, bus),
     browser: new BrowserService(new PlaywrightEngine()),
     providers: providers,

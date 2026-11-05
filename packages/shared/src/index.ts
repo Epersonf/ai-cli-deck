@@ -14,3 +14,5 @@ export * from './jsonc.js';
 export * from './template.js';
 export * from './templateFill.js';
 export * from './task.js';
+export * from './gitReview.js';
+export * from './quickPrompt.js';

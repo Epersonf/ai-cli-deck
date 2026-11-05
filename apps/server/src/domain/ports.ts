@@ -1,10 +1,14 @@
 import type {
   FileContent,
   FileEntry,
+  GitChange,
+  GitDiff,
+  GitReview,
   GitStatus,
   HandoffInfo,
   Profile,
   ProfileTemplate,
+  QuickPrompt,
   Session,
 } from '@deck/shared';
 
@@ -105,6 +109,23 @@ export interface GitPort {
   status(cwd: string): Promise<GitStatus>;
   /** Subset of `paths` (relative to cwd) that git ignores; empty outside a repository. */
   ignoredPaths(cwd: string, paths: readonly string[]): Promise<Set<string>>;
+}
+
+/** Reviewing a repository's changes. `root` is the repository's top folder. */
+export interface GitReviewPort {
+  root(cwd: string): Promise<string | null>;
+  status(root: string): Promise<Pick<GitReview, 'branch' | 'ahead' | 'changes'>>;
+  diff(root: string, change: GitChange): Promise<GitDiff>;
+  discard(root: string, change: GitChange): Promise<void>;
+  /** Commits exactly these changes; returns git's summary. */
+  commit(root: string, message: string, changes: readonly GitChange[]): Promise<string>;
+  push(root: string): Promise<string>;
+}
+
+/** The quick prompts list; null until the user saved one. */
+export interface PromptStorePort {
+  load(): Promise<QuickPrompt[] | null>;
+  save(prompts: readonly QuickPrompt[]): Promise<void>;
 }
 
 export interface SystemPort {

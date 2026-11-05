@@ -15,6 +15,8 @@ import './styles/tools.css';
 import './styles/subtabs.css';
 import './styles/viewer.css';
 import './styles/preview.css';
+import './styles/changes.css';
+import './styles/terminalTools.css';
 import './styles/approvals.css';
 
 initToken();

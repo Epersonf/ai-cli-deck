@@ -1,6 +1,7 @@
 import type { Session } from '@deck/shared';
 import { useRef, type CSSProperties } from 'react';
 import { PaneTabs } from './PaneTabs';
+import { ChangesPanel } from './features/changes/ChangesPanel';
 import { FilesPanel } from './features/files/FilesPanel';
 import { useLayout } from './features/layout/layoutStore';
 import { Splitter } from './features/layout/Splitter';
@@ -71,10 +72,10 @@ export function Workspace({
         {split && (
           <div className="right-header">
             <PaneTabs
-              views={['files', 'preview']}
+              views={['files', 'changes', 'preview']}
               active={layout.rightView}
               className="right-tabs"
-              onSelect={(v) => patch({ rightView: v === 'preview' ? 'preview' : 'files' })}
+              onSelect={(v) => patch({ rightView: v === 'terminal' ? 'files' : v })}
             />
             <button
               type="button"
@@ -89,6 +90,9 @@ export function Workspace({
         )}
         {sessions.map((s) => (
           <FilesPanel key={`f${s.id}`} sessionId={s.id} visible={showing(s.id, 'files')} />
+        ))}
+        {sessions.map((s) => (
+          <ChangesPanel key={`c${s.id}`} sessionId={s.id} visible={showing(s.id, 'changes')} />
         ))}
         {sessions.map((s) => (
           <PreviewPanel key={`p${s.id}`} sessionId={s.id} visible={showing(s.id, 'preview')} />

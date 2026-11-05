@@ -1,0 +1,49 @@
+/* The bars around a terminal: search and quick prompts. */
+.terminal-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.terminal-search input {
+  flex: 1;
+  min-width: 0;
+}
+.terminal-search-count {
+  min-width: 3.5em;
+  color: var(--muted);
+  font: 12px var(--mono);
+  text-align: right;
+}
+.quick-prompts {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.quick-prompts::-webkit-scrollbar {
+  display: none;
+}
+.quick-prompts .chip {
+  flex-shrink: 0;
+  padding: 3px 12px;
+  min-height: 30px;
+  border-radius: 15px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.prompts-dialog .prompt-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgb(185 138 62 / 25%);
+}
+.prompt-edit-row {
+  display: flex;
+  gap: 6px;
+}
+.prompt-edit-row input {
+  flex: 1;
+  min-width: 0;
+}
