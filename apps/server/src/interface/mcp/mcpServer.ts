@@ -8,7 +8,10 @@ import { registerPhoneAndTaskTools } from './phoneTaskTools.js';
 import { run, runAsync } from './mcpResult.js';
 
 /** One MCP server per request, bound to the calling session. No tool runs git or writes files. */
-export function buildMcpServer(tools: AgentTools, devices: DeviceTools | null = null): McpServer {
+export function buildMcpServer(
+  tools: AgentTools,
+  devices: { tools: DeviceTools; cwd: string } | null = null,
+): McpServer {
   const server = new McpServer({ name: 'ai-cli-deck', version: '0.1.0' });
 
   server.registerTool(
@@ -73,6 +76,6 @@ export function buildMcpServer(tools: AgentTools, devices: DeviceTools | null = 
 
   registerPhoneAndTaskTools(server, tools);
   registerBrowserTools(server, tools);
-  if (devices) registerDeviceTool(server, devices);
+  if (devices) registerDeviceTool(server, devices.tools, devices.cwd);
   return server;
 }

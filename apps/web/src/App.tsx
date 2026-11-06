@@ -7,6 +7,7 @@ import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { ConfirmHost } from './features/confirm/ConfirmHost';
 import { PairingRequestHost } from './features/devices/PairingRequestHost';
+import { SendProfileHost } from './features/devices/SendProfileHost';
 import { useNetwork } from './features/devices/networkStore';
 import { PEER_ID } from './shared/api/base';
 import { ForkHost } from './features/sessions/ForkDialog';
@@ -140,6 +141,7 @@ export function App() {
       <ApprovalsPanel />
       <ForkHost />
       <PairingRequestHost />
+      <SendProfileHost />
       <ConfirmHost />
     </div>
   );

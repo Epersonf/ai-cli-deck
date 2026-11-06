@@ -293,4 +293,11 @@ export const ja: Messages = {
   'devices.refuse': '拒否',
   'devices.remote': '{name} 上',
   'devices.back': 'このデバイスに戻る',
+  'devices.sendProfile': 'ペアリング済みのデバイスに送る…',
+  'devices.sendTitle': '{name} を送る',
+  'devices.sendHint':
+    'プロファイルをログイン、API キー、設定ごと別のデバイスにコピーし、すぐに使えるようにします。会話は含めない限りここに残ります。',
+  'devices.sendChats': '会話も含める',
+  'devices.send': '送る',
+  'devices.sent': '{name} に送りました。向こうですぐ使えます。',
 };

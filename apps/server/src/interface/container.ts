@@ -20,6 +20,8 @@ import type { EventBus } from '../domain/events.js';
 import type { PhonePort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 import type { MachinePort } from '../infrastructure/machine/machineWiring.js';
+import type { DeviceRequest } from '../infrastructure/peers/deviceCall.js';
+import type { ProfileBundles } from '../infrastructure/providers/profileBundle.js';
 
 export interface SecurityOptions {
   bindHost: string;
@@ -47,6 +49,8 @@ export interface Container {
   providerStatus(id: string): Promise<ProviderStatusInfo>;
   profiles: ProfileService;
   templates: TemplateService;
+  /** Profiles packed to move to another device, and unpacked from one. */
+  profileBundles: ProfileBundles;
   tasks: TaskService;
   security: SecurityOptions;
   /** Sharing this deck and its paired decks; `tunnel()` gives the link the `/peer/` proxy uses. */
@@ -55,8 +59,8 @@ export interface Container {
   pairingRequests: PairingRequests;
   /** Runs commands and reads terminals for agents (also a paired deck's, through a link). */
   machine: MachinePort;
-  /** A paired deck's API, through the link: what agents here use to act there. */
-  peerCall(peer: string, method: string, path: string, body?: unknown): Promise<unknown>;
+  /** A device's API: a paired deck through its link, or this deck (null). What agents act through. */
+  device(peer: string | null): DeviceRequest;
   auth: AuthService;
   throttle: LoginThrottle;
   staticDir: string | null;

@@ -289,4 +289,11 @@ export const ru: Messages = {
   'devices.refuse': 'Отклонить',
   'devices.remote': 'На {name}',
   'devices.back': 'Вернуться к этому устройству',
+  'devices.sendProfile': 'Отправить на сопряжённое устройство…',
+  'devices.sendTitle': 'Отправить {name}',
+  'devices.sendHint':
+    'Копирует профиль со входом, ключом API и настройками на другое устройство, готовым к работе. Разговоры остаются здесь, если вы их не включите.',
+  'devices.sendChats': 'Включить разговоры',
+  'devices.send': 'Отправить',
+  'devices.sent': 'Отправлено на {name}: можно пользоваться.',
 };

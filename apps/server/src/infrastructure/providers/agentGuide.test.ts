@@ -22,9 +22,11 @@ describe('agent briefing', () => {
   });
 
   it('tells agents about paired devices only when there are some', () => {
-    expect(agentGuide({ phone: false })).not.toContain('clideck device');
+    expect(agentGuide({ phone: false })).not.toContain('paired with this deck');
+    expect(agentGuide({ phone: false })).toContain('clideck device here');
     const guide = agentGuide({ phone: false, devices: ['Meu PC'] });
     expect(guide).toContain('paired with this deck: Meu PC');
     expect(guide).toContain('clideck device <name> run');
+    expect(guide).toContain('clideck copy');
   });
 });

@@ -290,4 +290,11 @@ export const pt: Messages = {
   'devices.refuse': 'Recusar',
   'devices.remote': 'Em {name}',
   'devices.back': 'Voltar para este aparelho',
+  'devices.sendProfile': 'Enviar para aparelho pareado…',
+  'devices.sendTitle': 'Enviar {name}',
+  'devices.sendHint':
+    'Copia o profile com o login, a chave de API e as configurações para o outro aparelho, pronto para usar lá. As conversas ficam aqui, a menos que você as inclua.',
+  'devices.sendChats': 'Incluir as conversas',
+  'devices.send': 'Enviar',
+  'devices.sent': 'Enviado para {name}: pronto para usar lá.',
 };

@@ -44,6 +44,10 @@
   `/agent`, or chain to a third deck (`/peer`). Unpairing (either side) or turning sharing off ends
   every link at once.
 - On the asking deck, `/peer/<id>/api` and `/peer/<id>/ws` need that deck's own token like `/api`.
+- Agents act on devices through `/agent/<session>/devices` (loopback only): on a paired deck through its
+  link, on this deck (`here`) through the same loopback door and token, so the same paths stay off-limits.
+  `/api/files`, `/api/exec` and profile bundles give the same power as a terminal: a profile bundle carries
+  its sign-in and API key, and only ever travels inside the encrypted link or loopback.
 
 ## Files and the browser
 

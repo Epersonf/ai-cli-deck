@@ -1,41 +1,31 @@
-import type { ExecResult, PeerInfo, ProviderInfo, ScreenText, Session } from '@deck/shared';
-import { notFound } from '../../domain/errors.js';
-import type { Container } from '../container.js';
+import type { ExecResult, ProviderInfo, ScreenText, Session, Task } from '@deck/shared';
+import { createDeviceTransfer } from './deviceTransfer.js';
+import { deviceRouter, type DeviceDeps } from './deviceRoute.js';
 
-export type DeviceDeps = Pick<Container, 'network' | 'peerCall'>;
-
-const plain = (text: string): string =>
-  text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+export type { DeviceDeps };
 
 const enc = encodeURIComponent;
 
 /**
- * What an agent can do on the decks this one is paired with (the user's PC from the phone, and back):
- * run a command and wait for it, or use that machine's terminals, including talking to an agent there.
+ * What an agent can do on any device: this deck (`here`) or one paired with it (the user's PC from the
+ * phone, and back). Run a command and wait, use its terminals (start, message and read an agent there,
+ * restart or close one), its background tasks, and move files and profiles between devices.
  */
 export function createDeviceTools(deps: DeviceDeps) {
-  /** A paired deck by id or name (any case or accents), or by a word or the start of a name that only one fits. */
-  const device = (name: string): PeerInfo => {
-    const peers = deps.network.peers();
-    const wanted = plain(name);
-    const exact = peers.find((p) => p.id === name || plain(p.name) === wanted);
-    const close = peers.filter((p) => {
-      const full = plain(p.name);
-      return full.startsWith(wanted) || full.split(/\s+/).includes(wanted);
-    });
-    const found = exact ?? (close.length === 1 ? close[0] : undefined);
-    if (found) return found;
-    const known = peers.map((p) => p.name).join(', ') || 'none (pair one in Settings > Devices)';
-    throw notFound(`Paired device "${name}" (paired: ${known})`);
-  };
-  const call = <T>(name: string, method: string, path: string, body?: unknown): Promise<T> =>
-    deps.peerCall(device(name).id, method, path, body) as Promise<T>;
+  const route = deviceRouter(deps);
+  const { call } = route;
+  const terminal = (id: string): string => `/api/sessions/${enc(id)}`;
 
   return {
-    devices: () =>
-      deps.network
+    ...createDeviceTransfer(route),
+
+    devices: () => {
+      const self = deps.network.status();
+      const peers = deps.network
         .peers()
-        .map(({ name, id, online, lastSeen }) => ({ name, id, online, lastSeen })),
+        .map(({ name, id, online, lastSeen }) => ({ name, id, online, lastSeen }));
+      return [{ name: self.name, id: 'here', online: true, lastSeen: null }, ...peers];
+    },
 
     run: (name: string, command: string, cwd?: string, timeoutSec?: number) =>
       call<ExecResult>(name, 'POST', '/api/exec', { command, cwd, timeoutSec }),
@@ -56,7 +46,7 @@ export function createDeviceTools(deps: DeviceDeps) {
         })),
         profiles: providers
           .filter((p) => p.status !== 'missing')
-          .map((p) => ({ id: p.id, label: p.label })),
+          .map((p) => ({ id: p.id, label: p.label, ownProfile: p.profile })),
       };
     },
 
@@ -74,18 +64,35 @@ export function createDeviceTools(deps: DeviceDeps) {
     },
 
     /** Types into one of its terminals (an agent's chat box, a shell), Enter after by default. */
-    send: async (name: string, terminal: string, text: string, enter = true) => {
-      await call(name, 'POST', `/api/sessions/${enc(terminal)}/input`, { text, enter });
+    send: async (name: string, id: string, text: string, enter = true) => {
+      await call(name, 'POST', `${terminal(id)}/input`, { text, enter });
       return { sent: true };
     },
 
     /** One of its terminals as text, as a person would see it. */
-    read: (name: string, terminal: string, lines = 60) =>
-      call<ScreenText>(name, 'GET', `/api/sessions/${enc(terminal)}/screen?lines=${lines}`),
+    read: (name: string, id: string, lines = 60) =>
+      call<ScreenText>(name, 'GET', `${terminal(id)}/screen?lines=${lines}`),
 
-    close: async (name: string, terminal: string) => {
-      await call(name, 'DELETE', `/api/sessions/${enc(terminal)}`);
+    /** Starts an ended terminal again: its conversation continued (default) or a new one. */
+    restart: async (name: string, id: string, fresh = false) => {
+      await call(name, 'POST', `${terminal(id)}/restart`, { mode: fresh ? 'new' : 'continue' });
+      return { restarted: true };
+    },
+
+    close: async (name: string, id: string) => {
+      await call(name, 'DELETE', terminal(id));
       return { closed: true };
+    },
+
+    /** Background tasks there: a command that keeps running (the user sees it in that deck's drawer). */
+    taskRun: (name: string, command: string, cwd?: string, label?: string) =>
+      call<Task>(name, 'POST', '/api/tasks', { command, cwd, name: label }),
+    taskList: (name: string) => call<Task[]>(name, 'GET', '/api/tasks'),
+    taskLog: (name: string, id: string) =>
+      call<{ text: string }>(name, 'GET', `/api/tasks/${enc(id)}/log`),
+    taskStop: async (name: string, id: string) => {
+      await call(name, 'DELETE', `/api/tasks/${enc(id)}`);
+      return { stopped: true };
     },
   };
 }

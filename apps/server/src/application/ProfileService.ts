@@ -112,6 +112,20 @@ export class ProfileService {
     });
   }
 
+  /** A profile brought from another device: kept with its id (its folder was just written), or refreshed. */
+  adopt(profile: Profile): Promise<Profile> {
+    if (!this.deps.template(profile.base))
+      return Promise.reject(invalid(`Unknown template "${profile.base}"`));
+    return this.serial(async () => {
+      await this.sync();
+      if (this.deps.reservedIds().includes(profile.id)) throw invalid(`"${profile.id}" is taken`);
+      this.profiles = [...this.profiles.filter((p) => p.id !== profile.id), profile];
+      await this.deps.store.save(this.profiles);
+      this.deps.register(profile);
+      return profile;
+    });
+  }
+
   rename(id: string, label: string): Promise<Profile> {
     return this.serial(async () => {
       await this.sync();

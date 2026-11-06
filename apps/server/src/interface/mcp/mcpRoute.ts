@@ -20,8 +20,10 @@ const NOT_ALLOWED = {
 export function mcpRoutes(app: FastifyInstance, c: Container): void {
   app.post(`${MCP_PATH}/:sessionId`, async (request, reply) => {
     const { sessionId } = parseWith(Params, request.params);
-    if (!c.sessions.get(sessionId)) throw notFound(`Session ${sessionId}`);
-    const devices = c.network.peers().length > 0 ? createDeviceTools(c) : null;
+    const session = c.sessions.get(sessionId);
+    if (!session) throw notFound(`Session ${sessionId}`);
+    // Always offered: "here" lets an agent manage this deck's terminals, tasks and files too.
+    const devices = { tools: createDeviceTools(c), cwd: session.cwd };
     const server = buildMcpServer(createAgentTools(c, sessionId), devices);
     const transport = new StreamableHTTPServerTransport({});
     reply.hijack();

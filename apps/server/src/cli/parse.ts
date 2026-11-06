@@ -90,6 +90,10 @@ export function parseArgs(argv: readonly string[]): Parsed {
     }
     case 'devices':
       return ok({ name: 'device', args: [] });
+    case 'copy':
+      return rest.length < 2
+        ? fail(DEVICE_USAGE)
+        : ok({ name: 'device', args: ['--copy', ...rest] });
     case 'device':
       return rest.length < 2 ? fail(DEVICE_USAGE) : ok({ name: 'device', args: rest });
     case 'title':
@@ -103,6 +107,10 @@ export function parseArgs(argv: readonly string[]): Parsed {
     case 'setup':
       return ok({ name, provider: rest[0] ?? null });
     case 'profile':
+      if (rest[0] === 'send')
+        return rest.length < 3
+          ? fail(DEVICE_USAGE)
+          : ok({ name: 'device', args: ['--send-profile', ...rest.slice(1)] });
       return rest[0] === 'add'
         ? ok({ name, args: rest.slice(1) })
         : fail(

@@ -289,4 +289,11 @@ export const it: Messages = {
   'devices.refuse': 'Rifiuta',
   'devices.remote': 'Su {name}',
   'devices.back': 'Torna a questo dispositivo',
+  'devices.sendProfile': 'Invia a un dispositivo abbinato…',
+  'devices.sendTitle': 'Invia {name}',
+  'devices.sendHint':
+    'Copia il profilo con accesso, chiave API e impostazioni sull’altro dispositivo, pronto all’uso. Le conversazioni restano qui, a meno che tu non le includa.',
+  'devices.sendChats': 'Includi le conversazioni',
+  'devices.send': 'Invia',
+  'devices.sent': 'Inviato a {name}: pronto all’uso.',
 };

@@ -297,4 +297,11 @@ export const fr: Messages = {
   'devices.refuse': 'Refuser',
   'devices.remote': 'Sur {name}',
   'devices.back': 'Revenir à cet appareil',
+  'devices.sendProfile': 'Envoyer à un appareil appairé…',
+  'devices.sendTitle': 'Envoyer {name}',
+  'devices.sendHint':
+    'Copie le profil avec sa connexion, sa clé d’API et ses réglages sur l’autre appareil, prêt à l’emploi. Ses conversations restent ici, sauf si vous les incluez.',
+  'devices.sendChats': 'Inclure ses conversations',
+  'devices.send': 'Envoyer',
+  'devices.sent': 'Envoyé à {name} : prêt à l’emploi.',
 };

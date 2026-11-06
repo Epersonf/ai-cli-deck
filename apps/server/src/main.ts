@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   const git = new GitCli(runCommand);
   const bus = new EventBus();
   const shellName = defaultShell(process.env, process.platform);
-  const { profiles, templates } = await createProfileService({
+  const profileWiring = await createProfileService({
     configDir: paths.configDir,
     providers,
     status: statusResolver,
@@ -116,8 +116,7 @@ async function main(): Promise<void> {
     providers: providers,
     bus,
     providerStatus: (id) => statusResolver.resolve(id),
-    profiles,
-    templates,
+    ...profileWiring,
     tasks,
     ...network,
     machine: createMachine({ defaultCwd: config.defaultCwd ?? homedir() }),

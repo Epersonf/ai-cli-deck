@@ -291,4 +291,11 @@ export const es: Messages = {
   'devices.refuse': 'Rechazar',
   'devices.remote': 'En {name}',
   'devices.back': 'Volver a este dispositivo',
+  'devices.sendProfile': 'Enviar a un dispositivo emparejado…',
+  'devices.sendTitle': 'Enviar {name}',
+  'devices.sendHint':
+    'Copia el perfil con su inicio de sesión, clave de API y ajustes al otro dispositivo, listo para usar allí. Sus conversaciones se quedan aquí salvo que las incluyas.',
+  'devices.sendChats': 'Incluir sus conversaciones',
+  'devices.send': 'Enviar',
+  'devices.sent': 'Enviado a {name}: listo para usar allí.',
 };

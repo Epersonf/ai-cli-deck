@@ -287,6 +287,13 @@ export const en = {
   'devices.refuse': 'Refuse',
   'devices.remote': 'On {name}',
   'devices.back': 'Back to this device',
+  'devices.sendProfile': 'Send to a paired device…',
+  'devices.sendTitle': 'Send {name}',
+  'devices.sendHint':
+    'Copies the profile with its sign-in, API key and settings to the other device, ready to use there. Its conversations stay here unless you include them.',
+  'devices.sendChats': 'Include its conversations',
+  'devices.send': 'Send',
+  'devices.sent': 'Sent to {name}: ready to use there.',
 } as const;
 
 export type MessageKey = keyof typeof en;

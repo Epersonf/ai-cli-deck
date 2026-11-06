@@ -8,8 +8,14 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { Container } from '../../container.js';
 import { parseWith } from '../errors.js';
+import { createDeviceTools } from '../../agent/deviceTools.js';
 
 const IdParams = z.object({ id: z.string().min(1).max(80) });
+const SendProfileBody = z.object({
+  profile: z.string().min(1).max(80),
+  to: z.string().min(1).max(80),
+  chats: z.boolean().default(false),
+});
 
 /** Sharing this deck, finding and pairing other decks, and the requests to pair with this one. */
 export function networkRoutes(app: FastifyInstance, c: Container): void {
@@ -43,6 +49,12 @@ export function networkRoutes(app: FastifyInstance, c: Container): void {
   app.delete('/api/network/pair/:id', (request, reply) => {
     pairing.cancel(idOf(request.params));
     return reply.code(204).send();
+  });
+
+  // A profile of this deck, with its sign-in and key, sent to a paired deck (from the profile's menu).
+  app.post('/api/network/send-profile', (request) => {
+    const { profile, to, chats } = parseWith(SendProfileBody, request.body);
+    return createDeviceTools(c).sendProfile(profile, to, 'here', chats);
   });
 
   app.get('/api/network/requests', () => pairingRequests.list());

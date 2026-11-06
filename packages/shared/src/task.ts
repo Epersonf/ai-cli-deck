@@ -27,6 +27,13 @@ export const RunTaskBodySchema = z.object({
   name: z.string().trim().max(60).optional(),
 });
 
+/** A background task started from outside a terminal (another device's agent): in `cwd`, owned by `terminal`. */
+export const StartTaskBodySchema = RunTaskBodySchema.extend({
+  cwd: z.string().max(1000).optional(),
+  /** The terminal it belongs to (it ends with it); default: this deck's "Background tasks" terminal. */
+  terminal: z.string().max(80).optional(),
+});
+
 export const WatchBatteryBodySchema = z
   .object({
     below: z.number().int().min(1).max(99).optional(),

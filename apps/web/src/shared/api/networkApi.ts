@@ -27,6 +27,13 @@ export const networkApi = {
   submit: (pairingId: string, code: string) =>
     request(PairResultSchema, 'POST', `/api/network/pair/${enc(pairingId)}`, { code }),
   cancel: (pairingId: string) => request(none, 'DELETE', `/api/network/pair/${enc(pairingId)}`),
+  sendProfile: (profile: string, to: string, chats: boolean) =>
+    request(
+      z.object({ profile: z.string(), label: z.string(), on: z.string() }),
+      'POST',
+      '/api/network/send-profile',
+      { profile, to, chats },
+    ),
   requests: () => request(z.array(PairingRequestSchema), 'GET', '/api/network/requests'),
   refuse: (id: string) => request(none, 'DELETE', `/api/network/requests/${enc(id)}`),
 };

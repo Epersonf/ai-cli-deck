@@ -22,11 +22,13 @@ export function agentGuide(options: { phone: boolean; devices?: readonly string[
           '`clideck task battery --below 10` can notify the phone later without you waiting.',
         ]
       : []),
+    '`clideck device here terminals|open|read|send|restart|close|task ...` (MCP tool: device) manages this deck itself.',
     ...(options.devices?.length
       ? [
           `The user's other devices are paired with this deck: ${options.devices.join(', ')}.`,
-          'When asked to do something on one of them ("run X on my PC"), use `clideck device <name> run "<command>"` (MCP tool: device), which runs it THERE and returns the output;',
-          '`clideck device <name> terminals|open|send|read` uses its terminals, e.g. start or message an agent running there and read its answer. `clideck devices` says which are online.',
+          'For "do X on my PC" use `clideck device <name> run "<command>"` (runs THERE, returns output and exit code),',
+          '`task run` for long or heavy jobs there, `terminals|open|send|read` to start or talk to an agent there,',
+          '`clideck copy <device>:<path> <path>` to bring results back (folders too), `clideck profile send <profile> <device>` to share a sign-in.',
         ]
       : []),
     'Start dev servers on $PORT so sessions do not collide.',

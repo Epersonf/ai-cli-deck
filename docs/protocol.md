@@ -72,10 +72,10 @@ The token goes in the `x-deck-token` header (or `?token=` for WebSockets and med
   `session_title({title?})`, `session_meta({key?,value?})`, `task({action,...})`, `phone({action,...})`, `propose_worktree({reason})`, `open_preview({url})`, `suggest_new_tab({url})`,
   `get_request_status({requestId})`.
 - `clideck` uses `GET|POST /agent/<sessionId>/{whoami,sessions,preview,newtab,worktree,requests/:id}`.
-- Paired devices: MCP tool `device({action: list|run|terminals|open|send|read|close, ...})` (only offered
-  while a deck is paired) and `clideck devices` / `clideck device <name> ...` over
-  `/agent/<sessionId>/devices/*`. They call the paired deck's `/api/exec`, `/api/sessions` and the
-  terminal input and screen endpoints through the link.
+- Devices: MCP tool `device({action, ...})` and `clideck devices|device|copy|profile send`, both through
+  `POST /agent/<sessionId>/devices` with the same body. Actions: list, run, terminals, open, send, read,
+  restart, close, task_run|list|log|stop, copy, profiles, send_profile. The device is `here` (this deck, through
+  the same loopback door paired decks use) or a paired deck (through its link); they call the API below.
 
 Both are thin wrappers over the same `createAgentTools`, so they behave identically. No tool runs
 git or writes files: `propose_worktree` only creates a pending request.

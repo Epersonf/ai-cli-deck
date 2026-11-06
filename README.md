@@ -138,7 +138,8 @@ folder, endpoint and whatever the template sets in `env`), so tools run there us
 profile's agent. It does not run the CLI or ask for the key.
 
 **Profiles are separate worlds.** Each has its own config folder, login, key and endpoint, and an agent
-in one cannot list the terminals of another (`clideck sessions` / the MCP tool only show the same profile).
+in one does not see the terminals of another in `clideck sessions`. (`clideck device here ...` manages any
+terminal of the deck, on purpose: it acts for the user.)
 They all run as the same operating-system user, so this is separation of configuration and of what the
 deck exposes, not a security sandbox: use separate OS users or containers if you need that.
 
@@ -184,11 +185,18 @@ PC shows, and from then on the PC is in the terminals drawer (☰). Opening it s
   different home routers cannot reach each other.
 - Ports: TCP 7850 for pairing and links (`DECK_PEER_PORT`), UDP 7849 for finding decks.
 
-**Agents use the paired devices too.** An agent in a terminal on the phone is told which devices are
-paired, so "run the tests on my PC" just works: `clideck device PC run "npm test"` runs it there and
-returns the output and exit code. `clideck device PC terminals|open|send|read|close` uses the PC's
-terminals, so an agent on the phone can start an agent on the PC, send it a message and read its answer
-(MCP tool `device`). Long jobs belong in a terminal there (`run` waits at most 280 s).
+**Agents use every device.** Agents act on a device by name: `here` (this deck) or a paired one, through
+`clideck device <name> ...` or the MCP tool `device`. A phone agent is told which devices are paired, so
+"use my PC's GPU for this" just works:
+
+- `clideck device PC run "nvidia-smi"`: runs a command there and returns its output and exit code (up to 280 s).
+- `clideck device PC task run "python render.py" --cwd ~/proj`: a long job there, shown in that deck's drawer;
+  `task list|log <id>|stop <id>` follows it.
+- `clideck copy PC:~/proj/out ./results`: copies a file or a whole folder between any two devices, streamed.
+- `clideck device PC terminals|open|send|read|restart|close`: uses its terminals, e.g. start an agent on the PC,
+  send it a message and read its answer. `here` does the same for this deck's own terminals.
+- `clideck profile send Work PC`: copies a profile with its sign-in, API key and settings (not its chats,
+  unless `--chats`), so it works there without signing in again.
 
 **Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
 under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs

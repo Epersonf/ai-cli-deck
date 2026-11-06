@@ -41,3 +41,14 @@ export function profileIdFor(label: string, taken: readonly string[]): string {
   for (let n = 2; taken.includes(id); n += 1) id = `${base}-${n}`;
   return id;
 }
+
+/**
+ * A profile carried to another device: its record, its template when it is not built in, and its CLI
+ * config folder (sign-in, API key, settings; chats only when asked), file by file in base64.
+ */
+export const ProfileBundleSchema = z.object({
+  profile: ProfileSchema,
+  template: z.string().nullable(),
+  files: z.array(z.object({ path: z.string().min(1).max(500), data: z.string() })).max(5000),
+});
+export type ProfileBundle = z.infer<typeof ProfileBundleSchema>;

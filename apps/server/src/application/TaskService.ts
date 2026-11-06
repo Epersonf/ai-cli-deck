@@ -62,10 +62,10 @@ export class TaskService {
     return this.board.get(id, profile).log;
   }
 
-  runProcess(owner: Session, commandLine: string, name?: string): Task {
+  runProcess(owner: Session, commandLine: string, name?: string, cwd = owner.cwd): Task {
     const { command, args } = this.deps.shell(commandLine);
     const handle = this.deps.pty.spawn(
-      { command, args, cwd: owner.cwd, env: this.deps.envFor(owner) },
+      { command, args, cwd, env: this.deps.envFor(owner) },
       { cols: 120, rows: 30 },
     );
     const entry = this.board.add(owner, 'process', name || commandLine.slice(0, 40), {

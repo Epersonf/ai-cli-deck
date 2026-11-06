@@ -281,4 +281,11 @@ export const zh: Messages = {
   'devices.refuse': '拒绝',
   'devices.remote': '在 {name} 上',
   'devices.back': '返回此设备',
+  'devices.sendProfile': '发送到已配对的设备…',
+  'devices.sendTitle': '发送 {name}',
+  'devices.sendHint':
+    '把此配置连同登录、API 密钥和设置复制到另一台设备，在那边可直接使用。对话记录默认留在这里，除非你选择包含。',
+  'devices.sendChats': '包含对话记录',
+  'devices.send': '发送',
+  'devices.sent': '已发送到 {name}：可以在那边使用了。',
 };

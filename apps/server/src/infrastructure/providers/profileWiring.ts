@@ -9,6 +9,7 @@ import { FileTemplateStore } from '../store/FileTemplateStore.js';
 import { BUILTIN_TEMPLATES } from './builtinTemplates.js';
 import type { ProviderStatusResolver } from './status.js';
 import { createTemplateProvider } from './templateProvider.js';
+import { profileBundles, type ProfileBundles } from './profileBundle.js';
 
 interface Deps {
   configDir: string;
@@ -18,9 +19,11 @@ interface Deps {
 }
 
 /** Loads templates and saved profiles, keeping the registry and install status in sync when they change. */
-export async function createProfileService(
-  deps: Deps,
-): Promise<{ profiles: ProfileService; templates: TemplateService }> {
+export async function createProfileService(deps: Deps): Promise<{
+  profiles: ProfileService;
+  templates: TemplateService;
+  profileBundles: ProfileBundles;
+}> {
   const profilesDir = join(deps.configDir, 'profiles');
   const reserved = deps.providers.list().map((p) => p.id);
   const templates: TemplateService = new TemplateService({
@@ -53,5 +56,9 @@ export async function createProfileService(
     },
   });
   await profiles.load();
-  return { profiles, templates };
+  return {
+    profiles,
+    templates,
+    profileBundles: profileBundles({ profilesDir, profiles, templates }),
+  };
 }
