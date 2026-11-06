@@ -11,6 +11,11 @@ Commands:
                            Background jobs: a command that keeps running, or a watcher that notifies the phone
   phone battery|device|notify "<text>"
                            The phone running the deck (only when enabled in the Android app settings)
+  devices                  The decks paired with this one (your PC, your phone...)
+  device <name> run "<cmd>" [--cwd D] [--timeout S]
+                           Run a command on that device and print its output
+  device <name> terminals | open <profile> | send <id> "<text>" | read <id> | close <id>
+                           Use its terminals, e.g. start an agent there and talk to it
   meta [get|set|del ...]   Notes kept with this terminal (no argument: list them)
   port                     Print this session's PORT (use it for dev servers)
   preview <url|port>       Open a localhost page in this session's preview panel

@@ -3,7 +3,7 @@
  * commands exist. When the Android app lets agents use the phone, the briefing says so: an agent that is not
  * told will insist it cannot reach the phone.
  */
-export function agentGuide(options: { phone: boolean }): string {
+export function agentGuide(options: { phone: boolean; devices?: readonly string[] }): string {
   return [
     'You are running inside ai-cli-deck, a web app that hosts this terminal for the user.',
     'The shell command `clideck` talks to it (`clideck help` lists everything); the same actions exist as MCP tools on the "deck" server.',
@@ -20,6 +20,13 @@ export function agentGuide(options: { phone: boolean }): string {
           "This deck runs on the user's PHONE and phone access is ON. For anything about the phone (battery, Wi-Fi, location, notifications, camera, files...)",
           'run `clideck phone help` (MCP tool: phone) to see what is allowed, then use it. Do not say you cannot reach the phone, and do not guess: ask the phone.',
           '`clideck task battery --below 10` can notify the phone later without you waiting.',
+        ]
+      : []),
+    ...(options.devices?.length
+      ? [
+          `The user's other devices are paired with this deck: ${options.devices.join(', ')}.`,
+          'When asked to do something on one of them ("run X on my PC"), use `clideck device <name> run "<command>"` (MCP tool: device), which runs it THERE and returns the output;',
+          '`clideck device <name> terminals|open|send|read` uses its terminals, e.g. start or message an agent running there and read its answer. `clideck devices` says which are online.',
         ]
       : []),
     'Start dev servers on $PORT so sessions do not collide.',

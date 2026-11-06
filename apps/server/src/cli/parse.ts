@@ -1,4 +1,5 @@
 import { normalizeUrl } from '@deck/shared';
+import { DEVICE_USAGE } from './deviceCommand.js';
 import { parseEnsureKey, type EnsureKey } from './ensureKey.js';
 
 export type Command =
@@ -11,6 +12,7 @@ export type Command =
   | { name: 'title'; title: string | null }
   | { name: 'meta'; key: string | null; value: string | null }
   | { name: 'task'; action: string; args: string[] }
+  | { name: 'device'; args: string[] }
   | { name: 'phone'; action: string; text: string; title: string; args: string[] }
   | { name: 'worktree'; reason: string }
   | { name: 'status'; requestId: string }
@@ -86,6 +88,10 @@ export function parseArgs(argv: readonly string[]): Parsed {
         return ok({ name, action: 'call', text: '', title: '', args: [action, ...words] });
       return fail(PHONE_USAGE);
     }
+    case 'devices':
+      return ok({ name: 'device', args: [] });
+    case 'device':
+      return rest.length < 2 ? fail(DEVICE_USAGE) : ok({ name: 'device', args: rest });
     case 'title':
       return ok({ name, title: text === '' ? null : text });
     case 'worktree':

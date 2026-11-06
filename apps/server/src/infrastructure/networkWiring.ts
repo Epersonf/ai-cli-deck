@@ -8,6 +8,7 @@ import { PairingRequests } from '../application/PairingRequests.js';
 import { PeerBook } from '../application/PeerBook.js';
 import { loadIdentity, peerIdOf } from './peers/identity.js';
 import { loopbackTarget } from './peers/loopbackTarget.js';
+import { peerCall } from './peers/peerCall.js';
 import type { Mux } from './peers/mux.js';
 import { PeerNode } from './peers/PeerNode.js';
 import { JsonNetworkStore } from './store/JsonNetworkStore.js';
@@ -79,5 +80,7 @@ export async function networkServices(options: NetworkWiringOptions) {
     pairing,
     pairingRequests,
     isPeerToken: (token: string | undefined) => token !== undefined && safeEqual(token, peerToken),
+    peerCall: (peer: string, method: string, path: string, body?: unknown) =>
+      peerCall(network.tunnel(peer), method, path, body),
   };
 }

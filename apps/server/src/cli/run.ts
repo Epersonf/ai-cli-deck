@@ -8,6 +8,7 @@ import { ensureKey } from './ensureKey.js';
 import { runSetup } from './setupCommand.js';
 import { phoneCommand } from './phoneCommand.js';
 import { runTask } from './taskCommand.js';
+import { deviceCommand } from './deviceCommand.js';
 
 const show = (value: unknown): string => JSON.stringify(value, null, 2);
 
@@ -36,6 +37,8 @@ async function execute(
       return show(await call(deck, 'GET', '/sessions'));
     case 'task':
       return runTask(deck, command.action, command.args);
+    case 'device':
+      return deviceCommand(deck, command.args);
     case 'phone':
       return phoneCommand(deck, command);
     case 'meta': {

@@ -19,6 +19,7 @@ import type { PairingRequests } from '../application/PairingRequests.js';
 import type { EventBus } from '../domain/events.js';
 import type { PhonePort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
+import type { MachinePort } from '../infrastructure/machine/machineWiring.js';
 
 export interface SecurityOptions {
   bindHost: string;
@@ -52,6 +53,10 @@ export interface Container {
   network: NetworkService<unknown>;
   pairing: PairingFlow;
   pairingRequests: PairingRequests;
+  /** Runs commands and reads terminals for agents (also a paired deck's, through a link). */
+  machine: MachinePort;
+  /** A paired deck's API, through the link: what agents here use to act there. */
+  peerCall(peer: string, method: string, path: string, body?: unknown): Promise<unknown>;
   auth: AuthService;
   throttle: LoginThrottle;
   staticDir: string | null;

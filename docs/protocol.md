@@ -37,24 +37,32 @@ browser resets its terminal on every (re)connect.
 
 ## HTTP API (`/api`)
 
-| method   | path                                        | purpose                                                                    |
-| -------- | ------------------------------------------- | -------------------------------------------------------------------------- |
-| GET      | `/auth`                                     | `{required, canDisable, isDefault}` (public)                               |
-| POST     | `/login`                                    | `{password}` -> `{token}` (public, throttled)                              |
-| PUT      | `/password`                                 | `{current, next}`; `next: null` removes it (loopback only)                 |
-| GET      | `/config`, `/providers`                     | public config, available CLIs                                              |
-| GET/POST | `/sessions`                                 | list / create                                                              |
-| DELETE   | `/sessions/:id`                             | stop and remove                                                            |
-| PUT      | `/sessions/:id/preview`                     | set the preview URL (localhost only)                                       |
-| GET      | `/sessions/:id/tree?path=&hidden=&ignored=` | folder listing; `hidden` adds dotfiles, `ignored` adds git-ignored entries |
-| GET      | `/sessions/:id/file?path=`                  | text content (512 KiB cap)                                                 |
-| GET      | `/sessions/:id/raw?path=[&download=1]`      | file bytes with `Range` (media viewer); `download=1` sends an attachment   |
-| GET      | `/sessions/:id/zip?path=`                   | a folder as a streamed `.zip` (no `.git`, `node_modules`, symlinks)        |
-| POST     | `/sessions/:id/upload?dir=&name=`           | raw body saved into the folder (512 MiB cap, name sanitized)               |
-| POST     | `/sessions/:id/paste?ext=`                  | pasted image saved to a temp file; returns its path                        |
-| GET      | `/sessions/:id/git`                         | git status                                                                 |
-| GET      | `/approvals?status=`                        | approval requests                                                          |
-| POST     | `/approvals/:id/decision`                   | `{decision}` where decision is `approve` or `reject`                       |
+| method   | path                                            | purpose                                                                    |
+| -------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
+| GET      | `/auth`                                         | `{required, canDisable, isDefault}` (public)                               |
+| POST     | `/login`                                        | `{password}` -> `{token}` (public, throttled)                              |
+| PUT      | `/password`                                     | `{current, next}`; `next: null` removes it (loopback only)                 |
+| GET      | `/config`, `/providers`                         | public config, available CLIs                                              |
+| GET/POST | `/sessions`                                     | list / create                                                              |
+| DELETE   | `/sessions/:id`                                 | stop and remove                                                            |
+| PUT      | `/sessions/:id/preview`                         | set the preview URL (localhost only)                                       |
+| GET      | `/sessions/:id/tree?path=&hidden=&ignored=`     | folder listing; `hidden` adds dotfiles, `ignored` adds git-ignored entries |
+| GET      | `/sessions/:id/file?path=`                      | text content (512 KiB cap)                                                 |
+| GET      | `/sessions/:id/raw?path=[&download=1]`          | file bytes with `Range` (media viewer); `download=1` sends an attachment   |
+| GET      | `/sessions/:id/zip?path=`                       | a folder as a streamed `.zip` (no `.git`, `node_modules`, symlinks)        |
+| POST     | `/sessions/:id/upload?dir=&name=`               | raw body saved into the folder (512 MiB cap, name sanitized)               |
+| POST     | `/sessions/:id/paste?ext=`                      | pasted image saved to a temp file; returns its path                        |
+| GET      | `/sessions/:id/git`                             | git status                                                                 |
+| GET      | `/approvals?status=`                            | approval requests                                                          |
+| POST     | `/approvals/:id/decision`                       | `{decision}` where decision is `approve` or `reject`                       |
+| POST     | `/exec`                                         | `{command, cwd?, timeoutSec?}`: run in the shell, wait, output + exit code |
+| POST     | `/sessions/:id/input`                           | `{text, enter?}`: type into a terminal (Enter 300 ms after the text)       |
+| GET      | `/sessions/:id/screen?lines=`                   | the terminal's screen as plain text (rendered by a headless xterm)         |
+| GET      | `/network`, `/network/peers`, `/network/nearby` | sharing state, paired decks, decks found on the network                    |
+| POST     | `/network/pair`, `/network/pair/:id`            | ask a deck to pair, then send the code shown there                         |
+
+`/peer/<id>/...` carries any of these to a paired deck through the encrypted link (not `/network`, login,
+password, `/mcp`, `/agent`).
 
 The token goes in the `x-deck-token` header (or `?token=` for WebSockets and media elements).
 
@@ -64,6 +72,10 @@ The token goes in the `x-deck-token` header (or `?token=` for WebSockets and med
   `session_title({title?})`, `session_meta({key?,value?})`, `task({action,...})`, `phone({action,...})`, `propose_worktree({reason})`, `open_preview({url})`, `suggest_new_tab({url})`,
   `get_request_status({requestId})`.
 - `clideck` uses `GET|POST /agent/<sessionId>/{whoami,sessions,preview,newtab,worktree,requests/:id}`.
+- Paired devices: MCP tool `device({action: list|run|terminals|open|send|read|close, ...})` (only offered
+  while a deck is paired) and `clideck devices` / `clideck device <name> ...` over
+  `/agent/<sessionId>/devices/*`. They call the paired deck's `/api/exec`, `/api/sessions` and the
+  terminal input and screen endpoints through the link.
 
 Both are thin wrappers over the same `createAgentTools`, so they behave identically. No tool runs
 git or writes files: `propose_worktree` only creates a pending request.

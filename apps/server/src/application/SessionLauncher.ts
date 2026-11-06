@@ -20,6 +20,8 @@ export interface LauncherDeps {
   phoneEnabled?(): boolean;
   /** The file a session's CLI writes its current chat to (see ChatSupport.track). */
   chatReportFile?(sessionId: string): string;
+  /** Names of the decks paired with this one, so agents know they can act there. */
+  pairedDevices?(): string[];
 }
 
 export const tmuxNameFor = (sessionId: string): string => `${TMUX_PREFIX}${sessionId}`;
@@ -50,7 +52,10 @@ export class SessionLauncher {
       command,
       args,
       defaultShell: this.deps.defaultShell,
-      guide: agentGuide({ phone: this.deps.phoneEnabled?.() ?? false }),
+      guide: agentGuide({
+        phone: this.deps.phoneEnabled?.() ?? false,
+        devices: this.deps.pairedDevices?.() ?? [],
+      }),
     };
     const parts = provider.buildCommand(ctx);
     const mcp = provider.buildMcpConfig(ctx);

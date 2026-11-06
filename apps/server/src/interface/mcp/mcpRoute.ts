@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { notFound } from '../../domain/errors.js';
 import { createAgentTools } from '../agent/agentTools.js';
+import { createDeviceTools } from '../agent/deviceTools.js';
 import type { Container } from '../container.js';
 import { parseWith } from '../http/errors.js';
 import { buildMcpServer } from './mcpServer.js';
@@ -20,7 +21,8 @@ export function mcpRoutes(app: FastifyInstance, c: Container): void {
   app.post(`${MCP_PATH}/:sessionId`, async (request, reply) => {
     const { sessionId } = parseWith(Params, request.params);
     if (!c.sessions.get(sessionId)) throw notFound(`Session ${sessionId}`);
-    const server = buildMcpServer(createAgentTools(c, sessionId));
+    const devices = c.network.peers().length > 0 ? createDeviceTools(c) : null;
+    const server = buildMcpServer(createAgentTools(c, sessionId), devices);
     const transport = new StreamableHTTPServerTransport({});
     reply.hijack();
     reply.raw.on('close', () => {

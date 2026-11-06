@@ -47,8 +47,7 @@ export function inbox(wire: Wire) {
               waiting.push(done);
             });
       return data.then((bytes) => {
-        if (bytes === null)
-          throw new Error(closed ? hangUp(closeCode) : 'No answer in time');
+        if (bytes === null) throw new Error(closed ? hangUp(closeCode) : 'No answer in time');
         const parsed: unknown = JSON.parse(bytes.toString('utf8'));
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Unexpected message');
         return parsed as Msg;

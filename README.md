@@ -184,6 +184,12 @@ PC shows, and from then on the PC is in the terminals drawer (☰). Opening it s
   different home routers cannot reach each other.
 - Ports: TCP 7850 for pairing and links (`DECK_PEER_PORT`), UDP 7849 for finding decks.
 
+**Agents use the paired devices too.** An agent in a terminal on the phone is told which devices are
+paired, so "run the tests on my PC" just works: `clideck device PC run "npm test"` runs it there and
+returns the output and exit code. `clideck device PC terminals|open|send|read|close` uses the PC's
+terminals, so an agent on the phone can start an agent on the PC, send it a message and read its answer
+(MCP tool `device`). Long jobs belong in a terminal there (`run` waits at most 280 s).
+
 **Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
 under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs
 Phone access, see android/README.md); `clideck task list|stop|log`. The terminal menu has "Notify me when it goes

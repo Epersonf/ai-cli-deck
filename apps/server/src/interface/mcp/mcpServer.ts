@@ -1,12 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { AgentTools } from '../agent/agentTools.js';
+import type { DeviceTools } from '../agent/deviceTools.js';
+import { registerDeviceTool } from './deviceTool.js';
 import { registerBrowserTools } from './browserTools.js';
 import { registerPhoneAndTaskTools } from './phoneTaskTools.js';
 import { run, runAsync } from './mcpResult.js';
 
 /** One MCP server per request, bound to the calling session. No tool runs git or writes files. */
-export function buildMcpServer(tools: AgentTools): McpServer {
+export function buildMcpServer(tools: AgentTools, devices: DeviceTools | null = null): McpServer {
   const server = new McpServer({ name: 'ai-cli-deck', version: '0.1.0' });
 
   server.registerTool(
@@ -71,5 +73,6 @@ export function buildMcpServer(tools: AgentTools): McpServer {
 
   registerPhoneAndTaskTools(server, tools);
   registerBrowserTools(server, tools);
+  if (devices) registerDeviceTool(server, devices);
   return server;
 }

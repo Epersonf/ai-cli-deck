@@ -19,6 +19,7 @@ import { defaultShell } from './infrastructure/config/platform.js';
 import { workspaceServices } from './infrastructure/workspaceWiring.js';
 import { chatServices, createChatFiles } from './infrastructure/chatWiring.js';
 import { networkServices } from './infrastructure/networkWiring.js';
+import { createMachine } from './infrastructure/machine/machineWiring.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
@@ -64,6 +65,13 @@ async function main(): Promise<void> {
     status: statusResolver,
     defaultShell: shellName,
   });
+  const { isPeerToken, ...network } = await networkServices({
+    configDir: paths.configDir,
+    host: config.host,
+    port: config.port,
+    peerPort: config.peerPort,
+    name: process.env['DECK_NAME'],
+  });
   const chatFiles = createChatFiles(paths.stateDir);
   const launcher = new SessionLauncher({
     mux,
@@ -75,6 +83,7 @@ async function main(): Promise<void> {
     defaultShell: shellName,
     phoneEnabled: () => phone !== null,
     chatReportFile: (id) => chatFiles.reportFile(id),
+    pairedDevices: () => network.network.peers().map((peer) => peer.name),
   });
   const sessions = new SessionManager({
     launcher,
@@ -96,13 +105,6 @@ async function main(): Promise<void> {
     newId: () => system.newId(),
   });
   sessions.screens.start(SCROLLBACK_SAVE_MS);
-  const { isPeerToken, ...network } = await networkServices({
-    configDir: paths.configDir,
-    host: config.host,
-    port: config.port,
-    peerPort: config.peerPort,
-    name: process.env['DECK_NAME'],
-  });
 
   const app = await createApp({
     sessions,
@@ -118,6 +120,7 @@ async function main(): Promise<void> {
     templates,
     tasks,
     ...network,
+    machine: createMachine({ defaultCwd: config.defaultCwd ?? homedir() }),
     publicConfig: {
       defaultCwd: config.defaultCwd ?? homedir(),
       extraKeys: config.extraKeys,

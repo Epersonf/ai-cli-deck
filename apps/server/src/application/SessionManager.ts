@@ -98,9 +98,8 @@ export class SessionManager {
   }
 
   /**
-   * The screen for a device that connects, handed over at an exact point of the output (see
-   * PtyHandle.snapshot): output published before `done` runs is part of it, output after it is not.
-   * Without a snapshot (no tmux, or a session that ended) it is the recent raw output.
+   * The screen for a device that connects, at an exact point of the output (PtyHandle.snapshot): output
+   * published before `done` runs is in it. Without a snapshot (no tmux, or ended) it is the recent output.
    */
   snapshot(id: string, done: (screen: Uint8Array) => void): void {
     const { pty, ring } = this.reg.require(id);
