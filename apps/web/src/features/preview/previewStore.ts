@@ -1,5 +1,6 @@
 import { parseLocalUrl } from '@deck/shared';
 import { create } from 'zustand';
+import { PEER_ID } from '../../shared/api/base';
 
 export interface PreviewState {
   history: string[];
@@ -76,5 +77,6 @@ export const usePreview = create<PreviewStore>()((set, get) => {
   };
 });
 
+/** On a paired deck's app the iframe would load this device's ports, so its own browser is used. */
 export const modeOf = (mode: Record<string, PreviewMode>, sessionId: string): PreviewMode =>
-  mode[sessionId] ?? savedMode();
+  PEER_ID ? 'browser' : (mode[sessionId] ?? savedMode());

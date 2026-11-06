@@ -20,6 +20,7 @@ import './styles/changes.css';
 import './styles/terminalTools.css';
 import './styles/chats.css';
 import './styles/approvals.css';
+import './styles/devices.css';
 
 initToken();
 const root = document.getElementById('root');

@@ -1,3 +1,4 @@
+import { PEER_ID } from '../../shared/api/base';
 import { BrowserInstall } from './BrowserInstall';
 import { BrowserView } from './BrowserView';
 import { FrameView } from './FrameView';
@@ -15,7 +16,8 @@ export function PreviewPanel({ sessionId, visible }: Props) {
   const mode = usePreview((s) => modeOf(s.mode, sessionId));
   const url = usePreview((s) => currentUrl(s.byId[sessionId]));
   const [browser, setBrowser] = useBrowserStatus(mode === 'browser');
-  const toggle = <ModeSwitch sessionId={sessionId} mode={mode} />;
+  // A paired deck's app always uses that deck's browser (its iframe would load this device's ports).
+  const toggle = PEER_ID ? null : <ModeSwitch sessionId={sessionId} mode={mode} />;
 
   return (
     <section className={`pane preview-pane${visible ? '' : ' hidden'}`}>

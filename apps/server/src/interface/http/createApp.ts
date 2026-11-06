@@ -14,6 +14,8 @@ import { approvalRoutes } from './routes/approvals.js';
 import { authRoutes } from './routes/auth.js';
 import { chatRoutes } from './routes/chats.js';
 import { gitRoutes } from './routes/git.js';
+import { networkRoutes } from './routes/network.js';
+import { peerProxyRoutes } from './routes/peerProxy.js';
 import { taskRoutes } from './routes/tasks.js';
 import { templateRoutes } from './routes/templates.js';
 import { sessionRoutes } from './routes/sessions.js';
@@ -58,6 +60,8 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   mcpRoutes(app, c);
   agentRoutes(app, c);
   browserRoutes(app, c);
+  networkRoutes(app, c);
+  await peerProxyRoutes(app, c);
   terminalSocket(app, c);
   browserSocket(app, c);
   if (c.staticDir !== null && existsSync(c.staticDir)) await serveStatic(app, c.staticDir);

@@ -248,6 +248,45 @@ export const en = {
   'terminal.exitedCode': 'process exited (code {code})',
   'layout.closePanel': 'Close panel',
   'layout.resize': 'Drag to resize the panels',
+  'devices.title': 'Devices',
+  'devices.hint':
+    'Use another deck on your network (your PC from your phone), or let your other devices use this one.',
+  'devices.open': 'Devices and pairing',
+  'devices.warnTitle': 'Share this deck?',
+  'devices.warnBody':
+    'A paired device gets full use of this deck: its terminals run commands on this machine as your user, and it sees your files. Only pair devices that are yours.',
+  'devices.warnNext': 'Continue',
+  'devices.sureTitle': 'Turn on sharing?',
+  'devices.sureBody':
+    'While sharing, this deck answers on your network (port {port}) so your devices can find it and ask to pair. Pairing needs the code shown on this screen, and you can unpair a device at any time.',
+  'devices.shareOn': 'Share',
+  'devices.share': 'Share this deck with my devices',
+  'devices.shareHint':
+    'Other decks on your network can find this one and ask to pair; paired decks can use its terminals.',
+  'devices.listening': 'Listening on {list}',
+  'devices.name': 'Name of this deck',
+  'devices.useIt': 'Open',
+  'devices.addAddress': 'Add address',
+  'devices.forget': 'Unpair',
+  'devices.forgetBody': '{name} will need a new code to connect again.',
+  'devices.paired': 'Paired devices',
+  'devices.none': 'No paired device yet.',
+  'devices.nearby': 'On this network',
+  'devices.searching': 'Looking for decks that share themselves…',
+  'devices.pair': 'Pair',
+  'devices.byAddress': 'Address (host or host:port)',
+  'devices.remoteHint':
+    'Away from home: put both devices on the same VPN (Tailscale, ZeroTier…) and pair or add the VPN address.',
+  'devices.pairTitle': 'Pair a device',
+  'devices.connecting': 'Connecting to {name}…',
+  'devices.typeCode': 'Type the code shown on {name}',
+  'devices.wrongCode': 'Wrong code: {left} tries left',
+  'devices.requestTitle': 'Pairing request',
+  'devices.requestBody': '{name} wants to pair with this deck. Type this code there:',
+  'devices.requestHint': 'Did not ask for this? Refuse it: without the code nothing is paired.',
+  'devices.refuse': 'Refuse',
+  'devices.remote': 'On {name}',
+  'devices.back': 'Back to this device',
 } as const;
 
 export type MessageKey = keyof typeof en;

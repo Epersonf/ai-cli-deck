@@ -7,6 +7,7 @@ import {
   type BrowserServerMessage,
 } from '@deck/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { socketUrl } from '../../shared/api/base';
 import { getToken } from '../../shared/api/token';
 
 export type PageState = Extract<BrowserServerMessage, { type: 'page' }>;
@@ -16,10 +17,9 @@ const RETRY_MS = 1000;
 const REVOKE_MS = 1000;
 
 function streamUrl(sessionId: string): string {
-  const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const token = getToken();
   const query = token === null ? '' : `?${TOKEN_QUERY}=${encodeURIComponent(token)}`;
-  return `${scheme}://${window.location.host}${BROWSER_WS_PATH}/${encodeURIComponent(sessionId)}${query}`;
+  return socketUrl(`${BROWSER_WS_PATH}/${encodeURIComponent(sessionId)}${query}`);
 }
 
 const clamp = (value: number, min: number, max: number): number =>

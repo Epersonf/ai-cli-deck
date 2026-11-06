@@ -5,6 +5,8 @@ const serverPort = Number(process.env['DECK_PORT'] ?? 7842);
 
 export default defineConfig({
   plugins: [react()],
+  // Relative asset paths: the same build is also served under `/peer/<id>/` by a paired deck.
+  base: './',
   server: {
     host: '127.0.0.1',
     port: 5173,

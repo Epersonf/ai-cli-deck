@@ -252,4 +252,45 @@ export const ja: Messages = {
   'terminal.exitedCode': 'プロセスが終了しました（コード {code}）',
   'layout.closePanel': 'パネルを閉じる',
   'layout.resize': 'ドラッグしてパネルのサイズを変更',
+  'devices.title': 'デバイス',
+  'devices.hint':
+    '同じネットワークの別の deck を使う（スマホから PC を操作）か、ほかのデバイスにこの deck を使わせます。',
+  'devices.open': 'デバイスとペアリング',
+  'devices.warnTitle': 'この deck を共有しますか？',
+  'devices.warnBody':
+    'ペアリングしたデバイスはこの deck を完全に使えます。そのターミナルはあなたのユーザーとしてこのマシンでコマンドを実行し、ファイルも見えます。自分のデバイスだけをペアリングしてください。',
+  'devices.warnNext': '続ける',
+  'devices.sureTitle': '共有をオンにしますか？',
+  'devices.sureBody':
+    '共有中、この deck はネットワーク上で応答し（ポート {port}）、デバイスが見つけてペアリングを依頼できます。ペアリングにはこの画面に表示されるコードが必要で、いつでも解除できます。',
+  'devices.shareOn': '共有する',
+  'devices.share': 'この deck を自分のデバイスと共有',
+  'devices.shareHint':
+    'ネットワーク上の他の deck がこれを見つけてペアリングを依頼できます。ペアリング済みの deck はターミナルを使えます。',
+  'devices.listening': '待ち受け中: {list}',
+  'devices.name': 'この deck の名前',
+  'devices.useIt': '開く',
+  'devices.addAddress': 'アドレスを追加',
+  'devices.forget': 'ペアリング解除',
+  'devices.forgetBody': '{name} は再接続に新しいコードが必要になります。',
+  'devices.paired': 'ペアリング済みのデバイス',
+  'devices.none': 'ペアリング済みのデバイスはまだありません。',
+  'devices.nearby': 'このネットワーク',
+  'devices.searching': '共有中の deck を探しています…',
+  'devices.pair': 'ペアリング',
+  'devices.byAddress': 'アドレス（ホスト または ホスト:ポート）',
+  'devices.remoteHint':
+    '外出先では、両方のデバイスを同じ VPN（Tailscale、ZeroTier など）に入れ、ペアリングするか VPN のアドレスを追加します。',
+  'devices.pairTitle': 'デバイスをペアリング',
+  'devices.connecting': '{name} に接続中…',
+  'devices.typeCode': '{name} に表示されたコードを入力',
+  'devices.wrongCode': 'コードが違います: 残り {left} 回',
+  'devices.requestTitle': 'ペアリングの依頼',
+  'devices.requestBody':
+    '{name} がこの deck とのペアリングを求めています。向こうでこのコードを入力してください:',
+  'devices.requestHint':
+    '心当たりがなければ拒否してください。コードがなければペアリングされません。',
+  'devices.refuse': '拒否',
+  'devices.remote': '{name} 上',
+  'devices.back': 'このデバイスに戻る',
 };

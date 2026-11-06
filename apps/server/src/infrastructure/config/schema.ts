@@ -1,4 +1,4 @@
-import { DEFAULT_PORT_RANGE, DEFAULT_SERVER_PORT } from '@deck/shared';
+import { DEFAULT_PEER_PORT, DEFAULT_PORT_RANGE, DEFAULT_SERVER_PORT } from '@deck/shared';
 import { z } from 'zod';
 
 export const ProviderDefSchema = z.object({
@@ -23,6 +23,8 @@ export const AppConfigSchema = z.object({
   extraKeys: z.array(z.string()).nullable().default(null),
   providers: z.array(ProviderDefSchema).default([]),
   password: z.string().min(4).nullable().default(null),
+  /** Port other decks pair and link on, while this deck shares itself (Settings > Devices). */
+  peerPort: z.number().int().min(1).max(65535).default(DEFAULT_PEER_PORT),
 });
 export type AppConfig = z.infer<typeof AppConfigSchema>;
 
@@ -35,5 +37,8 @@ export const EnvSchema = z.object({
   DECK_CONFIG_DIR: z.string().optional(),
   DECK_STATE_DIR: z.string().optional(),
   DECK_STATIC_DIR: z.string().optional(),
+  DECK_PEER_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+  /** The name other decks see (the Android app passes the phone's name). */
+  DECK_NAME: z.string().trim().min(1).max(40).optional(),
 });
 export type Env = z.infer<typeof EnvSchema>;

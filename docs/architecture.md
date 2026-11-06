@@ -35,6 +35,15 @@
   transcript in `<cwd>/.deck/chats/` (listed in `.git/info/exclude`) plus a first message asking to read
   it. Templates describe this in their `chat` block, so a new CLI needs no code. Restarting keeps the
   terminal size and may change the profile.
+- **Decks pair and use each other through this deck, not the browser.** `NetworkService` (sharing setting,
+  paired decks in `network.json`) drives `PeerNode` (`infrastructure/peers`): UDP discovery, a peer port that
+  only speaks `/pair` and `/link` WebSockets, the PAKE pairing, and one encrypted link per paired deck
+  (`LinkPool`). A link is a `Mux` of streams: HTTP requests and WebSockets, both ways. `/peer/<id>/*` on a
+  deck forwards everything to that deck, whose `loopbackTarget` replays it against its own server with a
+  process-only token. So a paired deck's whole app (its own build, served by it) works through the phone's
+  deck with no code per feature; the web app only prefixes its API and socket URLs (`shared/api/base.ts`)
+  and is built with relative asset paths. Links carry no knowledge of the network path, so they also work
+  over a VPN address added by hand; a public relay could carry them too, since they are end-to-end encrypted.
 - **Reattach without a provider.** After a server restart, live `deck-*` tmux sessions are
   re-attached with a control-mode `attach-session` (the provider is not needed again).
 - **Screens survive a dead machine.** `ScreenSaver` writes each live session's screen (tmux

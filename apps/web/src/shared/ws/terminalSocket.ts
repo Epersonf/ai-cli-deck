@@ -1,5 +1,6 @@
 import { REPLAY_FRAME, ServerMessageSchema, TOKEN_QUERY, WS_PATH } from '@deck/shared';
 import type { ClientMessage, ServerMessage } from '@deck/shared';
+import { socketUrl as deckSocket } from '../api/base';
 import { getToken } from '../api/token';
 
 export interface SocketHandlers {
@@ -20,11 +21,10 @@ const PING_MS = 25_000;
 /** Typed input older than this is not replayed after a reconnect (it would surprise the user). */
 const OUTBOX_MAX_AGE_MS = 15_000;
 
-function socketUrl(sessionId: string): string {
-  const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+function sessionSocketUrl(sessionId: string): string {
   const token = getToken();
   const query = token === null ? '' : `?${TOKEN_QUERY}=${encodeURIComponent(token)}`;
-  return `${scheme}://${window.location.host}${WS_PATH}/${encodeURIComponent(sessionId)}${query}`;
+  return deckSocket(`${WS_PATH}/${encodeURIComponent(sessionId)}${query}`);
 }
 
 /** WebSocket for one session with automatic reconnect (the server replays the screen). */
@@ -37,7 +37,7 @@ export function openTerminalSocket(sessionId: string, handlers: SocketHandlers):
   let outbox: { at: number; data: string }[] = [];
 
   const connect = (): void => {
-    const ws = new WebSocket(socketUrl(sessionId));
+    const ws = new WebSocket(sessionSocketUrl(sessionId));
     ws.binaryType = 'arraybuffer';
     socket = ws;
     ws.onopen = () => {

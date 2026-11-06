@@ -6,6 +6,7 @@ import { useT } from './shared/i18n/store';
 import { Gear } from './shared/ui/Gear';
 import { useTerminalSearch } from './features/terminal/searchStore';
 import { MenuIcon, SearchIcon } from './shared/ui/Icons';
+import { RemoteBadge } from './features/devices/RemoteBadge';
 
 interface Props {
   wide: boolean;
@@ -35,6 +36,7 @@ export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSetti
       <span className="brand">
         <Gear size={22} className="spin" />
       </span>
+      <RemoteBadge />
       <strong className="current-name">
         {active ? sessionLabel(active, providers) : t('switcher.empty')}
       </strong>

@@ -117,8 +117,8 @@ Claude Code (DeepSeek), Codex or Custom (any program, or just a shell). It start
 key is linked**. You sign in inside that terminal, exactly as the CLI documents. The deck holds no
 credentials, so it keeps working if a CLI changes how it logs in.
 
-**Custom endpoint and DeepSeek.** *Claude Code (custom endpoint)* talks to an Anthropic-compatible API at
-a base URL you choose (for example a company gateway with its own keys); *Claude Code (DeepSeek)* is the
+**Custom endpoint and DeepSeek.** _Claude Code (custom endpoint)_ talks to an Anthropic-compatible API at
+a base URL you choose (for example a company gateway with its own keys); _Claude Code (DeepSeek)_ is the
 same thing with the URL and models fixed. The first time such a terminal starts it asks for the API key
 (typed hidden, via `clideck ensure-key`) and remembers it in that profile's own Claude settings
 (`settings.json`, `env`), so later starts need nothing. The key only ever goes to that profile's Claude.
@@ -168,6 +168,21 @@ files (the one this terminal touched). A profile template says how its CLI conti
 - **⋮ > Fork or move** does the same for a running terminal: in the same profile the CLI forks the chat itself.
 - **New session** has **Load chat history** for the chosen profile and folder: a searchable list where any
   conversation continues in a new terminal.
+
+## Your other devices: use the PC from the phone
+
+Settings > Devices pairs decks on the same network: on the PC turn on **Share this deck with my devices**
+(it asks twice), and on the phone the PC shows up under **On this network**; tap **Pair**, type the code the
+PC shows, and from then on the PC is in the terminals drawer (☰). Opening it shows the PC's whole deck
+(terminals, files, changes, preview) inside the phone's app, running on the PC.
+
+- Pairing uses the code with a PAKE, and every link is end-to-end encrypted and tied to the keys pinned
+  when pairing: nothing on the network can read it or pretend to be one of the devices.
+- Either side can unpair; turning sharing off ends every link at once.
+- Away from home it works through any route between the two devices, such as a VPN (Tailscale, ZeroTier):
+  pair, or add the VPN address of a paired device. Without a VPN or a forwarded port, two devices behind
+  different home routers cannot reach each other.
+- Ports: TCP 7850 for pairing and links (`DECK_PEER_PORT`), UDP 7849 for finding decks.
 
 **Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
 under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs

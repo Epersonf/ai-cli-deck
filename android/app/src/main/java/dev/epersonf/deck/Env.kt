@@ -18,6 +18,9 @@ class Env(ctx: Context) {
         android.content.res.Configuration(ctx.resources.configuration).apply { setLocale(java.util.Locale.ENGLISH) },
     )
     val prefs = ctx.getSharedPreferences("deck", Context.MODE_PRIVATE)
+    /** The phone's own name (Settings > About), shown to the decks it pairs with. */
+    val deviceName: String = android.provider.Settings.Global.getString(ctx.contentResolver, "device_name")
+        ?.takeIf { it.isNotBlank() } ?: android.os.Build.MODEL
 
     val port: Int get() = prefs.getInt("port", 7842)
     /** Bind address; migrates the old "accept LAN" switch. */
@@ -49,7 +52,7 @@ class Env(ctx: Context) {
 
     /** What the deck server is told when it starts: its port and bind address, diagnostics, and the phone bridge. */
     fun serverEnv(phone: PhoneBridge?): Map<String, String> {
-        val extra = mutableMapOf("DECK_PORT" to port.toString(), "DECK_HOST" to LOOPBACK)
+        val extra = mutableMapOf("DECK_PORT" to port.toString(), "DECK_HOST" to LOOPBACK, "DECK_NAME" to deviceName)
         if (verbose) { extra["DECK_VERBOSE"] = "1"; extra["DECK_LOG_LEVEL"] = "debug" }
         if (phone != null) { extra["DECK_PHONE_URL"] = phone.url; extra["DECK_PHONE_TOKEN"] = phone.token }
         if (exposed && password.isNotEmpty()) { extra["DECK_HOST"] = host; extra["DECK_PASSWORD"] = password }

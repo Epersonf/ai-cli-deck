@@ -6,6 +6,9 @@ import { Workspace } from './Workspace';
 import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { ConfirmHost } from './features/confirm/ConfirmHost';
+import { PairingRequestHost } from './features/devices/PairingRequestHost';
+import { useNetwork } from './features/devices/networkStore';
+import { PEER_ID } from './shared/api/base';
 import { ForkHost } from './features/sessions/ForkDialog';
 import { ProfileDialog } from './features/sessions/ProfileDialog';
 import { LoginScreen } from './features/auth/LoginScreen';
@@ -44,14 +47,12 @@ export function App() {
       .config()
       .then((c) => (setConfig(c), setLocked(false)))
       .catch(() => undefined);
-    void useSessions
-      .getState()
-      .refresh()
-      .catch(() => undefined);
-    void useProfiles
-      .getState()
-      .refresh()
-      .catch(() => undefined);
+    for (const store of [useSessions, useProfiles, useNetwork]) {
+      void store
+        .getState()
+        .refresh()
+        .catch(() => undefined);
+    }
   }, []);
 
   const active = sessions.find((s) => s.id === activeId);
@@ -60,7 +61,11 @@ export function App() {
     document.title = activeLabel ? `${activeLabel} · Deck` : 'Deck · AI CLI workspace';
   }, [activeLabel]);
 
-  useEffect(() => onUnauthorized(() => setLocked(true)), []);
+  // A paired deck's app is signed in through this deck: a refusal means this deck wants its login.
+  useEffect(
+    () => onUnauthorized(() => (PEER_ID ? window.location.assign('/') : setLocked(true))),
+    [],
+  );
   useEffect(reload, [reload]);
   useShortcuts(
     sessions.map((s) => s.id),
@@ -134,6 +139,7 @@ export function App() {
       )}
       <ApprovalsPanel />
       <ForkHost />
+      <PairingRequestHost />
       <ConfirmHost />
     </div>
   );

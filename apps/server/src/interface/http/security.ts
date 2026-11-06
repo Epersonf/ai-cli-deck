@@ -1,4 +1,4 @@
-import { AGENT_PATH, MCP_PATH, TOKEN_HEADER, TOKEN_QUERY } from '@deck/shared';
+import { AGENT_PATH, MCP_PATH, PEER_PATH, TOKEN_HEADER, TOKEN_QUERY } from '@deck/shared';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { isLoopbackHost } from '../../infrastructure/config/bind.js';
 import type { SecurityOptions } from '../container.js';
@@ -15,6 +15,17 @@ const PROTECTED_PREFIXES = ['/api', '/ws'];
 const LOCAL_ONLY_PREFIXES = [MCP_PATH, AGENT_PATH];
 /** Reachable without a token (still origin/host checked): the login handshake itself. */
 const PUBLIC_PATHS = new Set(['/api/login', '/api/auth']);
+
+/**
+ * The path a request means on this deck: a paired deck's app under `/peer/<id>/` is judged by what follows,
+ * so its API and sockets need this deck's token and its static files do not (like this deck's own).
+ */
+function ownPath(url: string): string {
+  if (!url.startsWith(`${PEER_PATH}/`)) return url;
+  const rest = url.slice(PEER_PATH.length + 1);
+  const slash = rest.indexOf('/');
+  return slash < 0 ? '/' : rest.slice(slash);
+}
 
 function readToken(request: FastifyRequest): string | undefined {
   const header = request.headers[TOKEN_HEADER];
@@ -33,7 +44,8 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
       if (isLoopbackAddress(request.ip) && hostOk) return;
       return reply.code(403).send({ error: 'Agent endpoints are reachable from localhost only' });
     }
-    if (!PROTECTED_PREFIXES.some((prefix) => url.startsWith(prefix))) return;
+    const path = ownPath(url);
+    if (!PROTECTED_PREFIXES.some((prefix) => path.startsWith(prefix))) return;
     const { host, origin } = request.headers;
     if (
       !isAllowedHost(host, loopbackBind) ||
@@ -41,7 +53,7 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
     ) {
       return reply.code(403).send({ error: 'Origin or host not allowed' });
     }
-    if (PUBLIC_PATHS.has(url.split('?')[0] ?? url)) return;
+    if (PUBLIC_PATHS.has(path.split('?')[0] ?? path)) return;
     if (!options.isValidToken(readToken(request))) {
       return reply.code(401).send({ error: 'Missing or invalid access token' });
     }

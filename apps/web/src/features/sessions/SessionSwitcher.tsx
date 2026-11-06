@@ -4,6 +4,7 @@ import { usePolling } from '../../shared/ui/usePolling';
 import { useTasks } from '../tasks/tasksStore';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { groupSessions } from './groupSessions';
+import { PeerShortcuts } from '../devices/PeerShortcuts';
 import { ProfileList } from './ProfileList';
 import { ProfileView } from './ProfileView';
 import { useProfiles } from './profilesStore';
@@ -59,6 +60,7 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
               onNewSession={newIn}
               onPick={(session) => pick(session.id)}
             />
+            <PeerShortcuts />
           </>
         )}
       </aside>

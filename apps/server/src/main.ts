@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
@@ -13,14 +12,13 @@ import { EventBus } from './domain/events.js';
 /** How often changed terminal screens are written to disk. */
 const SCROLLBACK_SAVE_MS = 5_000;
 import { LoginThrottle } from './application/LoginThrottle.js';
-import { AuthService } from './application/AuthService.js';
-import { ScryptHasher } from './infrastructure/auth/ScryptHasher.js';
-import { JsonAuthStore } from './infrastructure/auth/JsonAuthStore.js';
-import { assertSecureBind, isLoopbackHost } from './infrastructure/config/bind.js';
+import { assertSecureBind } from './infrastructure/config/bind.js';
+import { createAuth } from './infrastructure/auth/authWiring.js';
 import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
 import { workspaceServices } from './infrastructure/workspaceWiring.js';
 import { chatServices, createChatFiles } from './infrastructure/chatWiring.js';
+import { networkServices } from './infrastructure/networkWiring.js';
 import { GitCli } from './infrastructure/git/GitCli.js';
 import { SystemAdapter } from './infrastructure/net/SystemAdapter.js';
 import { ProviderStatusResolver, realStatusDeps } from './infrastructure/providers/status.js';
@@ -41,13 +39,7 @@ import { listen } from './interface/http/listen.js';
 async function main(): Promise<void> {
   const phone = phoneFromEnv(process.env); // before sessions copy the environment
   const { config, paths } = await loadConfig(process.env);
-  const auth = await AuthService.create({
-    store: new JsonAuthStore(join(paths.configDir, 'auth.json')),
-    hasher: new ScryptHasher(),
-    newToken: () => randomBytes(24).toString('base64url'),
-    loopback: isLoopbackHost(config.host),
-    envPassword: config.password,
-  });
+  const auth = await createAuth(paths.configDir, config.host, config.password);
   assertSecureBind(config.host, auth.required);
 
   const here = dirname(fileURLToPath(import.meta.url));
@@ -104,6 +96,13 @@ async function main(): Promise<void> {
     newId: () => system.newId(),
   });
   sessions.screens.start(SCROLLBACK_SAVE_MS);
+  const { isPeerToken, ...network } = await networkServices({
+    configDir: paths.configDir,
+    host: config.host,
+    port: config.port,
+    peerPort: config.peerPort,
+    name: process.env['DECK_NAME'],
+  });
 
   const app = await createApp({
     sessions,
@@ -118,6 +117,7 @@ async function main(): Promise<void> {
     profiles,
     templates,
     tasks,
+    ...network,
     publicConfig: {
       defaultCwd: config.defaultCwd ?? homedir(),
       extraKeys: config.extraKeys,
@@ -128,7 +128,7 @@ async function main(): Promise<void> {
     security: {
       bindHost: config.host,
       allowedOrigins: config.allowedOrigins,
-      isValidToken: (token) => auth.isValidToken(token),
+      isValidToken: (token) => auth.isValidToken(token) || isPeerToken(token),
     },
     staticDir: paths.staticDir ?? join(here, '..', '..', 'web', 'dist'),
   });

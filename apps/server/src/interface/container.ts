@@ -13,6 +13,9 @@ import type { PreviewService } from '../application/PreviewService.js';
 import type { SessionManager } from '../application/SessionManager.js';
 import type { WorkspaceService } from '../application/WorkspaceService.js';
 import type { GitReviewService } from '../application/GitReviewService.js';
+import type { NetworkService } from '../application/NetworkService.js';
+import type { PairingFlow } from '../application/PairingFlow.js';
+import type { PairingRequests } from '../application/PairingRequests.js';
 import type { EventBus } from '../domain/events.js';
 import type { PhonePort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
@@ -45,6 +48,10 @@ export interface Container {
   templates: TemplateService;
   tasks: TaskService;
   security: SecurityOptions;
+  /** Sharing this deck and its paired decks; `tunnel()` gives the link the `/peer/` proxy uses. */
+  network: NetworkService<unknown>;
+  pairing: PairingFlow;
+  pairingRequests: PairingRequests;
   auth: AuthService;
   throttle: LoginThrottle;
   staticDir: string | null;

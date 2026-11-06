@@ -25,6 +25,26 @@
 - On a loopback bind, only loopback `Host` headers are served (blocks DNS rebinding).
 - `/mcp` and `/agent` accept loopback peers only, whatever the bind address.
 
+## Paired decks
+
+- Sharing (Settings > Devices) is off until the user turns it on and confirms twice. While on, the deck
+  listens on its peer port (`DECK_PEER_PORT`, default 7850) and answers discovery on UDP 7849. That port
+  only speaks pairing and links; the app and its API stay on the normal bind, behind the login.
+- Each deck has an Ed25519 key (`identity.pem`, mode 0600); its id is a hash of the public key.
+- Pairing: the deck being asked shows a random 6-digit code and the asking deck sends what the user
+  typed through a PAKE (CPace on ristretto255, `@noble/curves`). Both keys go into the PAKE transcript, so
+  a successful pairing pins the right keys on both sides. A listener learns nothing; someone in the middle
+  gets one online guess per attempt (3 attempts per request), and every request that ended on a wrong
+  code doubles the wait before the next one is accepted (10 s, 20 s, … up to an hour).
+- Links: each connection does an X25519 exchange signed by both pinned Ed25519 keys, then every message
+  is sealed with ChaCha20-Poly1305 (one key per direction, counter nonces). A forged, replayed or
+  reordered message closes the link. An unknown key is refused before anything else is sent.
+- A paired deck is trusted like the user: its requests reach this deck's server on loopback signed in
+  with a token only this process holds. It may not use pairing, login or password endpoints, `/mcp`,
+  `/agent`, or chain to a third deck (`/peer`). Unpairing (either side) or turning sharing off ends
+  every link at once.
+- On the asking deck, `/peer/<id>/api` and `/peer/<id>/ws` need that deck's own token like `/api`.
+
 ## Files and the browser
 
 - Every file operation goes through `resolveInside(root, relative)`: it rejects `..`, absolute

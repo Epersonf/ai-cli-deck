@@ -13,6 +13,9 @@ Treat it like SSH, not like a web page.
 - Terminal screens saved for recovery (`<state dir>/scrollback`) can contain secrets that were
   printed in a terminal. They are readable only by your user and deleted with the session.
 
+- **Sharing with paired devices** (Settings > Devices) lets a deck you paired run anything this deck
+  can. Pair only your own devices, and unpair any you no longer use. Links are end-to-end encrypted.
+
 How the protections work is described in [docs/security.md](docs/security.md).
 
 ## Reporting a vulnerability

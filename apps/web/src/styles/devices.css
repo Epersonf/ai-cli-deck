@@ -1,0 +1,104 @@
+/* Devices: paired and nearby decks, pairing codes, and the badge on a paired deck's app. */
+.devices {
+  grid-template-columns: minmax(0, 1fr);
+}
+.peer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.peer-row {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+}
+.peer-main {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+.peer-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.peer-address {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.peer-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.peer-dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+}
+.peer-dot.on {
+  background: #7fd17a;
+  box-shadow: 0 0 6px #7fd17a;
+  opacity: 1;
+}
+.peer-shortcuts {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.peer-shortcuts h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.peer-shortcuts button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  text-align: left;
+}
+.pair-code {
+  font-size: 1.6rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.pair-shown-code {
+  margin: 4px 0;
+  color: var(--brass-hi);
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.remote-badge {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 3px 8px;
+  border: 1px solid var(--brass);
+  border-radius: 999px;
+  color: var(--brass-hi);
+  font-size: 0.8rem;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
