@@ -192,6 +192,9 @@ export const zh: Messages = {
   'chat.otherAi': '用另一个 AI 继续…',
   'chat.move': '在那里继续',
   'chat.saved': '继续已保存的对话',
+  'chat.load': '加载聊天记录（{count}）',
+  'chat.search': '搜索对话',
+  'chat.noMatch': '没有匹配的对话',
   'fork.native': '同一配置：CLI 自己复制对话。',
   'fork.handoff':
     '另一个配置：deck 把目前的对话交给它（文件夹 .deck/chats 中的记录）。不需要代理做任何事。',

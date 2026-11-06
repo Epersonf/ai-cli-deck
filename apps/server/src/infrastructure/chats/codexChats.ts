@@ -9,7 +9,7 @@ import {
 import { chatTitle, isInjected, textBlocks, toolLine } from './chatText.js';
 import { MAX_HEAD_LINES, dateOf, jsonLines, obj, perFile, str, type Json } from './jsonLines.js';
 
-const MAX_LISTED = 40;
+const MAX_LISTED = 100;
 /** Chat files opened to find a folder's: every folder's chats share one dated tree. */
 const MAX_SCANNED = 400;
 

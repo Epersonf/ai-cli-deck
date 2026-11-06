@@ -199,6 +199,9 @@ export const es: Messages = {
   'chat.otherAi': 'Continuar con otra IA…',
   'chat.move': 'Continuar allí',
   'chat.saved': 'Continuar una conversación guardada',
+  'chat.load': 'Cargar historial de chats ({count})',
+  'chat.search': 'Buscar conversaciones',
+  'chat.noMatch': 'Ninguna conversación coincide',
   'fork.native': 'Mismo perfil: la propia CLI copia la conversación.',
   'fork.handoff':
     'Otro perfil: el deck le entrega la conversación hasta ahora (una transcripción en .deck/chats de la carpeta). No se le pide nada al agente.',

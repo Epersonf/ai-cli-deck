@@ -195,6 +195,9 @@ export const en = {
   'chat.otherAi': 'Continue with another AI…',
   'chat.move': 'Continue there',
   'chat.saved': 'Continue a saved conversation',
+  'chat.load': 'Load chat history ({count})',
+  'chat.search': 'Search conversations',
+  'chat.noMatch': 'No conversation matches',
   'fork.native': 'Same profile: the CLI copies the conversation itself.',
   'fork.handoff':
     'Another profile: the deck hands it the conversation so far (a transcript in .deck/chats of the folder). Nothing is asked of the agent.',

@@ -25,4 +25,15 @@ describe('createPredictor limits', () => {
     t.predictor.input('z');
     expect((t.predictor.view()?.chars ?? []).every((c) => c.x < 19)).toBe(true);
   });
+
+  it('keeps trusting the echo when it lands on another row (a wrapped line)', () => {
+    const t = setup();
+    t.predictor.input('a');
+    t.state.y = 1; // the program wrapped the line and echoed there
+    t.state.x = 0;
+    t.echo('a');
+    expect(t.predictor.afterWrite()).toBe(true);
+    t.predictor.input('b');
+    expect(t.predictor.view()?.chars.map((c) => c.ch)).toEqual(['b']);
+  });
 });

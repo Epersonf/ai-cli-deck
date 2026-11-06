@@ -101,8 +101,9 @@ export function createPredictor(options: PredictorOptions) {
       let changed = false;
       const cursor = screen.cursor();
       for (let front = pending[0]; front !== undefined; front = pending[0]) {
-        const moved =
-          cursor.y !== front.y || (front.erase ? cursor.x <= front.x : cursor.x > front.x);
+        // The echo went elsewhere (the box wrapped the line, a menu opened): no wrong guess, just stop.
+        if (cursor.y !== front.y) return (clear(), true);
+        const moved = front.erase ? cursor.x <= front.x : cursor.x > front.x;
         if (!moved) break;
         if ((screen.cell(front.x, front.y) || ' ') !== front.ch) {
           give_up(); // the echo differs from the guess

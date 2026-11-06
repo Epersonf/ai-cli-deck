@@ -2,8 +2,8 @@ import type { ChatInfo } from '@deck/shared';
 import { useEffect, useState } from 'react';
 import { chatApi } from '../../shared/api/chatApi';
 import { useT } from '../../shared/i18n/store';
+import { ChatPicker } from './ChatPicker';
 
-const SHOWN = 8;
 /** Typing a folder asks only once the typing stops. */
 const DEBOUNCE_MS = 350;
 
@@ -14,13 +14,14 @@ interface Props {
   onOpen(chatId: string): void;
 }
 
-const when = (iso: string): string =>
-  new Date(iso).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
-
-/** The conversations this profile already had in this folder: any of them continues in a new terminal. */
+/**
+ * The conversations this profile already had in this folder, behind one button (the dialog stays short):
+ * it opens a picker where any of them continues in a new terminal.
+ */
 export function SavedChats({ provider, cwd, disabled, onOpen }: Props) {
   const t = useT();
   const [chats, setChats] = useState<ChatInfo[]>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const folder = cwd.trim();
@@ -40,18 +41,23 @@ export function SavedChats({ provider, cwd, disabled, onOpen }: Props) {
 
   if (chats.length === 0) return null;
   return (
-    <div className="saved-chats">
-      <h3>{t('chat.saved')}</h3>
-      <ul>
-        {chats.slice(0, SHOWN).map((chat) => (
-          <li key={chat.id}>
-            <button type="button" disabled={disabled} onClick={() => onOpen(chat.id)}>
-              <span className="saved-title">{chat.title}</span>
-              <span className="saved-date">{when(chat.updatedAt)}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <button
+        type="button"
+        className="saved-chats-open"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+      >
+        {t('chat.load', { count: String(chats.length) })}
+      </button>
+      {open && (
+        <ChatPicker
+          chats={chats}
+          disabled={disabled}
+          onPick={(id) => (setOpen(false), onOpen(id))}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
   );
 }

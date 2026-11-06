@@ -3,6 +3,9 @@ import type { Latency } from './latencyMeter';
 import { createOverlay, screenOf } from './predictionOverlay';
 import { createPredictor } from './predictor';
 
+/** Quiet time after output before the screen is compared with the guesses. */
+const SETTLE_MS = 20;
+
 /** Wires the predictor to a terminal: guesses typed keys while the link is slow, shows them as an overlay. */
 export function attachLocalEcho(term: Terminal, latency: () => Latency) {
   const overlay = createOverlay(term);
@@ -14,6 +17,7 @@ export function attachLocalEcho(term: Terminal, latency: () => Latency) {
     },
   });
   let expiry = 0;
+  let settle = 0;
   const paint = (): void => {
     overlay.render(predictor.view());
     window.clearTimeout(expiry);
@@ -33,12 +37,21 @@ export function attachLocalEcho(term: Terminal, latency: () => Latency) {
     input(data: string): void {
       if (!composing && predictor.input(data)) paint();
     },
-    /** Call once server output has been written to the terminal. */
+    /**
+     * Call once server output has been written to the terminal. The screen is judged once output pauses:
+     * a program redrawing its whole frame (tmux sends it in pieces) passes the cursor over other rows, and
+     * judging there took a correct guess for a wrong one, which turned the local echo off.
+     */
     written(): void {
-      if (predictor.afterWrite() || predictor.hasPending()) paint();
+      if (!predictor.hasPending()) return;
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => {
+        if (predictor.afterWrite() || predictor.hasPending()) paint();
+      }, SETTLE_MS);
     },
     dispose(): void {
       window.clearTimeout(expiry);
+      window.clearTimeout(settle);
       textarea?.removeEventListener('compositionstart', start);
       textarea?.removeEventListener('compositionend', end);
       overlay.clear();

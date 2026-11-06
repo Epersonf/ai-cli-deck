@@ -166,8 +166,8 @@ files (the one this terminal touched). A profile template says how its CLI conti
   first message asks it to read that file. For a CLI whose chat files the deck cannot read, the transcript is
   what the terminal showed.
 - **⋮ > Fork or move** does the same for a running terminal: in the same profile the CLI forks the chat itself.
-- **New session** lists the saved conversations of the chosen profile in the chosen folder: any of them
-  continues in a new terminal.
+- **New session** has **Load chat history** for the chosen profile and folder: a searchable list where any
+  conversation continues in a new terminal.
 
 **Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
 under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs

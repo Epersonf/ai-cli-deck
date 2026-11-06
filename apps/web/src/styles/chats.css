@@ -34,28 +34,41 @@
   white-space: nowrap;
 }
 
-/* The saved conversations of a profile in a folder, in the new-session dialog. */
-.saved-chats h3 {
-  margin: 4px 0 6px;
-  font-size: 0.95rem;
+/* The saved conversations of a profile in a folder: a button in the new-session dialog, and its picker. */
+.saved-chats-open {
+  justify-self: start;
+  max-width: 100%;
 }
-.saved-chats ul {
+.chat-picker {
+  grid-template-columns: minmax(0, 1fr);
+}
+.chat-picker ul {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 220px;
+  min-height: 0;
+  max-height: 55dvh;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden auto;
+  padding-right: 4px;
   list-style: none;
 }
-.saved-chats button {
+.chat-picker li {
+  min-width: 0;
+}
+.chat-picker li button {
   display: flex;
   width: 100%;
+  min-width: 0;
   gap: 8px;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   text-align: left;
+}
+.chat-picker-empty {
+  margin: 0;
+  color: var(--muted);
 }
 .saved-title {
   flex: 1;

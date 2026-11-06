@@ -199,6 +199,9 @@ export const ja: Messages = {
   'chat.otherAi': '別の AI で続ける…',
   'chat.move': 'そこで続ける',
   'chat.saved': '保存された会話を続ける',
+  'chat.load': 'チャット履歴を読み込む（{count}）',
+  'chat.search': '会話を検索',
+  'chat.noMatch': '一致する会話はありません',
   'fork.native': '同じプロファイル：CLI 自身が会話をコピーします。',
   'fork.handoff':
     '別のプロファイル：deck がここまでの会話を渡します（フォルダーの .deck/chats にある記録）。エージェントには何も頼みません。',
