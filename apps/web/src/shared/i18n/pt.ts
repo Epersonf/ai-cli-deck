@@ -75,6 +75,7 @@ export const pt: Messages = {
   'profile.deleteBody':
     'Apagar "{name}" e encerrar seus {count} terminal(is)? A pasta de configuração do próprio CLI, com qualquer login, continua no disco.',
   'profile.deleteAction': 'Apagar perfil',
+  'profile.deleteBlocked': 'Feche os terminais antes',
   'profile.base': 'CLI base',
   'profile.command': 'Programa para executar (vazio = shell)',
   'profile.base.claude': 'Claude Code',

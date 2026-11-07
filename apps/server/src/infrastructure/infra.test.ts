@@ -31,7 +31,7 @@ describe('providers', () => {
   it('claude-deepseek points Claude Code at DeepSeek and holds no key', () => {
     const env = claudeDeepseek.buildCommand(ctx).env;
     expect(env['ANTHROPIC_BASE_URL']).toBe('https://api.deepseek.com/anthropic');
-    expect(JSON.stringify(env)).not.toMatch(/KEY|TOKEN/);
+    expect(JSON.stringify(env)).not.toMatch(/KEY|AUTH_TOKEN/);
   });
 
   it('codex overrides mcp_servers and custom requires a command', () => {

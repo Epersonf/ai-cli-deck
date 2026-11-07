@@ -5,6 +5,9 @@ export interface MenuItem {
   label: string;
   icon?: ReactNode;
   danger?: boolean;
+  /** Shown greyed out and not clickable; `hint` says why. */
+  disabled?: boolean;
+  hint?: string;
   onSelect(): void;
 }
 
@@ -66,6 +69,8 @@ export function KebabMenu({ items }: Props) {
                 type="button"
                 role="menuitem"
                 className={item.danger ? 'danger' : undefined}
+                disabled={item.disabled}
+                title={item.disabled ? item.hint : undefined}
                 onClick={() => (close(), item.onSelect())}
               >
                 {item.icon}

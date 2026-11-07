@@ -6,7 +6,9 @@ import { claudeMcpConfig } from './claudeLike.js';
 /** DeepSeek is a ready-made endpoint: the URL and models are fixed, only the key is yours. */
 export const DEEPSEEK_ENV = {
   ANTHROPIC_MODEL: 'deepseek-chat',
-  ANTHROPIC_SMALL_FAST_MODEL: 'deepseek-chat',
+  ANTHROPIC_DEFAULT_HAIKU_MODEL: 'deepseek-chat',
+  // Claude Code does not know this model: without the real window it warns and assumes 200k.
+  CLAUDE_CODE_MAX_CONTEXT_TOKENS: '128000',
 } as const;
 export const DEEPSEEK_URL = 'https://api.deepseek.com/anthropic';
 

@@ -26,7 +26,7 @@ describe('template providers (clean terminals)', () => {
     const parts = make('claude-deepseek').buildCommand({ ...ctx, args: ['-x'] });
     expect(parts.env['ANTHROPIC_BASE_URL']).toContain('deepseek');
     expect(parts.env['CLAUDE_CONFIG_DIR']).toBe(home);
-    expect(Object.keys(parts.env).some((k) => /KEY|TOKEN/.test(k))).toBe(false);
+    expect(Object.keys(parts.env).some((k) => /KEY|AUTH_TOKEN/.test(k))).toBe(false);
     expect(parts.command).toBe('clideck');
     expect(parts.args).toEqual([
       'ensure-key',

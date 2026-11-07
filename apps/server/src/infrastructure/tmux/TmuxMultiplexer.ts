@@ -1,6 +1,7 @@
 import { TERMINAL_COLORS, TMUX_PREFIX } from '@deck/shared';
 import type { LaunchSpec, MultiplexerPort, PtyHandle } from '../../domain/ports.js';
 import type { Runner } from './exec.js';
+import { dropLeakedEnv, neutralEnv } from './serverEnv.js';
 import { TmuxControlClient } from './TmuxControlClient.js';
 
 const SKIPPED_ENV = new Set(['TMUX', 'TMUX_PANE']);
@@ -100,6 +101,14 @@ export class TmuxMultiplexer implements MultiplexerPort {
     }
   }
 
+  /**
+   * A tmux server started by an older deck still carries the first session's profile in its global
+   * environment, and hands it to every new session. Drops whatever differs from the deck's own environment.
+   */
+  cleanServerEnv(): Promise<string[]> {
+    return dropLeakedEnv(this.run, SOCKET_ARGS);
+  }
+
   async kill(name: string): Promise<void> {
     await this.run('tmux', [...SOCKET_ARGS, 'kill-session', '-t', `=${name}`]).catch(
       () => undefined,
@@ -107,4 +116,4 @@ export class TmuxMultiplexer implements MultiplexerPort {
   }
 }
 
-const place = (spec: LaunchSpec) => ({ env: spec.env, cwd: spec.cwd });
+const place = (spec: LaunchSpec) => ({ env: neutralEnv(), cwd: spec.cwd });

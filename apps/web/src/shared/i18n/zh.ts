@@ -73,6 +73,7 @@ export const zh: Messages = {
   'profile.deleteBody':
     '删除“{name}”并结束它的 {count} 个终端？CLI 自己的配置文件夹（含任何登录信息）会保留在磁盘上。',
   'profile.deleteAction': '删除配置',
+  'profile.deleteBlocked': '请先关闭其终端',
   'profile.base': '基础 CLI',
   'profile.command': '要运行的程序（留空 = shell）',
   'profile.base.claude': 'Claude Code',

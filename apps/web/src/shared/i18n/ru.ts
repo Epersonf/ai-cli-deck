@@ -74,6 +74,7 @@ export const ru: Messages = {
   'profile.deleteBody':
     'Удалить «{name}» и завершить его терминалы ({count})? Папка настроек самого CLI, включая любой вход, останется на диске.',
   'profile.deleteAction': 'Удалить профиль',
+  'profile.deleteBlocked': 'Сначала закройте его терминалы',
   'profile.base': 'Базовый CLI',
   'profile.command': 'Программа для запуска (пусто = shell)',
   'profile.base.claude': 'Claude Code',

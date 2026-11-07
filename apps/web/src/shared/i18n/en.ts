@@ -72,6 +72,7 @@ export const en = {
   'profile.deleteBody':
     'Delete "{name}" and end its {count} terminal(s)? The CLI\'s own config folder, with any login, stays on disk.',
   'profile.deleteAction': 'Delete profile',
+  'profile.deleteBlocked': 'Close its terminals first',
   'profile.base': 'CLI to start from',
   'profile.command': 'Program to run (empty = shell)',
   'profile.base.claude': 'Claude Code',

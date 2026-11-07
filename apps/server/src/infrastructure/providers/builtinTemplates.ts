@@ -61,7 +61,9 @@ export const BUILTIN_TEMPLATES: readonly ProfileTemplate[] = [
     env: {
       ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic',
       ANTHROPIC_MODEL: 'deepseek-chat',
-      ANTHROPIC_SMALL_FAST_MODEL: 'deepseek-chat',
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: 'deepseek-chat',
+      // Claude Code does not know this model: without the real window it warns and assumes 200k.
+      CLAUDE_CODE_MAX_CONTEXT_TOKENS: '128000',
     },
     home: { env: 'CLAUDE_CONFIG_DIR' },
     apiKey: { env: 'ANTHROPIC_AUTH_TOKEN', label: 'DeepSeek API key', remember: true },

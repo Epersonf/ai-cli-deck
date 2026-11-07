@@ -55,7 +55,14 @@ export function useProfileActions(group: SessionGroup, onNewSession: () => void)
         icon: <PencilIcon size={16} />,
         onSelect: () => (setName(group.label), setEditing(true)),
       },
-      { label: t('profile.delete'), icon: <TrashIcon size={16} />, danger: true, onSelect: remove },
+      {
+        label: t('profile.delete'),
+        icon: <TrashIcon size={16} />,
+        danger: true,
+        disabled: group.sessions.length > 0,
+        hint: t('profile.deleteBlocked'),
+        onSelect: remove,
+      },
     );
   if (group.profile && paired && !PEER_ID)
     items.splice(1, 0, {

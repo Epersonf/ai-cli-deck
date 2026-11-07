@@ -74,6 +74,7 @@ export const es: Messages = {
   'profile.deleteBody':
     '¿Eliminar "{name}" y terminar sus {count} terminal(es)? La carpeta de configuración del propio CLI, con cualquier inicio de sesión, permanece en el disco.',
   'profile.deleteAction': 'Eliminar perfil',
+  'profile.deleteBlocked': 'Cierra antes sus terminales',
   'profile.base': 'CLI de base',
   'profile.command': 'Programa a ejecutar (vacío = shell)',
   'profile.base.claude': 'Claude Code',

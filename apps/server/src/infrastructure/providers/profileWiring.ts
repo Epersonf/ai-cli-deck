@@ -1,3 +1,4 @@
+import { mkdirSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fieldVars, fillText } from '@deck/shared';
@@ -16,6 +17,15 @@ interface Deps {
   providers: ProviderRegistry;
   status: ProviderStatusResolver;
   defaultShell: string;
+}
+
+/** Some CLIs (Codex) refuse to start when their home folder does not exist yet. */
+function ensureHome(dir: string): void {
+  try {
+    mkdirSync(dir, { recursive: true });
+  } catch {
+    // the CLI will report the real problem when it starts
+  }
 }
 
 /** Loads templates and saved profiles, keeping the registry and install status in sync when they change. */
@@ -47,6 +57,7 @@ export async function createProfileService(deps: Deps): Promise<{
     register: (profile) => {
       const template = templates.get(profile.base);
       if (!template) return; // its template was removed: the profile stays on disk but cannot start
+      if (template.home) ensureHome(join(profilesDir, profile.id));
       deps.providers.add(createTemplateProvider(profile, template, profilesDir));
       if (template.install) deps.status.alias(profile.id, template.install);
       else {

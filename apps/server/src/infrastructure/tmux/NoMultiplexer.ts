@@ -28,7 +28,9 @@ export class NoMultiplexer implements MultiplexerPort {
 export async function detectMultiplexer(run: Runner, pty: PtyPort): Promise<MultiplexerPort> {
   try {
     await run('tmux', ['-V']);
-    return new TmuxMultiplexer(run);
+    const tmux = new TmuxMultiplexer(run);
+    await tmux.cleanServerEnv();
+    return tmux;
   } catch {
     return new NoMultiplexer(pty);
   }

@@ -73,6 +73,7 @@ export const it: Messages = {
   'profile.deleteBody':
     'Eliminare "{name}" e terminare i suoi {count} terminale/i? La cartella di configurazione della CLI, con eventuali accessi, resta sul disco.',
   'profile.deleteAction': 'Elimina profilo',
+  'profile.deleteBlocked': 'Chiudi prima i suoi terminali',
   'profile.base': 'CLI di base',
   'profile.command': 'Programma da eseguire (vuoto = shell)',
   'profile.base.claude': 'Claude Code',

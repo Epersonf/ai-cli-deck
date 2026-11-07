@@ -74,6 +74,7 @@ export const ja: Messages = {
   'profile.deleteBody':
     '「{name}」を削除し、{count} 個のターミナルを終了しますか？CLI 自体の設定フォルダー（ログイン情報を含む）はディスクに残ります。',
   'profile.deleteAction': 'プロファイルを削除',
+  'profile.deleteBlocked': '先にターミナルを閉じてください',
   'profile.base': 'ベースの CLI',
   'profile.command': '実行するプログラム（空欄 = シェル）',
   'profile.base.claude': 'Claude Code',

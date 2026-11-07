@@ -75,6 +75,7 @@ export const fr: Messages = {
   'profile.deleteBody':
     'Supprimer « {name} » et terminer ses {count} terminal(aux) ? Le dossier de configuration du CLI, avec toute connexion, reste sur le disque.',
   'profile.deleteAction': 'Supprimer le profil',
+  'profile.deleteBlocked': 'Fermez d’abord ses terminaux',
   'profile.base': 'CLI de base',
   'profile.command': 'Programme à lancer (vide = shell)',
   'profile.base.claude': 'Claude Code',

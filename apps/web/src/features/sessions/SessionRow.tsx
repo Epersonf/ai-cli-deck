@@ -9,6 +9,7 @@ import { idleWatcher, useTasks } from '../tasks/tasksStore';
 import { useFork } from './forkStore';
 import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
+import { sessionTime } from './sessionTime';
 import { useCloseSession } from './useCloseSession';
 import { useSessions } from './sessionsStore';
 
@@ -77,6 +78,9 @@ export function SessionRow({ session, index, active, onPick }: Props) {
           <strong>{sessionLabel(session, providers)}</strong>
           <small>{session.cwd}</small>
         </span>
+        <time className="session-time" dateTime={session.createdAt}>
+          {sessionTime(session.createdAt)}
+        </time>
         {session.sharedCwdWith.length > 0 && (
           <span className="warn" title={t('tabs.sharedFolder')}>
             ⚠
