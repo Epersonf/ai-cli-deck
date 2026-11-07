@@ -72,7 +72,6 @@ export const en = {
   'profile.deleteBody':
     'Delete "{name}" and end its {count} terminal(s)? The CLI\'s own config folder, with any login, stays on disk.',
   'profile.deleteAction': 'Delete profile',
-  'profile.deleteBlocked': 'Close its terminals first',
   'profile.base': 'CLI to start from',
   'profile.command': 'Program to run (empty = shell)',
   'profile.base.claude': 'Claude Code',
@@ -209,6 +208,15 @@ export const en = {
   'fork.end': 'End this terminal afterwards (move)',
   'fork.go': 'Fork',
   'fork.move': 'Move',
+  'terminal.copy': 'Copy text',
+  'terminal.copySelection': 'Copy selection',
+  'terminal.copyAll': 'Copy all',
+  'terminal.copyScreen': 'Screen',
+  'terminal.copyHistory': 'History',
+  'terminal.copied': 'Copied',
+  'terminal.copyFailed': 'Copy is blocked here: select the text and use the phone’s own Copy.',
+  'terminal.copyHint':
+    'Press and hold a word to select, drag the handles, then tap Copy selection.',
   'terminal.following': 'Mirroring another device. Tap to take over.',
   'templates.title': 'Profile templates',
   'templates.open': 'Manage templates',

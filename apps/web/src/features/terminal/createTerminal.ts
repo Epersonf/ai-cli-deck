@@ -7,6 +7,8 @@ import { Terminal } from '@xterm/xterm';
 import { attachClipboardOsc } from './clipboardOsc';
 import { tameMobileKeyboard } from './mobileKeyboard';
 import { openLink } from './openLink';
+import { copyText } from '../settings/templateFile';
+import { isCopyShortcut } from './copyShortcut';
 import { isPasteShortcut } from './pasteShortcut';
 import { TERMINAL_THEME } from './theme';
 import { quietRepliesWhen } from './upstreamReplies';
@@ -44,7 +46,13 @@ export function createTerminal(
   useGpu(term);
   quietRepliesWhen(term, upstream);
   // Let the browser paste (text, or an image that is uploaded) instead of sending ^V to the CLI.
-  term.attachCustomKeyEventHandler((event) => !isPasteShortcut(event));
+  term.attachCustomKeyEventHandler((event) => {
+    if (isCopyShortcut(event, term.hasSelection())) {
+      if (event.type === 'keydown') void copyText(term.getSelection()).catch(() => undefined);
+      return false;
+    }
+    return !isPasteShortcut(event);
+  });
   attachClipboardOsc(term);
   tameMobileKeyboard(term);
   const search = new SearchAddon();

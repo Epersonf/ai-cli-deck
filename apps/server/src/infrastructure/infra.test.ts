@@ -85,6 +85,26 @@ describe('tmux and git helpers', () => {
     expect(args.indexOf('status')).toBeLessThan(at);
   });
 
+  it('hands the program its PATH through env, so `clideck` is found whatever tmux does with the pane environment', () => {
+    const args = buildTmuxArgs(
+      'deck-s1',
+      {
+        command: 'clideck',
+        args: ['ensure-key'],
+        env: { PATH: '/opt/deck/bin:/usr/bin' },
+        cwd: '/w',
+      },
+      size,
+    );
+    expect(args.slice(args.indexOf('env'), args.indexOf('clideck') + 2)).toEqual([
+      'env',
+      ...['-u', 'TMUX', '-u', 'TMUX_PANE'],
+      'PATH=/opt/deck/bin:/usr/bin',
+      'clideck',
+      'ensure-key',
+    ]);
+  });
+
   it('leaves the mouse and the scrollback to the browser terminal, and answers colour queries', () => {
     const args = buildTmuxArgs(
       'deck-s1',

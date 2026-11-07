@@ -74,7 +74,6 @@ export const ru: Messages = {
   'profile.deleteBody':
     'Удалить «{name}» и завершить его терминалы ({count})? Папка настроек самого CLI, включая любой вход, останется на диске.',
   'profile.deleteAction': 'Удалить профиль',
-  'profile.deleteBlocked': 'Сначала закройте его терминалы',
   'profile.base': 'Базовый CLI',
   'profile.command': 'Программа для запуска (пусто = shell)',
   'profile.base.claude': 'Claude Code',
@@ -211,6 +210,16 @@ export const ru: Messages = {
   'fork.end': 'Затем завершить этот терминал (перенос)',
   'fork.go': 'Ответвить',
   'fork.move': 'Перенести',
+  'terminal.copy': 'Копировать текст',
+  'terminal.copySelection': 'Копировать выделенное',
+  'terminal.copyAll': 'Копировать всё',
+  'terminal.copyScreen': 'Экран',
+  'terminal.copyHistory': 'История',
+  'terminal.copied': 'Скопировано',
+  'terminal.copyFailed':
+    'Копирование здесь заблокировано: выделите текст и используйте «Копировать» телефона.',
+  'terminal.copyHint':
+    'Удерживайте слово, чтобы выделить, перетащите маркеры и нажмите «Копировать выделенное».',
   'terminal.following': 'Отображение с другого устройства. Нажмите, чтобы взять управление.',
   'templates.title': 'Шаблоны профилей',
   'templates.open': 'Управление шаблонами',

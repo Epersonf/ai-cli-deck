@@ -25,7 +25,7 @@ describe('TmuxMultiplexer.cleanServerEnv', () => {
   it('drops what another profile left in the tmux server, keeping the deck environment', async () => {
     const mine = own();
     const { run, calls } = fakeTmux(
-      `${mine}\nANTHROPIC_MODEL=deepseek-chat\nANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic\n-REMOVED`,
+      `${mine}\nPATH=/opt/deck/bin:/usr/bin\nANTHROPIC_MODEL=deepseek-chat\nANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic\n-REMOVED`,
     );
     const dropped = await new TmuxMultiplexer(run).cleanServerEnv();
     expect(dropped).toEqual(['ANTHROPIC_MODEL', 'ANTHROPIC_BASE_URL']);

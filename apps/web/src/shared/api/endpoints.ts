@@ -79,8 +79,12 @@ export const api = {
       },
     ),
   createProfile: (body: CreateProfileBody) => request(ProfileSchema, 'POST', '/api/profiles', body),
-  deleteProfile: (id: string) =>
-    request(z.object({ ended: z.number() }), 'DELETE', `/api/profiles/${enc(id)}`),
+  deleteProfile: (id: string, force = false) =>
+    request(
+      z.object({ ended: z.number() }),
+      'DELETE',
+      `/api/profiles/${enc(id)}${force ? '?force=1' : ''}`,
+    ),
   renameProfile: (id: string, label: string) =>
     request(ProfileSchema, 'PATCH', `/api/profiles/${enc(id)}`, { label }),
   deleteSession: (id: string) => request(z.void(), 'DELETE', session(id)),

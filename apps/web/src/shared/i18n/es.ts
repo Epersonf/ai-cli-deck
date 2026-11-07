@@ -74,7 +74,6 @@ export const es: Messages = {
   'profile.deleteBody':
     '¿Eliminar "{name}" y terminar sus {count} terminal(es)? La carpeta de configuración del propio CLI, con cualquier inicio de sesión, permanece en el disco.',
   'profile.deleteAction': 'Eliminar perfil',
-  'profile.deleteBlocked': 'Cierra antes sus terminales',
   'profile.base': 'CLI de base',
   'profile.command': 'Programa a ejecutar (vacío = shell)',
   'profile.base.claude': 'Claude Code',
@@ -213,6 +212,16 @@ export const es: Messages = {
   'fork.end': 'Terminar este terminal después (mover)',
   'fork.go': 'Bifurcar',
   'fork.move': 'Mover',
+  'terminal.copy': 'Copiar texto',
+  'terminal.copySelection': 'Copiar selección',
+  'terminal.copyAll': 'Copiar todo',
+  'terminal.copyScreen': 'Pantalla',
+  'terminal.copyHistory': 'Historial',
+  'terminal.copied': 'Copiado',
+  'terminal.copyFailed':
+    'La copia está bloqueada aquí: selecciona el texto y usa el Copiar del propio móvil.',
+  'terminal.copyHint':
+    'Mantén pulsada una palabra para seleccionar, arrastra los controles y toca Copiar selección.',
   'terminal.following': 'Reflejando otro dispositivo. Toca para tomar el control.',
   'templates.title': 'Plantillas de perfil',
   'templates.open': 'Gestionar plantillas',

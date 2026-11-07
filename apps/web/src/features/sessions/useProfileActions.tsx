@@ -37,7 +37,7 @@ export function useProfileActions(group: SessionGroup, onNewSession: () => void)
       cancelLabel: t('confirm.keep'),
       onConfirm: () =>
         void api
-          .deleteProfile(group.id)
+          .deleteProfile(group.id, true)
           .catch(() => undefined)
           // refresh either way: the list must reflect what the server really ended up doing
           .then(() =>
@@ -59,8 +59,6 @@ export function useProfileActions(group: SessionGroup, onNewSession: () => void)
         label: t('profile.delete'),
         icon: <TrashIcon size={16} />,
         danger: true,
-        disabled: group.sessions.length > 0,
-        hint: t('profile.deleteBlocked'),
         onSelect: remove,
       },
     );

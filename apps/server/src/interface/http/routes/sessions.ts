@@ -11,6 +11,7 @@ import type { Container } from '../../container.js';
 import { parseWith } from '../errors.js';
 
 const IdParams = z.object({ id: z.string().min(1) });
+const ForceQuery = z.object({ force: z.enum(['0', '1']).optional() });
 const PreviewBody = z.object({ url: z.string().min(1) });
 
 export function sessionRoutes(app: FastifyInstance, c: Container): void {
@@ -71,7 +72,8 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
 
   app.delete('/api/profiles/:id', async (request) => {
     const { id } = parseWith(IdParams, request.params);
-    return removeProfile(c, id);
+    const { force } = parseWith(ForceQuery, request.query);
+    return removeProfile(c, id, force === '1');
   });
 
   app.patch('/api/profiles/:id', async (request) => {

@@ -75,7 +75,6 @@ export const fr: Messages = {
   'profile.deleteBody':
     'Supprimer « {name} » et terminer ses {count} terminal(aux) ? Le dossier de configuration du CLI, avec toute connexion, reste sur le disque.',
   'profile.deleteAction': 'Supprimer le profil',
-  'profile.deleteBlocked': 'Fermez d’abord ses terminaux',
   'profile.base': 'CLI de base',
   'profile.command': 'Programme à lancer (vide = shell)',
   'profile.base.claude': 'Claude Code',
@@ -218,6 +217,16 @@ export const fr: Messages = {
   'fork.end': 'Terminer ce terminal ensuite (déplacer)',
   'fork.go': 'Dupliquer',
   'fork.move': 'Déplacer',
+  'terminal.copy': 'Copier le texte',
+  'terminal.copySelection': 'Copier la sélection',
+  'terminal.copyAll': 'Tout copier',
+  'terminal.copyScreen': 'Écran',
+  'terminal.copyHistory': 'Historique',
+  'terminal.copied': 'Copié',
+  'terminal.copyFailed':
+    'La copie est bloquée ici : sélectionnez le texte et utilisez le Copier du téléphone.',
+  'terminal.copyHint':
+    'Appuyez longuement sur un mot pour sélectionner, faites glisser les poignées puis touchez Copier la sélection.',
   'terminal.following': 'Reflète un autre appareil. Touchez pour prendre la main.',
   'templates.title': 'Modèles de profil',
   'templates.open': 'Gérer les modèles',

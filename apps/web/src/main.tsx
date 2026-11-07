@@ -18,6 +18,7 @@ import './styles/viewer.css';
 import './styles/preview.css';
 import './styles/changes.css';
 import './styles/terminalTools.css';
+import './styles/copyOverlay.css';
 import './styles/chats.css';
 import './styles/approvals.css';
 import './styles/devices.css';

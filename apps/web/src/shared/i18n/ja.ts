@@ -74,7 +74,6 @@ export const ja: Messages = {
   'profile.deleteBody':
     '「{name}」を削除し、{count} 個のターミナルを終了しますか？CLI 自体の設定フォルダー（ログイン情報を含む）はディスクに残ります。',
   'profile.deleteAction': 'プロファイルを削除',
-  'profile.deleteBlocked': '先にターミナルを閉じてください',
   'profile.base': 'ベースの CLI',
   'profile.command': '実行するプログラム（空欄 = シェル）',
   'profile.base.claude': 'Claude Code',
@@ -213,6 +212,16 @@ export const ja: Messages = {
   'fork.end': '終了後にこのターミナルを閉じる（移動）',
   'fork.go': 'フォーク',
   'fork.move': '移動',
+  'terminal.copy': 'テキストをコピー',
+  'terminal.copySelection': '選択範囲をコピー',
+  'terminal.copyAll': 'すべてコピー',
+  'terminal.copyScreen': '画面',
+  'terminal.copyHistory': '履歴',
+  'terminal.copied': 'コピーしました',
+  'terminal.copyFailed':
+    'ここではコピーがブロックされています。テキストを選択して端末のコピーを使ってください。',
+  'terminal.copyHint':
+    '単語を長押しして選択し、ハンドルをドラッグして「選択範囲をコピー」を押してください。',
   'terminal.following': '別の端末を表示中。タップして切り替え。',
   'templates.title': 'プロファイルテンプレート',
   'templates.open': 'テンプレートを管理',

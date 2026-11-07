@@ -48,6 +48,7 @@ export function buildTmuxArgs(
     .filter(([key]) => !SKIPPED_ENV.has(key))
     .flatMap(([key, value]) => ['-e', `${key}=${value}`]);
   const geometry = ['-x', String(size.cols), '-y', String(size.rows)];
+  const path = spec.env['PATH'];
   return [
     ...SOCKET_ARGS,
     '-C',
@@ -55,7 +56,7 @@ export function buildTmuxArgs(
     ...['new-session', '-A', '-s', name, ...geometry, '-c', spec.cwd, ...envFlags],
     // tmux tells its programs they run inside it; here the browser terminal gets their output as written,
     // so they must not adapt to tmux (Claude Code's "tmux detected" tips, wrapped escape sequences).
-    ...['env', '-u', 'TMUX', '-u', 'TMUX_PANE'],
+    ...['env', '-u', 'TMUX', '-u', 'TMUX_PANE', ...(path === undefined ? [] : [`PATH=${path}`])],
     spec.command,
     ...spec.args,
   ];

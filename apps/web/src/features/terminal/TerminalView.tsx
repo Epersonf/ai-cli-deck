@@ -139,6 +139,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
         online={online}
         following={following}
         latency={latency}
+        term={termRef}
         claim={() => syncRef.current?.claim()}
       />
     </div>

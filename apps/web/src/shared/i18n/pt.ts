@@ -75,7 +75,6 @@ export const pt: Messages = {
   'profile.deleteBody':
     'Apagar "{name}" e encerrar seus {count} terminal(is)? A pasta de configuração do próprio CLI, com qualquer login, continua no disco.',
   'profile.deleteAction': 'Apagar perfil',
-  'profile.deleteBlocked': 'Feche os terminais antes',
   'profile.base': 'CLI base',
   'profile.command': 'Programa para executar (vazio = shell)',
   'profile.base.claude': 'Claude Code',
@@ -212,6 +211,16 @@ export const pt: Messages = {
   'fork.end': 'Encerrar este terminal depois (mover)',
   'fork.go': 'Bifurcar',
   'fork.move': 'Mover',
+  'terminal.copy': 'Copiar texto',
+  'terminal.copySelection': 'Copiar seleção',
+  'terminal.copyAll': 'Copiar tudo',
+  'terminal.copyScreen': 'Tela',
+  'terminal.copyHistory': 'Histórico',
+  'terminal.copied': 'Copiado',
+  'terminal.copyFailed':
+    'A cópia está bloqueada aqui: selecione o texto e use o Copiar do próprio celular.',
+  'terminal.copyHint':
+    'Segure uma palavra para selecionar, arraste as alças e toque em Copiar seleção.',
   'terminal.following': 'Espelhando outro dispositivo. Toque para assumir.',
   'templates.title': 'Templates de perfil',
   'templates.open': 'Gerenciar templates',

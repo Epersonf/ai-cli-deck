@@ -32,6 +32,20 @@ describe('removeProfile', () => {
     expect(wiped).toEqual([]);
   });
 
+  it('with force, ends the profile terminals, keeps the others and deletes the profile', async () => {
+    const h = createHarness();
+    const wiped: string[] = [];
+    const profiles = await customProfile(wiped);
+    const mine = await h.sessions.create({ ...customBody(), provider: 'custom' });
+    const other = await h.sessions.create({ ...customBody(), provider: 'shell' });
+    const result = await removeProfile({ profiles, sessions: h.sessions }, 'custom', true);
+    expect(result.ended).toBe(1);
+    expect(h.sessions.get(mine.id)).toBeUndefined();
+    expect(h.sessions.get(other.id)).toBeDefined();
+    expect(profiles.has('custom')).toBe(false);
+    expect(wiped).toContain('custom');
+  });
+
   it('deletes the profile and its data once no terminal is left', async () => {
     const h = createHarness();
     const wiped: string[] = [];

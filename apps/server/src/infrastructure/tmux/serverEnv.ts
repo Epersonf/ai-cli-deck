@@ -12,6 +12,9 @@ export const neutralEnv = (): Record<string, string> =>
     ),
   );
 
+/** Always differ from the deck's own (the deck prepends its bin folder) and are never a profile's. */
+const KEPT = new Set(['PATH']);
+
 /** Variables of `tmux show-environment -g` that are not the deck's own. */
 export function leakedKeys(shown: string, mine: Record<string, string>): string[] {
   const keys: string[] = [];
@@ -19,6 +22,7 @@ export function leakedKeys(shown: string, mine: Record<string, string>): string[
     const at = line.indexOf('=');
     if (at < 1) continue; // blank, or "-NAME": a variable tmux marks as removed
     const key = line.slice(0, at);
+    if (KEPT.has(key)) continue;
     if (mine[key] !== line.slice(at + 1)) keys.push(key);
   }
   return keys;

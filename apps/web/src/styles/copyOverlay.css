@@ -1,0 +1,58 @@
+/* The "Copy text" button: on a phone the terminal canvas cannot be selected, so this opens it as plain text. */
+.terminal-copy {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 4;
+  min-height: 0;
+  padding: 2px 10px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+@media (pointer: coarse) {
+  .terminal-copy {
+    display: block;
+  }
+}
+
+.copy-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #120d08;
+}
+.copy-bar {
+  display: flex;
+  gap: 6px;
+}
+.copy-bar button {
+  flex: 1;
+  min-height: var(--ctl);
+}
+.copy-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.copy-text {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  color: var(--parchment);
+  font: 12px/1.35 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+  touch-action: pan-y;
+}
