@@ -4,7 +4,6 @@ import { PaneTabs } from './PaneTabs';
 import { Topbar } from './Topbar';
 import { Workspace } from './Workspace';
 import { ApprovalsPanel } from './features/approvals/ApprovalsPanel';
-import { useApprovals } from './features/approvals/approvalsStore';
 import { ConfirmHost } from './features/confirm/ConfirmHost';
 import { PairingRequestHost } from './features/devices/PairingRequestHost';
 import { SendProfileHost } from './features/devices/SendProfileHost';
@@ -26,7 +25,7 @@ import { keysVisible, loadMode, saveMode, type KeysMode } from './features/termi
 import { api } from './shared/api/endpoints';
 import { onUnauthorized } from './shared/api/unauthorized';
 import { useMediaQuery } from './shared/ui/useMediaQuery';
-import { usePolling } from './shared/ui/usePolling';
+import { useBackgroundPolling } from './useBackgroundPolling';
 
 type Dialog = 'new' | 'settings' | 'switcher' | 'profile' | null;
 
@@ -73,8 +72,7 @@ export function App() {
     activeId,
     select,
   );
-  usePolling(() => (locked ? Promise.resolve() : useSessions.getState().refresh()), 5000);
-  usePolling(() => (locked ? Promise.resolve() : useApprovals.getState().refresh()), 3000);
+  useBackgroundPolling(locked, sessions);
 
   if (locked) return <LoginScreen onDone={reload} />;
 

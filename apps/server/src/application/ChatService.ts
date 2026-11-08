@@ -6,6 +6,8 @@ import type { ProviderRegistry } from '../domain/provider.js';
 
 /** A chat touched this long before its terminal's run started still counts as that run's (clock skew). */
 const SKEW_MS = 2000;
+/** Reading every terminal's chat files is not free: the automatic names are reused for this long. */
+const TITLES_TTL_MS = 15_000;
 
 export interface ChatSessions {
   get(id: string): Session | undefined;
@@ -32,6 +34,8 @@ export const toInfo = (entry: ChatEntry): ChatInfo => ({
  * start hook) or the deck finds it in the CLI's own chat files (the one touched during this terminal's run).
  */
 export class ChatService {
+  private titleCache: { at: number; value: Record<string, string> } | null = null;
+
   constructor(private readonly deps: ChatServiceDeps) {
     // The moment a program ends is when its chat is easiest to tell apart: keep the id with the session.
     deps.bus.subscribe((event) => {
@@ -88,6 +92,21 @@ export class ChatService {
     const chat = await this.current(sessionId);
     const native = Boolean((chat && support?.resume) || (support?.last && !support.format));
     return { chat: chat ? toInfo(chat) : null, native, canContinue: native || !!chat || hasScreen };
+  }
+
+  /** The automatic name of each terminal that has a chat: the first thing asked in it. */
+  async titles(): Promise<Record<string, string>> {
+    if (this.titleCache && Date.now() - this.titleCache.at < TITLES_TTL_MS) {
+      return this.titleCache.value;
+    }
+    const value: Record<string, string> = {};
+    for (const session of this.deps.sessions.list()) {
+      if (session.parentId !== null) continue;
+      const chat = await this.current(session.id).catch(() => null);
+      if (chat !== null && chat.title !== '') value[session.id] = chat.title;
+    }
+    this.titleCache = { at: Date.now(), value };
+    return value;
   }
 
   /** Drops what a removed terminal's CLI reported. */

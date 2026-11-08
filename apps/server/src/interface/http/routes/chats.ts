@@ -34,6 +34,8 @@ export function chatRoutes(app: FastifyInstance, c: Container): void {
     return reply.code(201).send(await c.chatActions.fork(idOf(request.params), body));
   });
 
+  app.get('/api/chats/titles', () => c.chats.titles());
+
   app.get('/api/chats', async (request) => {
     const { provider, cwd } = parseWith(ListQuery, request.query);
     return (await c.chats.list(provider, c.resolveCwd(cwd))).map(toInfo);

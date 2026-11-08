@@ -122,6 +122,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* The automatic name: the first thing asked in the chat. */
+.session-main .session-title {
+  color: var(--parchment);
+  font-family: inherit;
+  font-size: 12px;
+}
 .session-time {
   color: var(--muted);
   font-family: var(--mono);

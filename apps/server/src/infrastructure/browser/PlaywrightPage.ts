@@ -5,7 +5,12 @@ const NAV_TIMEOUT_MS = 20_000;
 const ACTION_TIMEOUT_MS = 8_000;
 const OUTLINE_LIMIT = 16_000;
 /** JPEG quality of the live picture: readable text, small frames for a phone on Wi-Fi. */
-const FRAME_QUALITY = 60;
+const FRAME_QUALITY = 50;
+/**
+ * Chromium sends the next frame only after the last one is acknowledged, so holding the acknowledgement back
+ * caps the frame rate (about 14 per second): a phone has no CPU to spare for frames nobody can tell apart.
+ */
+const FRAME_GAP_MS = 70;
 
 interface ScreencastFrame {
   data: string;
@@ -72,14 +77,25 @@ export class PlaywrightPage implements PageDriver {
    */
   async screencast(onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>> {
     const cdp = await this.page.context().newCDPSession(this.page);
+    const timers = new Set<NodeJS.Timeout>();
+    let previous = 0;
     cdp.on('Page.screencastFrame', (frame: ScreencastFrame) => {
+      const now = Date.now();
       onFrame(Buffer.from(frame.data, 'base64'));
-      void cdp
-        .send('Page.screencastFrameAck', { sessionId: frame.sessionId })
-        .catch(() => undefined);
+      const wait = Math.max(0, previous + FRAME_GAP_MS - now);
+      previous = now;
+      const ack = (): void =>
+        void cdp
+          .send('Page.screencastFrameAck', { sessionId: frame.sessionId })
+          .catch(() => undefined);
+      if (wait === 0) return ack();
+      const timer = setTimeout(() => (timers.delete(timer), ack()), wait);
+      timers.add(timer);
     });
     await cdp.send('Page.startScreencast', { format: 'jpeg', quality: FRAME_QUALITY });
     return async () => {
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
       await cdp.send('Page.stopScreencast').catch(() => undefined);
       await cdp.detach().catch(() => undefined);
     };

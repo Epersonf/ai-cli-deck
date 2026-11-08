@@ -4,8 +4,8 @@ import { useProfiles } from './features/sessions/profilesStore';
 import { useActiveSession } from './features/sessions/sessionsStore';
 import { useT } from './shared/i18n/store';
 import { Gear } from './shared/ui/Gear';
-import { useTerminalSearch } from './features/terminal/searchStore';
-import { MenuIcon, SearchIcon } from './shared/ui/Icons';
+import { useTerminalTools } from './features/terminal/toolsStore';
+import { MenuIcon, ToolsIcon } from './shared/ui/Icons';
 import { RemoteBadge } from './features/devices/RemoteBadge';
 
 interface Props {
@@ -56,11 +56,11 @@ export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSetti
         <button
           type="button"
           className="tool"
-          onClick={() => useTerminalSearch.getState().toggle(active.id)}
-          title={t('search.open')}
-          aria-label={t('search.open')}
+          onClick={() => useTerminalTools.getState().toggle(active.id)}
+          title={t('tools.open')}
+          aria-label={t('tools.open')}
         >
-          <SearchIcon />
+          <ToolsIcon />
         </button>
       )}
       <button

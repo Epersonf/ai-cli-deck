@@ -3,6 +3,26 @@ import { z } from 'zod';
 /** Where the live picture of the session's Chromium streams (JPEG frames out, input in). */
 export const BROWSER_WS_PATH = '/ws/browser';
 
+/** Most preview tabs one session can have; each real-browser tab is a page of its own on the server. */
+export const PREVIEW_TABS_MAX = 6;
+
+/** The key of a preview tab: the session id for the first tab, "<session id>~<n>" for the others. */
+export const previewKey = (sessionId: string, tab: number): string =>
+  tab <= 1 ? sessionId : `${sessionId}~${tab}`;
+
+/** The session a preview key belongs to, or null when the key is not one (a wrong or too high tab number). */
+export function sessionOfPreviewKey(key: string): string | null {
+  const at = key.indexOf('~');
+  if (at < 0) return key === '' ? null : key;
+  const tab = Number(key.slice(at + 1));
+  const valid =
+    Number.isInteger(tab) &&
+    tab >= 2 &&
+    tab <= PREVIEW_TABS_MAX &&
+    key.slice(at + 1) === String(tab);
+  return valid && at > 0 ? key.slice(0, at) : null;
+}
+
 /** Smallest and largest page size a device may ask for (CSS pixels). */
 export const BROWSER_SIZE = { minWidth: 280, maxWidth: 1600, minHeight: 240, maxHeight: 2000 };
 

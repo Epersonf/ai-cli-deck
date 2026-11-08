@@ -50,22 +50,45 @@
   min-width: 0;
 }
 
-/* Iframe / Browser switch at the start of the preview bar. */
-.mode-switch {
+/* The tabs of a preview: iframes and pages of the deck's browser, all alive while another one is shown. */
+.preview-tabs {
   display: flex;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 0;
+  background: var(--leather-2);
 }
-.mode-switch button {
-  padding: 4px 10px;
+.preview-tab-chip {
+  display: inline-flex;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px 8px 0 0;
+}
+.preview-tab-chip button {
+  min-height: 0;
+  padding: 3px 10px;
+  border: 0;
   border-radius: 0;
+  background: transparent;
 }
-.mode-switch button:first-child {
-  border-radius: 8px 0 0 8px;
-}
-.mode-switch button:last-child {
-  border-radius: 0 8px 8px 0;
-}
-.mode-switch button.active {
+.preview-tab-chip.active {
   background: var(--brass-grad);
+}
+.preview-tab-chip.active button {
   color: var(--ink);
+}
+.preview-tab-close {
+  padding: 3px 6px;
+}
+.preview-tab-add {
+  min-height: 0;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+.preview-tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 }

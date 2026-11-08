@@ -1,9 +1,10 @@
-import { PEER_ID } from '../../shared/api/base';
+import { previewKey } from '@deck/shared';
 import { BrowserInstall } from './BrowserInstall';
 import { BrowserView } from './BrowserView';
 import { FrameView } from './FrameView';
-import { ModeSwitch } from './ModeSwitch';
-import { currentUrl, modeOf, usePreview } from './previewStore';
+import { currentUrl, firstMode, usePreview } from './previewStore';
+import { PreviewTabsBar } from './PreviewTabsBar';
+import { firstTabs } from './previewTabs';
 import { useBrowserStatus } from './useBrowserStatus';
 
 interface Props {
@@ -13,21 +14,33 @@ interface Props {
 
 /** A session's preview: an iframe on this device, or the deck's Chromium that the agent also drives. */
 export function PreviewPanel({ sessionId, visible }: Props) {
-  const mode = usePreview((s) => modeOf(s.mode, sessionId));
-  const url = usePreview((s) => currentUrl(s.byId[sessionId]));
-  const [browser, setBrowser] = useBrowserStatus(mode === 'browser');
-  // A paired deck's app always uses that deck's browser (its iframe would load this device's ports).
-  const toggle = PEER_ID ? null : <ModeSwitch sessionId={sessionId} mode={mode} />;
-
+  const stored = usePreview((s) => s.tabs[sessionId]);
+  const byId = usePreview((s) => s.byId);
+  const tabs = stored ?? firstTabs(firstMode());
+  const [browser, setBrowser] = useBrowserStatus(tabs.list.some((tab) => tab.mode === 'browser'));
   return (
     <section className={`pane preview-pane${visible ? '' : ' hidden'}`}>
-      {mode === 'frame' ? (
-        <FrameView sessionId={sessionId} toggle={toggle} />
-      ) : browser?.installed ? (
-        <BrowserView sessionId={sessionId} visible={visible} requested={url} toggle={toggle} />
-      ) : (
-        <BrowserInstall status={browser} onStatus={setBrowser} toggle={toggle} />
-      )}
+      <PreviewTabsBar sessionId={sessionId} tabs={tabs} />
+      {tabs.list.map((tab) => {
+        const key = previewKey(sessionId, tab.n);
+        const shown = visible && tab.n === tabs.active;
+        return (
+          <div key={tab.n} className={`preview-tab${tab.n === tabs.active ? '' : ' hidden'}`}>
+            {tab.mode === 'frame' ? (
+              <FrameView sessionId={sessionId} tabKey={key} visible={shown} toggle={null} />
+            ) : browser?.installed ? (
+              <BrowserView
+                sessionId={key}
+                visible={shown}
+                requested={currentUrl(byId[key])}
+                toggle={null}
+              />
+            ) : (
+              <BrowserInstall status={browser} onStatus={setBrowser} toggle={null} />
+            )}
+          </div>
+        );
+      })}
     </section>
   );
 }

@@ -20,7 +20,7 @@ describe('App dialogs', () => {
     click([...document.querySelectorAll('.profile-row')].pop() ?? null); // the Shell profile
     click($('.session-list button[aria-label="More actions"]'));
     click([...document.querySelectorAll('.menu-pop button')].pop() ?? null);
-    expect($('[role="alertdialog"]')?.textContent).toContain('Shell · alpha');
+    expect($('[role="alertdialog"]')?.textContent).toContain('Shell · beta'); // the newest session is the first row
     click($('[role="alertdialog"] .row button'));
     expect($('[role="alertdialog"]')).toBeNull();
   });

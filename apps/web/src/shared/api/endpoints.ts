@@ -65,6 +65,7 @@ export const api = {
   importTemplate: (text: string) => request(TemplateInfoSchema, 'POST', '/api/templates', { text }),
   removeTemplate: (id: string) =>
     request(z.void(), 'DELETE', `/api/templates/${encodeURIComponent(id)}`),
+  chatTitles: () => request(z.record(z.string(), z.string()), 'GET', '/api/chats/titles'),
   tasks: () => request(z.array(TaskSchema), 'GET', '/api/tasks'),
   taskLog: (id: string) =>
     request(TaskLogSchema, 'GET', `/api/tasks/${encodeURIComponent(id)}/log`).then((r) => r.text),

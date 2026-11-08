@@ -35,7 +35,8 @@ describe('App smoke', () => {
   it('shows the active session name in the top bar, with no tab strip', async () => {
     await mount();
     expect($('.tabs')).toBeNull();
-    expect($('.current-name')?.textContent).toBe('Shell · alpha');
+    // The newest session comes first (beta was created after alpha) and is the one that opens.
+    expect($('.current-name')?.textContent).toBe('Shell · beta');
   });
 
   it('opens the drawer, jumps to a session and supports Alt+number', async () => {
@@ -46,14 +47,14 @@ describe('App smoke', () => {
     expect(document.querySelectorAll('.session-row')).toHaveLength(2);
     click(document.querySelectorAll('.session-row')[1] ?? null);
     expect($('.drawer')).toBeNull();
-    expect($('.current-name')?.textContent).toBe('Shell · beta');
+    expect($('.current-name')?.textContent).toBe('Shell · alpha');
     act(
       () =>
         void window.dispatchEvent(
           new KeyboardEvent('keydown', { code: 'Digit1', altKey: true, bubbles: true }),
         ),
     );
-    expect($('.current-name')?.textContent).toBe('Shell · alpha');
+    expect($('.current-name')?.textContent).toBe('Shell · beta');
   });
 
   it("opens on the profile of the terminal you are in, and 'back' lists all profiles", async () => {

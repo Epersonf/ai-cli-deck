@@ -65,7 +65,16 @@ export class PlaywrightEngine implements BrowserEngine {
       headless: true,
       ...(executablePath ? { executablePath } : {}),
       // root + proot/Android: no user namespaces for the sandbox, and a tiny /dev/shm.
-      args: ['--no-sandbox', '--disable-dev-shm-usage'],
+      args: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        // Nothing here needs what Chromium does in the background; every process saved is CPU a phone keeps.
+        '--disable-extensions',
+        '--disable-background-networking',
+        '--disable-sync',
+        '--mute-audio',
+        '--no-first-run',
+      ],
     });
     try {
       const context = await (await this.browser).newContext({ viewport: VIEWPORT });

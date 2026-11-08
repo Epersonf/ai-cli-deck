@@ -5,6 +5,7 @@ import { ModalTitle } from '../../shared/ui/ModalTitle';
 import type { KeysMode } from '../terminal/keysPreference';
 import { KeysSection } from './KeysSection';
 import { LanguageSection } from './LanguageSection';
+import { NotifySection } from './NotifySection';
 import { PasswordDialog } from './PasswordDialog';
 import { TemplatesDialog } from './TemplatesDialog';
 import { DevicesDialog } from '../devices/DevicesDialog';
@@ -30,6 +31,7 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
         <ModalTitle title={t('settings.title')} onClose={onClose} />
         <LanguageSection />
         <KeysSection mode={keysMode} touchScreen={touchScreen} onChange={onKeysChange} />
+        <NotifySection />
         <div className="setting">
           <h3>{t('shortcuts.title')}</h3>
           <p className="hint">{t('shortcuts.body')}</p>

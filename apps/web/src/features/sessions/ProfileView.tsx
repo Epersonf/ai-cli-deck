@@ -6,6 +6,7 @@ import { KebabMenu } from '../../shared/ui/KebabMenu';
 import type { SessionGroup } from './groupSessions';
 import { TasksSection } from '../tasks/TasksSection';
 import { ProfileRename } from './ProfileRename';
+import { useChatTitles } from './chatTitlesStore';
 import { useProfiles } from './profilesStore';
 import { SessionRow } from './SessionRow';
 import { useSessions } from './sessionsStore';
@@ -25,9 +26,10 @@ export function ProfileView({ group, onBack, onNewSession, onPick }: Props) {
   const sessions = useSessions((s) => s.sessions);
   const activeId = useSessions((s) => s.activeId);
   const providers = useProfiles((s) => s.providers);
+  const titles = useChatTitles((s) => s.titles);
   const actions = useProfileActions(group, onNewSession);
   const [query, setQuery] = useState('');
-  const shown = filterSessions(group.sessions, providers, query);
+  const shown = filterSessions(group.sessions, providers, query, titles);
   return (
     <>
       <div className="profile-head">

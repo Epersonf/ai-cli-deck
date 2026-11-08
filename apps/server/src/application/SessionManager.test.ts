@@ -1,3 +1,4 @@
+import { delimiter } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { customBody, createHarness } from '../testing/harness.js';
 
@@ -11,7 +12,7 @@ describe('SessionManager lifecycle', () => {
     expect(spawned?.spec.env['PORT']).toBe('4100');
     expect(spawned?.spec.env['DECK_SESSION_ID']).toBe(session.id);
     expect(spawned?.spec.env['DECK_URL']).toBe('http://127.0.0.1:7842');
-    expect(spawned?.spec.env['PATH']).toBe('/deck/bin:/bin');
+    expect(spawned?.spec.env['PATH']).toBe(`/deck/bin${delimiter}/bin`); // ':' on Linux and the phone, ';' on Windows
     expect(h.store.saved).toHaveLength(1);
   });
 

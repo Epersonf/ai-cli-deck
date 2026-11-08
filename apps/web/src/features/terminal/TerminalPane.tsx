@@ -1,9 +1,9 @@
 import { useRef, type KeyboardEvent } from 'react';
 import { ExtraKeys } from './ExtraKeys';
-import { useTerminalSearch } from './searchStore';
 import type { TerminalApi } from './terminalApi';
-import { TerminalSearch } from './TerminalSearch';
+import { TerminalTools } from './TerminalTools';
 import { TerminalView } from './TerminalView';
+import { useTerminalTools } from './toolsStore';
 import { useModifiers } from './useModifiers';
 
 interface Props {
@@ -21,7 +21,7 @@ const isSearchKey = (e: KeyboardEvent): boolean =>
 export function TerminalPane({ sessionId, visible, extraKeys, showKeys }: Props) {
   const mods = useModifiers();
   const api = useRef<TerminalApi | null>(null);
-  const searching = useTerminalSearch((s) => s.openFor === sessionId);
+  const tools = useTerminalTools((s) => s.openFor === sessionId);
   return (
     <section
       className={`pane terminal-pane${visible ? '' : ' hidden'}`}
@@ -29,12 +29,10 @@ export function TerminalPane({ sessionId, visible, extraKeys, showKeys }: Props)
         if (!isSearchKey(e)) return;
         e.preventDefault();
         e.stopPropagation();
-        useTerminalSearch.getState().toggle(sessionId);
+        useTerminalTools.getState().toggle(sessionId, 'search');
       }}
     >
-      {searching && (
-        <TerminalSearch api={api} onClose={() => useTerminalSearch.getState().close()} />
-      )}
+      {tools && <TerminalTools sessionId={sessionId} api={api} />}
       <TerminalView sessionId={sessionId} visible={visible} mods={mods} apiRef={api} />
       {showKeys && (
         <ExtraKeys

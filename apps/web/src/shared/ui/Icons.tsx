@@ -123,6 +123,14 @@ export function TerminalIcon({ size = 18 }: Props) {
 }
 
 /** A magnifier: find text in the terminal. */
+export function ToolsIcon({ size = 20 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden {...base}>
+      <path d="M68 16a20 20 0 0 0-22 26L16 72a8 8 0 0 0 12 12l30-30a20 20 0 0 0 26-22l-12 12-10-4-4-10z" />
+    </svg>
+  );
+}
+
 export function SearchIcon({ size = 20 }: Props) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden {...base}>

@@ -11,43 +11,64 @@ async function bytesOf(stream: AsyncIterable<unknown>): Promise<Buffer> {
   return Buffer.concat(parts);
 }
 
+/** The first Python that really runs: on Windows `python3` is often only a Store stub, and a phone may have none. */
+const python = ['python3', 'python', 'py'].find((name) => {
+  try {
+    execFileSync(name, ['-c', 'import zipfile'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+});
+
 describe('zipStream', () => {
-  it('produces an archive that python can read back byte for byte', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'zip-'));
-    try {
-      const src = join(dir, 'proj');
-      mkdirSync(join(src, 'sub'), { recursive: true });
-      mkdirSync(join(src, 'empty'));
-      mkdirSync(join(src, 'node_modules'));
-      writeFileSync(join(src, 'node_modules', 'skip.js'), 'x');
-      writeFileSync(join(src, 'a.txt'), 'olá mundo\n'.repeat(5000));
-      writeFileSync(join(src, 'sub', 'b.bin'), Buffer.from([0, 1, 2, 255, 254]));
-      symlinkSync('/etc/passwd', join(src, 'link'));
-      const entries = await collectEntries(src, 'proj');
-      expect(entries.map((e) => e.name).sort()).toEqual([
-        'proj/a.txt',
-        'proj/empty/',
-        'proj/sub/',
-        'proj/sub/b.bin',
-      ]);
-      const out = join(dir, 'out.zip');
-      writeFileSync(out, await bytesOf(zipStream(entries)));
-      const check = [
-        'import zipfile,sys',
-        'z=zipfile.ZipFile(sys.argv[1])',
-        'assert z.testzip() is None',
-        'print(sorted(z.namelist()))',
-        'print(z.read("proj/a.txt")==open(sys.argv[2],"rb").read())',
-        'print(z.read("proj/sub/b.bin")==bytes([0,1,2,255,254]))',
-      ].join('\n');
-      const result = execFileSync('python3', ['-I', '-c', check, out, join(src, 'a.txt')], {
-        encoding: 'utf8',
-      });
-      expect(result).toContain("'proj/a.txt'");
-      expect(result.split('\n').slice(1, 3)).toEqual(['True', 'True']);
-      expect(readFileSync(out).length).toBeGreaterThan(100);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
+  it.skipIf(python === undefined)(
+    'produces an archive that python can read back byte for byte',
+    async () => {
+      const dir = mkdtempSync(join(tmpdir(), 'zip-'));
+      try {
+        const src = join(dir, 'proj');
+        mkdirSync(join(src, 'sub'), { recursive: true });
+        mkdirSync(join(src, 'empty'));
+        mkdirSync(join(src, 'node_modules'));
+        writeFileSync(join(src, 'node_modules', 'skip.js'), 'x');
+        writeFileSync(join(src, 'a.txt'), 'olá mundo\n'.repeat(5000));
+        writeFileSync(join(src, 'sub', 'b.bin'), Buffer.from([0, 1, 2, 255, 254]));
+        try {
+          symlinkSync('/etc/passwd', join(src, 'link'));
+        } catch {
+          // creating a symlink needs a privilege on Windows: the archive must skip it anyway
+        }
+        const entries = await collectEntries(src, 'proj');
+        expect(entries.map((e) => e.name).sort()).toEqual([
+          'proj/a.txt',
+          'proj/empty/',
+          'proj/sub/',
+          'proj/sub/b.bin',
+        ]);
+        const out = join(dir, 'out.zip');
+        writeFileSync(out, await bytesOf(zipStream(entries)));
+        const check = [
+          'import zipfile,sys',
+          'z=zipfile.ZipFile(sys.argv[1])',
+          'assert z.testzip() is None',
+          'print(sorted(z.namelist()))',
+          'print(z.read("proj/a.txt")==open(sys.argv[2],"rb").read())',
+          'print(z.read("proj/sub/b.bin")==bytes([0,1,2,255,254]))',
+        ].join('\n');
+        const result = execFileSync(
+          python ?? 'python3',
+          ['-I', '-c', check, out, join(src, 'a.txt')],
+          {
+            encoding: 'utf8',
+          },
+        );
+        expect(result).toContain("'proj/a.txt'");
+        expect(result.split(/\r?\n/).slice(1, 3)).toEqual(['True', 'True']);
+        expect(readFileSync(out).length).toBeGreaterThan(100);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+  );
 });

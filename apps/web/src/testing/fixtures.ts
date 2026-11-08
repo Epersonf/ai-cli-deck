@@ -46,6 +46,7 @@ const ROUTES: Record<string, unknown> = {
     },
   ],
   '/api/tasks': [],
+  '/api/chats/titles': {},
   '/api/auth': { required: false, canDisable: true, isDefault: false },
 };
 

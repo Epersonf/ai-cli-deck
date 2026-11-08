@@ -45,6 +45,18 @@ describe('which conversation a terminal is on', () => {
     });
   });
 
+  it('names each terminal by the first thing asked in its chat, reusing the answer for a moment', async () => {
+    const h = createHarness();
+    const mine = await h.sessions.create(claude);
+    const shell = await h.sessions.create(customBody('/work'));
+    h.reader.chats = [chat('abc', 1, 5)];
+    const first = await h.chats.titles();
+    expect(first).toEqual({ [mine.id]: 'chat abc' });
+    expect(first[shell.id]).toBeUndefined();
+    h.reader.chats = [];
+    expect(await h.chats.titles()).toEqual(first);
+  });
+
   it('has nothing to read for a CLI without chat support, but can still continue from the screen', async () => {
     const h = createHarness();
     const { id } = await h.sessions.create(customBody('/work'));

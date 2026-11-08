@@ -2,7 +2,6 @@ import { conflict } from '../domain/errors.js';
 import type { ProfileService } from './ProfileService.js';
 import type { SessionManager } from './SessionManager.js';
 
-/** Deletes a profile and its data. It refuses while any terminal still runs on it, so no chat is lost silently. */
 /**
  * Deletes a profile and its data. With terminals still open it refuses, unless `force` is set: then they
  * are ended first (a recursive delete), so no chat is lost without the caller asking for it.

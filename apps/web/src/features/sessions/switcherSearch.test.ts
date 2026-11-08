@@ -31,4 +31,12 @@ describe('switcher search', () => {
     expect(filterSessions(all, providers, 'website').map((s) => s.id)).toEqual(['b']);
     expect(filterSessions(all, providers, 'work').map((s) => s.id)).toEqual(['b']);
   });
+
+  it('also finds terminals by their automatic name, the first thing asked in the chat', () => {
+    const all = [session('a', 'api server', '/srv/a'), session('b', null, '/home/me/website')];
+    const titles = { b: 'Fix the login redirect on mobile' };
+    expect(filterSessions(all, providers, 'redirect', titles).map((s) => s.id)).toEqual(['b']);
+    expect(filterSessions(all, providers, 'redirect').map((s) => s.id)).toEqual([]);
+    expect(filterSessions(all, providers, 'api', titles).map((s) => s.id)).toEqual(['a']);
+  });
 });

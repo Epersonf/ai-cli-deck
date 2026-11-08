@@ -8,13 +8,15 @@ const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-
 
 interface Props {
   sessionId: string;
+  tabKey: string;
+  visible: boolean;
   toggle: ReactNode;
 }
 
 /** The page in a sandboxed iframe drawn by this device: localhost only, and as fast as the page itself. */
-export function FrameView({ sessionId, toggle }: Props) {
+export function FrameView({ sessionId, tabKey, visible, toggle }: Props) {
   const t = useT();
-  const state = usePreview((s) => s.byId[sessionId]);
+  const state = usePreview((s) => s.byId[tabKey]);
   const suggested = usePreview((s) => s.newTab[sessionId] ?? null);
   const { open, back, forward, reload, suggestNewTab } = usePreview.getState();
   const url = currentUrl(state);
@@ -24,8 +26,8 @@ export function FrameView({ sessionId, toggle }: Props) {
   useEffect(() => setDraft(url ?? ''), [url]);
   // The session remembers it: the agent's browser opens on the page shown here.
   useEffect(() => {
-    if (url !== null) void api.setPreview(sessionId, url).catch(() => undefined);
-  }, [sessionId, url]);
+    if (visible && url !== null) void api.setPreview(sessionId, url).catch(() => undefined);
+  }, [sessionId, visible, url]);
 
   const submit = (event: FormEvent): void => {
     event.preventDefault();
@@ -38,17 +40,17 @@ export function FrameView({ sessionId, toggle }: Props) {
     <>
       <form className="preview-bar" onSubmit={submit}>
         {toggle}
-        <button type="button" onClick={() => back(sessionId)} disabled={!state || state.index <= 0}>
+        <button type="button" onClick={() => back(tabKey)} disabled={!state || state.index <= 0}>
           ←
         </button>
         <button
           type="button"
-          onClick={() => forward(sessionId)}
+          onClick={() => forward(tabKey)}
           disabled={!state || state.index >= state.history.length - 1}
         >
           →
         </button>
-        <button type="button" onClick={() => reload(sessionId)} disabled={url === null}>
+        <button type="button" onClick={() => reload(tabKey)} disabled={url === null}>
           ⟳
         </button>
         <input

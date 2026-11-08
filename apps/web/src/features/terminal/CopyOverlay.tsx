@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { copyText } from '../settings/templateFile';
 import type { TextScope } from './bufferText';
@@ -18,7 +18,9 @@ export function CopyOverlay({ text, onClose }: Props) {
   const [note, setNote] = useState('');
   const [selected, setSelected] = useState('');
   const body = useRef<HTMLPreElement>(null);
-  const shown = useMemo(() => text(scope), [text, scope]);
+  // A snapshot: new output must not move the text (or drop the selection) while it is being read.
+  const [shown, setShown] = useState(() => text('screen'));
+  const show = (next: TextScope): void => (setScope(next), setShown(text(next)));
 
   useEffect(() => {
     body.current?.scrollTo({ top: body.current.scrollHeight });
@@ -49,7 +51,7 @@ export function CopyOverlay({ text, onClose }: Props) {
         </button>
         <button
           type="button"
-          onClick={() => setScope(scope === 'screen' ? 'all' : 'screen')}
+          onClick={() => show(scope === 'screen' ? 'all' : 'screen')}
           aria-pressed={scope === 'all'}
         >
           {scope === 'screen' ? t('terminal.copyHistory') : t('terminal.copyScreen')}

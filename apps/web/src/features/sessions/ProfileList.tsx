@@ -4,6 +4,7 @@ import { useT } from '../../shared/i18n/store';
 import { KebabMenu } from '../../shared/ui/KebabMenu';
 import type { SessionGroup } from './groupSessions';
 import { ProfileRename } from './ProfileRename';
+import { useChatTitles } from './chatTitlesStore';
 import { useProfiles } from './profilesStore';
 import { SessionRow } from './SessionRow';
 import { useSessions } from './sessionsStore';
@@ -48,9 +49,10 @@ export function ProfileList({ groups, onOpen, onNewSession, onPick }: Props) {
   const sessions = useSessions((s) => s.sessions);
   const activeId = useSessions((s) => s.activeId);
   const providers = useProfiles((s) => s.providers);
+  const titles = useChatTitles((s) => s.titles);
   const [query, setQuery] = useState('');
   const shown = filterGroups(groups, query);
-  const terminals = query.trim() === '' ? [] : filterSessions(sessions, providers, query);
+  const terminals = query.trim() === '' ? [] : filterSessions(sessions, providers, query, titles);
   return (
     <>
       <input

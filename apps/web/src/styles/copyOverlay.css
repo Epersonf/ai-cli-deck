@@ -1,21 +1,4 @@
-/* The "Copy text" button: on a phone the terminal canvas cannot be selected, so this opens it as plain text. */
-.terminal-copy {
-  display: none;
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  z-index: 4;
-  min-height: 0;
-  padding: 2px 10px;
-  font-size: 12px;
-  opacity: 0.85;
-}
-@media (pointer: coarse) {
-  .terminal-copy {
-    display: block;
-  }
-}
-
+/* On a phone the terminal canvas cannot be selected: this shows its text as a plain page instead. */
 .copy-overlay {
   position: absolute;
   inset: 0;

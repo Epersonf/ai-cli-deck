@@ -7,6 +7,7 @@ import { api } from '../../shared/api/endpoints';
 import { useConfirm } from '../confirm/confirmStore';
 import { idleWatcher, useTasks } from '../tasks/tasksStore';
 import { useFork } from './forkStore';
+import { useChatTitles } from './chatTitlesStore';
 import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
 import { sessionTime } from './sessionTime';
@@ -40,6 +41,7 @@ export function SessionRow({ session, index, active, onPick }: Props) {
         }),
       );
   const providers = useProfiles((s) => s.providers);
+  const title = useChatTitles((s) => s.titles[session.id]);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
 
@@ -76,6 +78,7 @@ export function SessionRow({ session, index, active, onPick }: Props) {
         <span className={`dot ${session.status}`} title={t(`status.${session.status}`)} />
         <span className="session-main">
           <strong>{sessionLabel(session, providers)}</strong>
+          {title !== undefined && <small className="session-title">{title}</small>}
           <small>{session.cwd}</small>
         </span>
         <time className="session-time" dateTime={session.createdAt}>

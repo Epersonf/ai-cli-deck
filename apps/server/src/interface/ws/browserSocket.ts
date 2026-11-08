@@ -1,5 +1,6 @@
 import {
   BROWSER_WS_PATH,
+  sessionOfPreviewKey,
   parseBrowserClientMessage,
   type BrowserServerMessage,
 } from '@deck/shared';
@@ -21,7 +22,11 @@ const INFO_MS = 1000;
 export function browserSocket(app: FastifyInstance, c: Container): void {
   app.get(`${BROWSER_WS_PATH}/:id`, { websocket: true }, (socket: WebSocket, request) => {
     const { id } = request.params as { id: string };
-    if (!c.sessions.get(id)) return socket.close(CLOSE_NOT_FOUND, 'session not found');
+    // `id` is a preview key: the session id, plus "~n" for a session's further tabs (a page of its own each).
+    const sessionId = sessionOfPreviewKey(id);
+    if (sessionId === null || !c.sessions.get(sessionId)) {
+      return socket.close(CLOSE_NOT_FOUND, 'session not found');
+    }
 
     const open = (): boolean => socket.readyState === socket.OPEN;
     const json = (message: BrowserServerMessage): void => {

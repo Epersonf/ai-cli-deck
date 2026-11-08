@@ -23,7 +23,7 @@ beforeAll(async () => {
 
 describe('resolveInside', () => {
   it('resolves paths inside the root', async () => {
-    expect(await resolveInside(root, 'sub/a.txt')).toMatch(/sub\/a\.txt$/);
+    expect(await resolveInside(root, 'sub/a.txt')).toMatch(/sub[\\/]a\.txt$/);
     expect(await resolveInside(root, '')).toMatch(/root$/);
   });
 
@@ -35,7 +35,7 @@ describe('resolveInside', () => {
 
   it('rejects symlinks that leave the root but allows inner ones', async () => {
     await expect(resolveInside(root, 'escape/secret.txt')).rejects.toThrow('escapes');
-    expect(await resolveInside(root, 'inner-link/a.txt')).toMatch(/sub\/a\.txt$/);
+    expect(await resolveInside(root, 'inner-link/a.txt')).toMatch(/sub[\\/]a\.txt$/);
   });
 
   it('reports missing paths and null bytes', async () => {

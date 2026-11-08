@@ -1,22 +1,24 @@
-import type { Terminal } from '@xterm/xterm';
 import type { MutableRefObject } from 'react';
 import { useT } from '../../shared/i18n/store';
-import { bufferText } from './bufferText';
-import { CopyTools } from './CopyTools';
+import { CopyOverlay } from './CopyOverlay';
 import type { Latency } from './latencyMeter';
+import type { TerminalApi } from './terminalApi';
+import { useTerminalTools } from './toolsStore';
 
 interface Props {
+  sessionId: string;
   online: boolean;
   following: boolean;
   latency: Latency;
-  term: MutableRefObject<Terminal | null>;
+  api: MutableRefObject<TerminalApi | null>;
   /** Make this device the one that sets the size. */
   claim(): void;
 }
 
 /** What floats over the terminal: "following another device", the link latency, "reconnecting". */
-export function TerminalBadges({ online, following, latency, term, claim }: Props) {
+export function TerminalBadges({ sessionId, online, following, latency, api, claim }: Props) {
   const t = useT();
+  const selecting = useTerminalTools((s) => s.selecting === sessionId);
   return (
     <>
       {following && (
@@ -31,7 +33,12 @@ export function TerminalBadges({ online, following, latency, term, claim }: Prop
         </div>
       )}
       {!online && <div className="terminal-offline">{t('terminal.reconnecting')}</div>}
-      <CopyTools text={(scope) => (term.current ? bufferText(term.current, scope) : '')} />
+      {selecting && (
+        <CopyOverlay
+          text={(scope) => api.current?.text(scope) ?? ''}
+          onClose={() => useTerminalTools.getState().select(null)}
+        />
+      )}
     </>
   );
 }

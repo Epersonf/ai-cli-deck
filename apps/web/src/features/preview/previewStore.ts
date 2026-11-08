@@ -1,6 +1,17 @@
-import { parseLocalUrl } from '@deck/shared';
+import { parseLocalUrl, previewKey } from '@deck/shared';
 import { create } from 'zustand';
 import { PEER_ID } from '../../shared/api/base';
+import {
+  activeTab,
+  addTab,
+  closeTab,
+  firstTabs,
+  showMode,
+  type PreviewMode,
+  type PreviewTabs,
+} from './previewTabs';
+
+export type { PreviewMode } from './previewTabs';
 
 export interface PreviewState {
   history: string[];
@@ -8,8 +19,6 @@ export interface PreviewState {
   reloadKey: number;
 }
 
-/** `frame`: the page in an iframe on this device (fast). `browser`: the deck's Chromium, which the agent drives too. */
-export type PreviewMode = 'frame' | 'browser';
 const MODE_KEY = 'deck-preview-mode';
 const savedMode = (): PreviewMode => {
   try {
@@ -21,9 +30,13 @@ const savedMode = (): PreviewMode => {
 
 interface PreviewStore {
   byId: Record<string, PreviewState>;
-  /** Per session; a session not listed uses the mode last picked on this device. */
-  mode: Record<string, PreviewMode>;
+  /** Per session; one not listed has a single tab of the mode last picked on this device (see tabsOf). */
+  tabs: Record<string, PreviewTabs>;
+  /** Shows the first tab of that mode, opening one when there is none. */
   setMode(sessionId: string, mode: PreviewMode, remember?: boolean): void;
+  addTab(sessionId: string, mode: PreviewMode): void;
+  selectTab(sessionId: string, n: number): void;
+  closeTab(sessionId: string, n: number): void;
   newTab: Record<string, string | null>;
   open(sessionId: string, url: string): boolean;
   back(sessionId: string): void;
@@ -46,11 +59,13 @@ export function previewable(url: string, deckOrigin: string): string | null {
 export const usePreview = create<PreviewStore>()((set, get) => {
   const update = (id: string, fn: (s: PreviewState) => PreviewState): void =>
     set({ byId: { ...get().byId, [id]: fn(get().byId[id] ?? EMPTY) } });
+  const setTabs = (sessionId: string, fn: (tabs: PreviewTabs) => PreviewTabs): void =>
+    set({ tabs: { ...get().tabs, [sessionId]: fn(tabsOf(get().tabs, sessionId)) } });
   return {
     byId: {},
-    mode: {},
+    tabs: {},
     setMode(sessionId, mode, remember = true) {
-      set({ mode: { ...get().mode, [sessionId]: mode } });
+      setTabs(sessionId, (tabs) => showMode(tabs, mode));
       if (!remember) return;
       try {
         localStorage.setItem(MODE_KEY, mode);
@@ -58,11 +73,21 @@ export const usePreview = create<PreviewStore>()((set, get) => {
         // only this page load remembers it
       }
     },
+    addTab: (sessionId, mode) => setTabs(sessionId, (tabs) => addTab(tabs, mode)),
+    selectTab: (sessionId, n) => setTabs(sessionId, (tabs) => ({ ...tabs, active: n })),
+    closeTab(sessionId, n) {
+      setTabs(sessionId, (tabs) => closeTab(tabs, n));
+      // A tab opened later with this number starts empty.
+      const gone = previewKey(sessionId, n);
+      set({ byId: Object.fromEntries(Object.entries(get().byId).filter(([key]) => key !== gone)) });
+    },
     newTab: {},
     open(sessionId, url) {
       const safe = previewable(url, window.location.origin);
       if (safe === null) return false;
-      update(sessionId, (s) =>
+      // The link goes to the tab being shown.
+      const key = previewKey(sessionId, activeTab(tabsOf(get().tabs, sessionId)).n);
+      update(key, (s) =>
         s.history[s.index] === safe
           ? s
           : { ...s, history: [...s.history.slice(0, s.index + 1), safe], index: s.index + 1 },
@@ -78,5 +103,8 @@ export const usePreview = create<PreviewStore>()((set, get) => {
 });
 
 /** On a paired deck's app the iframe would load this device's ports, so its own browser is used. */
-export const modeOf = (mode: Record<string, PreviewMode>, sessionId: string): PreviewMode =>
-  PEER_ID ? 'browser' : (mode[sessionId] ?? savedMode());
+export const firstMode = (): PreviewMode => (PEER_ID ? 'browser' : savedMode());
+
+/** A session's tabs: what was set, else one tab of the usual mode. */
+export const tabsOf = (tabs: Record<string, PreviewTabs>, sessionId: string): PreviewTabs =>
+  tabs[sessionId] ?? firstTabs(firstMode());
