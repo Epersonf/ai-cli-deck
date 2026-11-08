@@ -1,5 +1,6 @@
 import { useState, type MutableRefObject } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { SpeakerIcon, StopIcon } from '../../shared/ui/ToolIcons';
 import { canSpeak, speak, speakable, stopSpeaking } from './speakText';
 import type { TerminalApi } from './terminalApi';
 
@@ -12,12 +13,14 @@ export function TerminalSpeak({ api }: { api: MutableRefObject<TerminalApi | nul
     speak(speakable(api.current?.text('screen') ?? ''), document.documentElement.lang || 'en');
   };
   return (
-    <div className="tools-copy">
-      <button type="button" className="primary" onClick={start}>
-        {t('tools.speakScreen')}
+    <div className="tools-actions">
+      <button type="button" className="tool-action primary" onClick={start}>
+        <SpeakerIcon size={24} />
+        <span>{t('tools.speakScreen')}</span>
       </button>
-      <button type="button" onClick={stopSpeaking}>
-        {t('tools.speakStop')}
+      <button type="button" className="tool-action" onClick={stopSpeaking}>
+        <StopIcon size={24} />
+        <span>{t('tools.speakStop')}</span>
       </button>
       {unsupported && <span className="tools-note">{t('tools.speakNone')}</span>}
     </div>

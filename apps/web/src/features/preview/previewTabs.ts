@@ -45,3 +45,32 @@ export function showMode(tabs: PreviewTabs, mode: PreviewMode): PreviewTabs {
   const found = tabs.list.find((tab) => tab.mode === mode);
   return found ? { ...tabs, active: found.n } : addTab(tabs, mode);
 }
+
+/** The numbers of the browser tabs: the part of the list that every device shares. */
+export const browserNumbers = (tabs: PreviewTabs): number[] =>
+  tabs.list.filter((tab) => tab.mode === 'browser').map((tab) => tab.n);
+
+/**
+ * The list with its browser tabs replaced by the shared ones (`numbers`); this device's iframe tabs stay, moved to
+ * another number when a shared tab took theirs. Never empty, and `active` always names a tab that exists.
+ */
+export function withBrowserTabs(
+  tabs: PreviewTabs,
+  numbers: readonly number[],
+  fallback: PreviewMode,
+): PreviewTabs {
+  const taken = new Set(numbers);
+  const kept = tabs.list.filter((tab) => tab.mode === 'frame');
+  const frames: PreviewTab[] = [];
+  for (const tab of kept) {
+    let n = tab.n;
+    while (taken.has(n) || frames.some((f) => f.n === n)) n += 1;
+    frames.push({ n, mode: 'frame' });
+  }
+  const list = [...numbers.map((n): PreviewTab => ({ n, mode: 'browser' })), ...frames].sort(
+    (a, b) => a.n - b.n,
+  );
+  if (list.length === 0) return firstTabs(fallback);
+  const active = list.some((tab) => tab.n === tabs.active) ? tabs.active : (list[0]?.n ?? 1);
+  return { list, active };
+}

@@ -12,6 +12,12 @@ export const it: Messages = {
   'nav.terminal': 'Terminale',
   'nav.files': 'File',
   'nav.preview': 'Anteprima',
+  'preview.frameDesc':
+    'Veloce, gira su questo dispositivo. Solo per pagine sulle porte del deck stesso (localhost).',
+  'preview.browserDesc':
+    'Gira sul deck, quindi ogni dispositivo e l’agente vedono la stessa pagina. Qualsiasi indirizzo.',
+  'preview.frameNoPair':
+    'Non disponibile tramite abbinamento: la pagina caricherebbe le porte di questo dispositivo, non quelle del deck. Usa il Browser.',
   'preview.addTab': 'Nuova scheda',
   'preview.closeTab': 'Chiudi scheda',
   'preview.modeFrame': 'Iframe',

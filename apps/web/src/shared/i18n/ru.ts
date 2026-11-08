@@ -13,6 +13,12 @@ export const ru: Messages = {
   'nav.terminal': 'Терминал',
   'nav.files': 'Файлы',
   'nav.preview': 'Предпросмотр',
+  'preview.frameDesc':
+    'Быстро, работает на этом устройстве. Только для страниц на портах самого деки (localhost).',
+  'preview.browserDesc':
+    'Работает на деке, поэтому все устройства и агент видят одну страницу. Любой адрес.',
+  'preview.frameNoPair':
+    'Недоступно через сопряжение: страница загрузила бы порты этого устройства, а не деки. Используйте Browser.',
   'preview.addTab': 'Новая вкладка',
   'preview.closeTab': 'Закрыть вкладку',
   'preview.modeFrame': 'Iframe',

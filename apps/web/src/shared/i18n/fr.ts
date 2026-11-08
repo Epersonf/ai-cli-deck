@@ -13,6 +13,12 @@ export const fr: Messages = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Fichiers',
   'nav.preview': 'Aperçu',
+  'preview.frameDesc':
+    'Rapide, s’exécute sur cet appareil. Seulement pour les pages sur les ports du deck lui-même (localhost).',
+  'preview.browserDesc':
+    'S’exécute sur le deck : tous les appareils et l’agent voient la même page. N’importe quelle adresse.',
+  'preview.frameNoPair':
+    'Indisponible via un appairage : la page chargerait les ports de cet appareil, pas ceux du deck. Utilisez le Browser.',
   'preview.addTab': 'Nouvel onglet',
   'preview.closeTab': 'Fermer l’onglet',
   'preview.modeFrame': 'Iframe',

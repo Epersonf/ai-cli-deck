@@ -7,9 +7,11 @@ import {
   closeTab,
   firstTabs,
   showMode,
+  withBrowserTabs,
   type PreviewMode,
   type PreviewTabs,
 } from './previewTabs';
+import { shareBrowserTabs } from './tabSync';
 
 export type { PreviewMode } from './previewTabs';
 
@@ -43,6 +45,8 @@ interface PreviewStore {
   forward(sessionId: string): void;
   reload(sessionId: string): void;
   suggestNewTab(sessionId: string, url: string | null): void;
+  /** The browser tabs the deck says this session has (from another device, or on load). */
+  applyServerTabs(sessionId: string, numbers: readonly number[]): void;
 }
 
 const EMPTY: PreviewState = { history: [], index: -1, reloadKey: 0 };
@@ -59,8 +63,12 @@ export function previewable(url: string, deckOrigin: string): string | null {
 export const usePreview = create<PreviewStore>()((set, get) => {
   const update = (id: string, fn: (s: PreviewState) => PreviewState): void =>
     set({ byId: { ...get().byId, [id]: fn(get().byId[id] ?? EMPTY) } });
-  const setTabs = (sessionId: string, fn: (tabs: PreviewTabs) => PreviewTabs): void =>
-    set({ tabs: { ...get().tabs, [sessionId]: fn(tabsOf(get().tabs, sessionId)) } });
+  const setTabs = (sessionId: string, fn: (tabs: PreviewTabs) => PreviewTabs): void => {
+    const before = tabsOf(get().tabs, sessionId);
+    const after = fn(before);
+    set({ tabs: { ...get().tabs, [sessionId]: after } });
+    shareBrowserTabs(sessionId, before, after);
+  };
   return {
     byId: {},
     tabs: {},
@@ -99,6 +107,13 @@ export const usePreview = create<PreviewStore>()((set, get) => {
       update(id, (s) => ({ ...s, index: Math.min(s.index + 1, s.history.length - 1) })),
     reload: (id) => update(id, (s) => ({ ...s, reloadKey: s.reloadKey + 1 })),
     suggestNewTab: (id, url) => set({ newTab: { ...get().newTab, [id]: url } }),
+    applyServerTabs: (sessionId, numbers) =>
+      set({
+        tabs: {
+          ...get().tabs,
+          [sessionId]: withBrowserTabs(tabsOf(get().tabs, sessionId), numbers, firstMode()),
+        },
+      }),
   };
 });
 

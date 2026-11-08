@@ -3,6 +3,7 @@ import type { EventBus } from '../domain/events.js';
 import type { PhonePort, SystemPort, WorktreePort } from '../domain/ports.js';
 import { ActivityTracker } from './ActivityTracker.js';
 import { ApprovalNotifier } from './ApprovalNotifier.js';
+import { BrowserTabs } from './BrowserTabs.js';
 import { ApprovalService } from './ApprovalService.js';
 import type { SessionManager } from './SessionManager.js';
 import type { TaskService } from './TaskService.js';
@@ -20,6 +21,7 @@ export function liveServices(deps: {
   approvals: ApprovalService;
   approvalNotifier: ApprovalNotifier;
   activity: ActivityTracker;
+  browserTabs: BrowserTabs;
 } {
   const approvals = new ApprovalService({
     sessions: deps.sessions,
@@ -46,5 +48,5 @@ export function liveServices(deps: {
     () => Date.now(),
   );
   activity.start();
-  return { approvals, approvalNotifier: notifier, activity };
+  return { approvals, approvalNotifier: notifier, activity, browserTabs: new BrowserTabs() };
 }

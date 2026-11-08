@@ -92,3 +92,25 @@
   min-width: 0;
   min-height: 0;
 }
+
+/* The dialog behind "+": what kind of tab. */
+.add-tab {
+  display: grid;
+  gap: 10px;
+  max-width: 420px;
+}
+.add-tab-option {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+}
+.add-tab-option small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal;
+}
+.add-tab-option:disabled {
+  opacity: 0.55;
+}

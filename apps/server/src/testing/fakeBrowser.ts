@@ -29,6 +29,8 @@ export class FakeBrowserEngine implements BrowserEngine {
       type: (text) => Promise.resolve(void log.push(`type ${text}`)),
       press: (key) => Promise.resolve(void log.push(`press ${key}`)),
       scroll: (dy) => Promise.resolve(void log.push(`scroll ${dy}`)),
+      diagnose: () =>
+        Promise.resolve({ webgl: 'fake', visibility: 'visible', canvases: [], problems: [] }),
       size: () => ({ width: 1000, height: 720 }),
       resize: (w, h) => Promise.resolve(void log.push(`resize ${w}x${h}`)),
       screencast: (onFrame) => {

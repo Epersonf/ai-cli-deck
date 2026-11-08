@@ -3,6 +3,7 @@ import type { ProfileService } from '../application/ProfileService.js';
 import type { TaskService } from '../application/TaskService.js';
 import type { TemplateService } from '../application/TemplateService.js';
 import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
+import type { BrowserTabs } from '../application/BrowserTabs.js';
 import type { ActivityTracker } from '../application/ActivityTracker.js';
 import type { ApprovalNotifier } from '../application/ApprovalNotifier.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
@@ -45,6 +46,8 @@ export interface Container {
   approvalNotifier?: ApprovalNotifier;
   /** What every terminal is doing, pushed to devices as it changes. */
   activity?: ActivityTracker;
+  /** The browser tabs of each session, one list for every device. */
+  browserTabs?: BrowserTabs;
   workspace: WorkspaceService;
   gitReview: GitReviewService;
   preview: PreviewService;

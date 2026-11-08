@@ -89,6 +89,16 @@ export const api = {
   renameProfile: (id: string, label: string) =>
     request(ProfileSchema, 'PATCH', `/api/profiles/${enc(id)}`, { label }),
   deleteSession: (id: string) => request(z.void(), 'DELETE', session(id)),
+  browserTabs: (id: string) =>
+    request(
+      z.object({ tabs: z.array(z.number()).nullable() }),
+      'GET',
+      `${session(id)}/browser-tabs`,
+    ),
+  setBrowserTabs: (id: string, tabs: number[]) =>
+    request(z.object({ tabs: z.array(z.number()) }), 'PUT', `${session(id)}/browser-tabs`, {
+      tabs,
+    }),
   setPreview: (id: string, url: string) =>
     request(z.object({ url: z.string() }), 'PUT', `${session(id)}/preview`, { url }),
   tree: (id: string, path: string, show: { hidden: boolean; ignored: boolean }) =>

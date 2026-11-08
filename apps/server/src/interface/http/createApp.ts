@@ -6,6 +6,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { Container } from '../container.js';
 import { mcpRoutes } from '../mcp/mcpRoute.js';
 import { browserSocket } from '../ws/browserSocket.js';
+import { browserTabsRoutes } from './routes/browserTabs.js';
 import { notifyActionRoutes } from './routes/notifyAction.js';
 import { eventsSocket } from '../ws/eventsSocket.js';
 import { terminalSocket } from '../ws/terminalSocket.js';
@@ -68,6 +69,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   agentRoutes(app, c);
   agentDeviceRoutes(app, c);
   browserRoutes(app, c);
+  browserTabsRoutes(app, c);
   networkRoutes(app, c);
   machineRoutes(app, c);
   fileRoutes(app);

@@ -5,6 +5,7 @@ import {
   type BrowserEngine,
   type BrowserInput,
   type BrowserStatus,
+  type PageDiagnosis,
   type PageDriver,
   type PageInfo,
 } from './browserTypes.js';
@@ -83,15 +84,15 @@ export class BrowserService {
   }
 
   async state(sessionId: string): Promise<PageInfo> {
-    return asBadRequest(async () => {
-      return this.info(await this.page(sessionId));
-    });
+    return asBadRequest(async () => this.info(await this.page(sessionId)));
+  }
+
+  async diagnose(sessionId: string): Promise<PageDiagnosis> {
+    return asBadRequest(async () => (await this.page(sessionId)).diagnose());
   }
 
   async screenshot(sessionId: string): Promise<Buffer> {
-    return asBadRequest(async () => {
-      return (await this.page(sessionId)).screenshot();
-    });
+    return asBadRequest(async () => (await this.page(sessionId)).screenshot());
   }
 
   async outline(sessionId: string): Promise<PageInfo & { outline: string }> {

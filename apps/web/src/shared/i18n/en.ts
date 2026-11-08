@@ -11,6 +11,12 @@ export const en = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Files',
   'nav.preview': 'Preview',
+  'preview.frameDesc':
+    'Fast, runs on this device. Only for pages on this deck’s own ports (localhost).',
+  'preview.browserDesc':
+    'Runs on the deck, so every device and the agent see the same page. Any address.',
+  'preview.frameNoPair':
+    'Not available through a pairing: the page would load this device’s ports, not the deck’s. Use Browser.',
   'preview.addTab': 'New tab',
   'preview.closeTab': 'Close tab',
   'preview.modeFrame': 'Iframe',

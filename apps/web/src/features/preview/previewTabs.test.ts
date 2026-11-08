@@ -1,6 +1,14 @@
 import { PREVIEW_TABS_MAX } from '@deck/shared';
 import { describe, expect, it } from 'vitest';
-import { activeTab, addTab, closeTab, firstTabs, showMode } from './previewTabs';
+import {
+  activeTab,
+  addTab,
+  browserNumbers,
+  closeTab,
+  firstTabs,
+  showMode,
+  withBrowserTabs,
+} from './previewTabs';
 
 describe('preview tabs', () => {
   it('starts with one tab of the chosen mode', () => {
@@ -34,5 +42,28 @@ describe('preview tabs', () => {
     const tabs = addTab(firstTabs('frame'), 'browser'); // 2 shown
     expect(showMode(tabs, 'frame').active).toBe(1);
     expect(showMode(firstTabs('frame'), 'browser').list).toHaveLength(2);
+  });
+});
+
+describe('shared browser tabs', () => {
+  const mine = { list: [{ n: 1, mode: 'frame' as const }], active: 1 };
+
+  it('adds the shared tabs and moves an iframe tab out of their way', () => {
+    const next = withBrowserTabs(mine, [1, 2], 'frame');
+    expect(next.list).toEqual([
+      { n: 1, mode: 'browser' },
+      { n: 2, mode: 'browser' },
+      { n: 3, mode: 'frame' },
+    ]);
+    expect(browserNumbers(next)).toEqual([1, 2]);
+    expect(next.list.some((tab) => tab.n === next.active)).toBe(true);
+  });
+
+  it('never ends up empty', () => {
+    const only = { list: [{ n: 2, mode: 'browser' as const }], active: 2 };
+    expect(withBrowserTabs(only, [], 'frame')).toEqual({
+      list: [{ n: 1, mode: 'frame' }],
+      active: 1,
+    });
   });
 });

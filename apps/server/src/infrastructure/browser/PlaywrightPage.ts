@@ -1,5 +1,6 @@
 import type { Page } from 'playwright-core';
-import type { PageDriver } from '../../application/browserTypes.js';
+import type { PageDiagnosis, PageDriver } from '../../application/browserTypes.js';
+import { collectProblems, inspectGraphics } from './pageDiagnosis.js';
 
 const NAV_TIMEOUT_MS = 20_000;
 const ACTION_TIMEOUT_MS = 8_000;
@@ -19,7 +20,13 @@ interface ScreencastFrame {
 
 /** One Playwright page: what the deck user and the agent both drive. */
 export class PlaywrightPage implements PageDriver {
-  constructor(private readonly page: Page) {}
+  private readonly problems: string[];
+  constructor(private readonly page: Page) {
+    this.problems = collectProblems(page);
+  }
+  async diagnose(): Promise<PageDiagnosis> {
+    return { ...(await inspectGraphics(this.page)), problems: [...this.problems] };
+  }
   async goto(url: string): Promise<void> {
     await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS });
   }

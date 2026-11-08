@@ -1,6 +1,7 @@
 import type { ISearchOptions } from '@xterm/addon-search';
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { DownIcon, UpIcon } from '../../shared/ui/ToolIcons';
 import type { TerminalApi } from './terminalApi';
 
 const OPTIONS: ISearchOptions = {
@@ -74,22 +75,19 @@ export function TerminalSearch({ api, onClose }: Props) {
       <span className="terminal-search-count">{label}</span>
       <button
         type="button"
-        className="tool"
+        className="tool-tab"
         title={t('search.previous')}
         onClick={() => find(query, false)}
       >
-        ↑
+        <UpIcon size={20} />
       </button>
       <button
         type="button"
-        className="tool"
+        className="tool-tab"
         title={t('search.next')}
         onClick={() => find(query, true)}
       >
-        ↓
-      </button>
-      <button type="button" className="tool" title={t('search.close')} onClick={onClose}>
-        ✕
+        <DownIcon size={20} />
       </button>
     </div>
   );

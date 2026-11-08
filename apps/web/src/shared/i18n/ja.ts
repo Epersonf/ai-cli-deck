@@ -13,6 +13,12 @@ export const ja: Messages = {
   'nav.terminal': 'ターミナル',
   'nav.files': 'ファイル',
   'nav.preview': 'プレビュー',
+  'preview.frameDesc':
+    '高速で、この端末上で動きます。デック自身のポート（localhost）のページ専用です。',
+  'preview.browserDesc':
+    'デック上で動くので、すべての端末とエージェントが同じページを見ます。どのアドレスでも可。',
+  'preview.frameNoPair':
+    'ペアリング経由では使えません。ページはデックではなくこの端末のポートを読み込んでしまいます。Browser を使ってください。',
   'preview.addTab': '新しいタブ',
   'preview.closeTab': 'タブを閉じる',
   'preview.modeFrame': 'Iframe',

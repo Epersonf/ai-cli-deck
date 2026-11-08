@@ -18,11 +18,20 @@ export interface PageDriver {
   type(text: string): Promise<void>;
   press(key: string): Promise<void>;
   scroll(dy: number, dx?: number): Promise<void>;
+  /** Why a page may look blank: WebGL support, canvases, and what its console and network reported. */
+  diagnose(): Promise<PageDiagnosis>;
   /** The page's size in CSS pixels; `resize` fits it to the device showing it. */
   size(): { width: number; height: number };
   resize(width: number, height: number): Promise<void>;
   /** Streams a JPEG each time the page changes; resolves to the function that stops it. */
   screencast(onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>>;
+}
+
+export interface PageDiagnosis {
+  webgl: string;
+  visibility: string;
+  canvases: string[];
+  problems: string[];
 }
 
 /** The real browser (Chromium) behind the pages; a fake in tests. */

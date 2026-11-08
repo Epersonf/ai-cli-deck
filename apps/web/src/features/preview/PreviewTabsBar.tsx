@@ -1,6 +1,7 @@
 import { PREVIEW_TABS_MAX } from '@deck/shared';
-import { PEER_ID } from '../../shared/api/base';
+import { useState } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { AddTabDialog } from './AddTabDialog';
 import { usePreview } from './previewStore';
 import type { PreviewMode, PreviewTabs } from './previewTabs';
 
@@ -19,7 +20,7 @@ export function PreviewTabsBar({ sessionId, tabs }: Props) {
     frame: t('preview.modeFrame'),
     browser: t('preview.modeBrowser'),
   };
-  const modes: PreviewMode[] = PEER_ID ? ['browser'] : ['frame', 'browser'];
+  const [picking, setPicking] = useState(false);
   const store = usePreview.getState();
   const full = tabs.list.length >= PREVIEW_TABS_MAX;
   return (
@@ -48,19 +49,22 @@ export function PreviewTabsBar({ sessionId, tabs }: Props) {
           )}
         </span>
       ))}
-      {modes.map((mode) => (
-        <button
-          key={mode}
-          type="button"
-          className="preview-tab-add"
-          disabled={full}
-          title={`${t('preview.addTab')}: ${labels[mode]}`}
-          aria-label={`${t('preview.addTab')}: ${labels[mode]}`}
-          onClick={() => store.addTab(sessionId, mode)}
-        >
-          + {labels[mode]}
-        </button>
-      ))}
+      <button
+        type="button"
+        className="preview-tab-add"
+        disabled={full}
+        title={t('preview.addTab')}
+        aria-label={t('preview.addTab')}
+        onClick={() => setPicking(true)}
+      >
+        +
+      </button>
+      {picking && (
+        <AddTabDialog
+          onClose={() => setPicking(false)}
+          onPick={(mode) => (setPicking(false), store.addTab(sessionId, mode))}
+        />
+      )}
     </div>
   );
 }

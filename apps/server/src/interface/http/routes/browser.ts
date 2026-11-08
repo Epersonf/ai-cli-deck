@@ -34,6 +34,9 @@ export function browserRoutes(app: FastifyInstance, c: Container): void {
   app.post('/api/sessions/:id/browser/input', async (request) =>
     c.browser.input(parseWith(IdParams, request.params).id, parseWith(InputBody, request.body)),
   );
+  app.get('/api/sessions/:id/browser/diagnose', async (request) =>
+    c.browser.diagnose(parseWith(IdParams, request.params).id),
+  );
   app.get('/api/sessions/:id/browser/screenshot', async (request, reply) => {
     const image = await c.browser.screenshot(parseWith(IdParams, request.params).id);
     return reply

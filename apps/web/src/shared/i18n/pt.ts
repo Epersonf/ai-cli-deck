@@ -13,6 +13,12 @@ export const pt: Messages = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Arquivos',
   'nav.preview': 'Prévia',
+  'preview.frameDesc':
+    'Rápido, roda neste aparelho. Só para páginas nas portas do próprio deck (localhost).',
+  'preview.browserDesc':
+    'Roda no deck, então todo aparelho e o agente veem a mesma página. Qualquer endereço.',
+  'preview.frameNoPair':
+    'Indisponível via pareamento: a página carregaria as portas deste aparelho, não as do deck. Use o Browser.',
   'preview.addTab': 'Nova aba',
   'preview.closeTab': 'Fechar aba',
   'preview.modeFrame': 'Iframe',

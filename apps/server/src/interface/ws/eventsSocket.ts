@@ -29,7 +29,11 @@ export function eventsSocket(app: FastifyInstance, c: Container): void {
     };
     const stopActivity = c.activity?.subscribe((a) => send({ type: 'activity', ...a }));
     for (const a of c.activity?.snapshot() ?? []) send({ type: 'activity', ...a });
+    const stopTabs = c.browserTabs?.subscribe((sessionId, tabs) =>
+      send({ type: 'browser-tabs', sessionId, tabs }),
+    );
     const stop = (): void => {
+      stopTabs?.();
       unsubscribe();
       stopActivity?.();
     };

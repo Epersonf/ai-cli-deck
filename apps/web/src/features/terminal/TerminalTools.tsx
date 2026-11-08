@@ -1,5 +1,13 @@
-import { useState, type MutableRefObject } from 'react';
+import { useState, type MutableRefObject, type ReactNode } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { SearchIcon } from '../../shared/ui/Icons';
+import {
+  CloseIcon,
+  CopyIcon,
+  HistoryIcon,
+  SelectIcon,
+  SpeakerIcon,
+} from '../../shared/ui/ToolIcons';
 import { copyText } from '../settings/templateFile';
 import type { TextScope } from './bufferText';
 import { TerminalSearch } from './TerminalSearch';
@@ -12,9 +20,13 @@ interface Props {
   api: MutableRefObject<TerminalApi | null>;
 }
 
-const TABS: readonly ToolTab[] = ['search', 'copy', 'listen'];
+const TABS: { name: ToolTab; icon: ReactNode }[] = [
+  { name: 'search', icon: <SearchIcon size={22} /> },
+  { name: 'copy', icon: <CopyIcon /> },
+  { name: 'listen', icon: <SpeakerIcon /> },
+];
 
-/** The tools of a terminal, in a bar above it (never over it): search, copy, and room for more tabs. */
+/** The tools of a terminal, in a bar above it (never over it): search, copy, listen, and room for more tabs. */
 export function TerminalTools({ sessionId, api }: Props) {
   const t = useT();
   const tab = useTerminalTools((s) => s.tab);
@@ -31,37 +43,48 @@ export function TerminalTools({ sessionId, api }: Props) {
   return (
     <div className="terminal-tools" role="toolbar" aria-label={t('tools.open')}>
       <div className="tools-tabs">
-        {TABS.map((name) => (
+        {TABS.map(({ name, icon }) => (
           <button
             key={name}
             type="button"
-            className={`tool${tab === name ? ' on' : ''}`}
+            className={`tool-tab${tab === name ? ' on' : ''}`}
             aria-pressed={tab === name}
+            aria-label={t(`tools.${name}`)}
+            title={t(`tools.${name}`)}
             onClick={() => (setNote(''), useTerminalTools.getState().setTab(name))}
           >
-            {t(`tools.${name}`)}
+            {icon}
           </button>
         ))}
-        <button type="button" className="tool tools-close" title={t('tools.close')} onClick={close}>
-          ✕
+        <button
+          type="button"
+          className="tools-x"
+          aria-label={t('tools.close')}
+          title={t('tools.close')}
+          onClick={close}
+        >
+          <CloseIcon size={20} />
         </button>
       </div>
       {tab === 'search' && <TerminalSearch api={api} onClose={close} />}
       {tab === 'listen' && <TerminalSpeak api={api} />}
       {tab === 'copy' && (
-        <div className="tools-copy">
-          <button type="button" onClick={() => copy('screen')}>
-            {t('tools.copyScreen')}
+        <div className="tools-actions">
+          <button type="button" className="tool-action" onClick={() => copy('screen')}>
+            <CopyIcon size={24} />
+            <span>{t('tools.copyScreen')}</span>
           </button>
-          <button type="button" onClick={() => copy('all')}>
-            {t('tools.copyHistory')}
+          <button type="button" className="tool-action" onClick={() => copy('all')}>
+            <HistoryIcon size={24} />
+            <span>{t('tools.copyHistory')}</span>
           </button>
           <button
             type="button"
-            className="primary"
+            className="tool-action primary"
             onClick={() => useTerminalTools.getState().select(sessionId)}
           >
-            {t('tools.select')}
+            <SelectIcon size={24} />
+            <span>{t('tools.select')}</span>
           </button>
           {note !== '' && <span className="tools-note">{note}</span>}
         </div>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { useApprovals } from './features/approvals/approvalsStore';
+import { usePreview } from './features/preview/previewStore';
 import { useActivity } from './features/sessions/activityStore';
 import { useSessions } from './features/sessions/sessionsStore';
 import { openEventsSocket } from './shared/ws/eventsSocket';
@@ -23,6 +24,8 @@ export function useLiveEvents(locked: boolean): void {
       onMessage: (message) => {
         if (message.type === 'session') useSessions.getState().upsert(message.session);
         else if (message.type === 'approval') useApprovals.getState().receive(message.request);
+        else if (message.type === 'browser-tabs')
+          usePreview.getState().applyServerTabs(message.sessionId, message.tabs);
         else if (message.type === 'activity')
           useActivity
             .getState()

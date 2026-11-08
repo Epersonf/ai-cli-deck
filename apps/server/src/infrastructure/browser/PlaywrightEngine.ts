@@ -74,6 +74,17 @@ export class PlaywrightEngine implements BrowserEngine {
         '--disable-sync',
         '--mute-audio',
         '--no-first-run',
+        // No GPU here (a phone under proot, a server): WebGL must come from the software renderer, inside this
+        // process (a separate GPU process cannot start under proot, and a game then shows a blank canvas).
+        '--in-process-gpu',
+        '--use-gl=angle',
+        '--use-angle=swiftshader',
+        '--enable-unsafe-swiftshader',
+        '--ignore-gpu-blocklist',
+        // The page is never in front of this browser's eyes: it must keep drawing and running timers anyway.
+        '--disable-renderer-backgrounding',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-background-timer-throttling',
       ],
     });
     try {

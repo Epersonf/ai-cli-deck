@@ -13,6 +13,12 @@ export const es: Messages = {
   'nav.terminal': 'Terminal',
   'nav.files': 'Archivos',
   'nav.preview': 'Vista previa',
+  'preview.frameDesc':
+    'Rápido, se ejecuta en este dispositivo. Solo para páginas en los puertos del propio deck (localhost).',
+  'preview.browserDesc':
+    'Se ejecuta en el deck, así que todos los dispositivos y el agente ven la misma página. Cualquier dirección.',
+  'preview.frameNoPair':
+    'No disponible por emparejamiento: la página cargaría los puertos de este dispositivo, no los del deck. Usa el Browser.',
   'preview.addTab': 'Nueva pestaña',
   'preview.closeTab': 'Cerrar pestaña',
   'preview.modeFrame': 'Iframe',
