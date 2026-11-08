@@ -14,6 +14,8 @@ import org.json.JSONObject
 class PhoneApi(private val ctx: Context) {
     private var nextId = 1000
 
+    fun string(id: Int): String = ctx.getString(id)
+
     fun battery(): JSONObject {
         val i = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val level = i?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -40,16 +42,28 @@ class PhoneApi(private val ctx: Context) {
         .put("sdk", Build.VERSION.SDK_INT)
 
     /** Returns null when shown, or the reason it could not be. */
-    fun notify(title: String, text: String): String? {
+    fun notify(title: String, text: String, actions: List<NotifyAction> = emptyList()): String? {
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (!nm.areNotificationsEnabled()) return "Notifications are off for this app in Android settings"
         if (Build.VERSION.SDK_INT >= 26) {
             nm.createNotificationChannel(NotificationChannel("phone", ctx.getString(R.string.phone_channel), NotificationManager.IMPORTANCE_DEFAULT))
         }
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(ctx, "phone") else @Suppress("DEPRECATION") Notification.Builder(ctx)
-        nm.notify(nextId++, b.setContentTitle(title.take(80).ifBlank { ctx.getString(R.string.app_name) })
+        val id = nextId++
+        b.setContentTitle(title.take(80).ifBlank { ctx.getString(R.string.app_name) })
             .setContentText(text.take(400)).setStyle(Notification.BigTextStyle().bigText(text.take(400)))
-            .setSmallIcon(R.drawable.ic_gear).setAutoCancel(true).build())
+            .setSmallIcon(R.drawable.ic_gear).setAutoCancel(true)
+        // Buttons that call a one-time address of the deck (see [NotifyActionReceiver]); at most three fit.
+        actions.take(3).forEachIndexed { index, action ->
+            val intent = Intent(ctx, NotifyActionReceiver::class.java).putExtra("url", action.url).putExtra("nid", id)
+            val press = android.app.PendingIntent.getBroadcast(ctx, id * 4 + index, intent,
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            b.addAction(Notification.Action.Builder(null, action.label, press).build())
+        }
+        nm.notify(id, b.build())
         return null
     }
 }
+
+/** A button on a notification: its label and the address it calls. */
+class NotifyAction(val label: String, val url: String)

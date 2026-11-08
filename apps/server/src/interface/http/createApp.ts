@@ -6,6 +6,8 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { Container } from '../container.js';
 import { mcpRoutes } from '../mcp/mcpRoute.js';
 import { browserSocket } from '../ws/browserSocket.js';
+import { notifyActionRoutes } from './routes/notifyAction.js';
+import { eventsSocket } from '../ws/eventsSocket.js';
 import { terminalSocket } from '../ws/terminalSocket.js';
 import { browserRoutes } from './routes/browser.js';
 import { registerErrorHandler } from './errors.js';
@@ -61,6 +63,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   rawRoutes(app, c);
   uploadRoutes(app, c);
   approvalRoutes(app, c);
+  notifyActionRoutes(app, c);
   mcpRoutes(app, c);
   agentRoutes(app, c);
   agentDeviceRoutes(app, c);
@@ -70,6 +73,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   fileRoutes(app);
   profileBundleRoutes(app, c);
   await peerProxyRoutes(app, c);
+  eventsSocket(app, c);
   terminalSocket(app, c);
   browserSocket(app, c);
   if (c.staticDir !== null && existsSync(c.staticDir)) await serveStatic(app, c.staticDir);

@@ -3,6 +3,7 @@ import { useT } from '../../shared/i18n/store';
 import { copyText } from '../settings/templateFile';
 import type { TextScope } from './bufferText';
 import { TerminalSearch } from './TerminalSearch';
+import { TerminalSpeak } from './TerminalSpeak';
 import type { TerminalApi } from './terminalApi';
 import { useTerminalTools, type ToolTab } from './toolsStore';
 
@@ -11,7 +12,7 @@ interface Props {
   api: MutableRefObject<TerminalApi | null>;
 }
 
-const TABS: readonly ToolTab[] = ['search', 'copy'];
+const TABS: readonly ToolTab[] = ['search', 'copy', 'listen'];
 
 /** The tools of a terminal, in a bar above it (never over it): search, copy, and room for more tabs. */
 export function TerminalTools({ sessionId, api }: Props) {
@@ -46,6 +47,7 @@ export function TerminalTools({ sessionId, api }: Props) {
         </button>
       </div>
       {tab === 'search' && <TerminalSearch api={api} onClose={close} />}
+      {tab === 'listen' && <TerminalSpeak api={api} />}
       {tab === 'copy' && (
         <div className="tools-copy">
           <button type="button" onClick={() => copy('screen')}>

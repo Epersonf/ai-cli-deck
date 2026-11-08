@@ -43,6 +43,7 @@ export function dispatchMessage(
       usePreview.getState().suggestNewTab(sessionId, message.url);
       break;
     case 'pong':
+    case 'ack':
       break;
   }
 }

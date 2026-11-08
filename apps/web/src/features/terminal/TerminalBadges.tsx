@@ -5,6 +5,9 @@ import type { Latency } from './latencyMeter';
 import type { TerminalApi } from './terminalApi';
 import { useTerminalTools } from './toolsStore';
 
+/** Server loop or page timers late by this much (ms) show up in the badge: they are what delays typing. */
+const SLOW_MS = 30;
+
 interface Props {
   sessionId: string;
   online: boolean;
@@ -30,6 +33,8 @@ export function TerminalBadges({ sessionId, online, following, latency, api, cla
         <div className="terminal-latency" title={t('terminal.latencyTip')}>
           {`${Math.round(latency.net)} ms`}
           {latency.echo !== null && ` · ${Math.round(latency.echo)} ms`}
+          {latency.server !== null && latency.server >= SLOW_MS && ` · srv ${latency.server}`}
+          {latency.ui !== null && latency.ui >= SLOW_MS && ` · ui ${Math.round(latency.ui)}`}
         </div>
       )}
       {!online && <div className="terminal-offline">{t('terminal.reconnecting')}</div>}

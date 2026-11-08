@@ -2,7 +2,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
 import { MCP_PATH, SETUP_SPECS } from '@deck/shared';
-import { ApprovalService } from './application/ApprovalService.js';
 import { PortAllocator } from './application/PortAllocator.js';
 import { PreviewService } from './application/PreviewService.js';
 import { SessionLauncher } from './application/SessionLauncher.js';
@@ -35,6 +34,7 @@ import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
 import { runCommand } from './infrastructure/tmux/exec.js';
 import { detectMultiplexer } from './infrastructure/tmux/NoMultiplexer.js';
 import { createApp } from './interface/http/createApp.js';
+import { liveServices } from './application/liveServices.js';
 import { listen } from './interface/http/listen.js';
 
 async function main(): Promise<void> {
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
     sessions,
     phone,
     ...chatServices({ files: chatFiles, sessions, providers, bus, system }),
-    approvals: new ApprovalService({ sessions, worktrees: git, system, bus }),
+    ...liveServices({ worktrees: git, system, sessions, tasks, bus, phone, port: config.port }),
     ...workspaceServices({ sessions, git }),
     preview: new PreviewService(sessions, bus),
     providers: providers,

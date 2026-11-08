@@ -6,6 +6,7 @@ import type { PhonePort, PtyPort } from '../domain/ports.js';
 import { batteryName, checkBattery, type BatteryRule } from './batteryRule.js';
 import { IdleWatch } from './idleWatch.js';
 import type { SessionManager } from './SessionManager.js';
+import { idleNotifier } from './idleNotifier.js';
 import { stripAnsi } from './stripAnsi.js';
 import { TaskBoard } from './taskBoard.js';
 
@@ -125,8 +126,7 @@ export class TaskService {
       const session = this.deps.sessions.get(owner.id);
       return session?.name ?? basename(session?.cwd ?? owner.cwd);
     };
-    const notify = (text: string): Promise<void> =>
-      phone.request('POST', '/notify', { title: 'CLI Deck', text }).then(() => undefined);
+    const notify = idleNotifier(phone, (id) => this.deps.sessions.replay(id), owner.id);
     const watch = new IdleWatch(owner.id, QUIET_MS, notify, label);
     const entry = this.board.add(owner, 'idle', 'notify when quiet', {
       stop: () => void this.idle.delete(entry.task.id),

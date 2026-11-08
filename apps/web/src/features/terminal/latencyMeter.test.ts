@@ -11,7 +11,7 @@ describe('createLatencyMeter', () => {
     meter.key();
     now = 80;
     meter.output();
-    expect(meter.get()).toEqual({ net: 20, echo: 60 });
+    expect(meter.get()).toMatchObject({ net: 20, echo: 60 });
   });
 
   it('ignores output that was not caused by a key and stale echoes', () => {
@@ -21,6 +21,15 @@ describe('createLatencyMeter', () => {
     meter.key();
     now = 5000;
     meter.output();
-    expect(meter.get()).toEqual({ net: null, echo: null });
+    expect(meter.get()).toMatchObject({ net: null, echo: null });
+  });
+});
+
+describe('createLatencyMeter load', () => {
+  it('keeps the server loop lag and the page timer drift', () => {
+    const meter = createLatencyMeter(() => 0);
+    meter.pong(45);
+    meter.drift(80);
+    expect(meter.get()).toMatchObject({ server: 45, ui: 80 });
   });
 });

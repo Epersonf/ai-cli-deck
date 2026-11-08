@@ -105,6 +105,13 @@ class PhoneRouter(ctx: Context, private val env: Env) {
         return JSONObject().put("always", JSONArray(listOf("battery", "device", "notify --text T [--title T]"))).put("enabled", list)
     }
 
+    /** The button text in the phone's language for the usual answers, else what the deck sent. */
+    private fun label(a: JSONObject): String = when (a.optString("kind")) {
+        "yes" -> api.string(R.string.phone_allow)
+        "no" -> api.string(R.string.phone_deny)
+        else -> a.optString("label").take(30)
+    }
+
     private fun notify(json: JSONObject): PhoneReply {
         val now = System.currentTimeMillis()
         synchronized(notifyTimes) {
@@ -115,7 +122,12 @@ class PhoneRouter(ctx: Context, private val env: Env) {
         }
         val text = json.optString("text")
         if (text.isBlank()) return fail("400 Bad Request", "text is required")
-        val problem = api.notify(json.optString("title"), text)
+        val buttons = json.optJSONArray("actions")
+        val actions = (0 until (buttons?.length() ?: 0)).mapNotNull { buttons?.optJSONObject(it) }.mapNotNull { a ->
+            val url = a.optString("url")
+            if (url.isBlank()) null else NotifyAction(label(a), url)
+        }
+        val problem = api.notify(json.optString("title"), text, actions)
         return if (problem == null) ok(JSONObject().put("shown", true)) else fail("409 Conflict", problem)
     }
 }

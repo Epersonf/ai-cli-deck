@@ -3,7 +3,13 @@ import { ApprovalRequestSchema } from './approval.js';
 import { SessionSchema } from './session.js';
 
 export const ClientMessageSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('input'), data: z.string() }),
+  z.object({
+    type: z.literal('input'),
+    data: z.string(),
+    // Numbered per device so a resend after a reconnect is applied once; the server answers with `ack`.
+    cid: z.string().max(64).optional(),
+    seq: z.number().int().nonnegative().optional(),
+  }),
   z.object({
     type: z.literal('resize'),
     // Smaller than this is a terminal that is not on screen yet; the program would redraw into garbage.
@@ -31,7 +37,10 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('preview-browser') }),
   z.object({ type: z.literal('new-tab'), url: z.string() }),
   z.object({ type: z.literal('size'), cols: z.number().int(), rows: z.number().int() }),
-  z.object({ type: z.literal('pong') }),
+  /** `lag`: how long (ms) the server's event loop was blocked lately; it delays every key. */
+  z.object({ type: z.literal('pong'), lag: z.number().nonnegative().optional() }),
+  /** Input numbered `seq` (and every one before it) reached the terminal. */
+  z.object({ type: z.literal('ack'), seq: z.number().int().nonnegative() }),
 ]);
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 

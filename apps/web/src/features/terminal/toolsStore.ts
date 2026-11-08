@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ToolTab = 'search' | 'copy';
+export type ToolTab = 'search' | 'copy' | 'listen';
 
 interface ToolsState {
   /** The terminal whose tools bar is open, if any. */

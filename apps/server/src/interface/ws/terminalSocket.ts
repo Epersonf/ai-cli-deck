@@ -2,6 +2,8 @@ import { WS_PATH, parseClientMessage, type ServerMessage } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
 import type { WebSocket } from 'ws';
 import type { Container } from '../container.js';
+import { acceptInput } from './inputDedup.js';
+import { loopLagMs } from './loopLag.js';
 import { eventToMessage, outputFrame } from './messages.js';
 
 const CLOSE_NOT_FOUND = 4404;
@@ -50,9 +52,15 @@ export function terminalSocket(app: FastifyInstance, c: Container): void {
     socket.on('message', (raw) => {
       const message = parseClientMessage(raw.toString());
       if (!message || gone()) return;
-      if (message.type === 'input') c.sessions.sendInput(id, message.data);
-      else if (message.type === 'resize') c.sessions.resize(id, message.cols, message.rows);
-      else json({ type: 'pong' });
+      if (message.type === 'input') {
+        const fresh =
+          message.cid === undefined ||
+          message.seq === undefined ||
+          acceptInput(`${id}:${message.cid}`, message.seq);
+        if (fresh) c.sessions.sendInput(id, message.data);
+        if (message.seq !== undefined) json({ type: 'ack', seq: message.seq });
+      } else if (message.type === 'resize') c.sessions.resize(id, message.cols, message.rows);
+      else json({ type: 'pong', lag: loopLagMs() });
     });
 
     c.sessions.snapshot(id, (screen) => {

@@ -7,6 +7,7 @@ import { dispatchMessage } from './dispatch';
 import { createFitter, laidOut } from './fitter';
 import { attachImagePaste } from './pasteImage';
 import { createLatencyMeter, type Latency } from './latencyMeter';
+import { startLatencyProbe } from './latencyProbe';
 import { attachLocalEcho } from './localEcho';
 import { RestartBar } from './RestartBar';
 import { TerminalBadges } from './TerminalBadges';
@@ -36,7 +37,12 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
   modsRef.current = mods;
   const [online, setOnline] = useState(false);
   const [following, setFollowing] = useState(false);
-  const [latency, setLatency] = useState<Latency>({ net: null, echo: null });
+  const [latency, setLatency] = useState<Latency>({
+    net: null,
+    echo: null,
+    server: null,
+    ui: null,
+  });
 
   useEffect(() => {
     const element = host.current;
@@ -63,7 +69,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
         term.write(bytes, echo.written);
       },
       onMessage: (message) => {
-        if (message.type === 'pong') meter.pong();
+        if (message.type === 'pong') meter.pong(message.lag);
         if (message.type === 'size') sync.onServerSize(message.cols, message.rows);
         if (message.type === 'status') {
           upstream = message.session.persistent;
@@ -85,11 +91,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
     syncRef.current = sync;
     const send = (data: string): void => socket.send({ type: 'input', data });
     apiRef.current = terminalApi(term, search, send);
-    const probe = window.setInterval(() => {
-      meter.ping();
-      socket.send({ type: 'ping' });
-      setLatency(meter.get());
-    }, 3000);
+    const stopProbe = startLatencyProbe(meter, () => socket.send({ type: 'ping' }), setLatency);
     term.onData((data) => {
       meter.key();
       echo.input(data);
@@ -114,7 +116,7 @@ export function TerminalView({ sessionId, visible, mods, apiRef }: Props) {
       detachPaste();
       detachTouch();
       detachShown();
-      window.clearInterval(probe);
+      stopProbe();
       window.removeEventListener('focus', claimIfActive);
       echo.dispose();
       observer.disconnect();
