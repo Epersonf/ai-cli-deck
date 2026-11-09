@@ -47,6 +47,18 @@ export function buildMcpServer(
     ({ reason }) => run(() => tools.proposeWorktree(reason)),
   );
   server.registerTool(
+    'propose_folder',
+    {
+      description:
+        "Ask the user to base this session in another folder (what the Files panel and git changes follow), e.g. when you are working mostly in one project. Nothing changes until the user approves. Poll get_request_status. The running terminal's own directory is not changed: cd yourself.",
+      inputSchema: {
+        path: z.string().min(1).describe('Absolute path of an existing folder'),
+        reason: z.string().optional().describe('Why this folder'),
+      },
+    },
+    ({ path, reason }) => runAsync(() => tools.proposeFolder(path, reason ?? '')),
+  );
+  server.registerTool(
     'open_preview',
     {
       description: "Open a localhost URL in this session's preview panel.",

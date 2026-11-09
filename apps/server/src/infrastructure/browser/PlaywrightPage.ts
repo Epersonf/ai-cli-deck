@@ -84,7 +84,10 @@ export class PlaywrightPage implements PageDriver {
    */
   async close(): Promise<void> {
     // The page's own context holds only this page; closing it frees the memory too.
-    await this.page.context().close().catch(() => undefined);
+    await this.page
+      .context()
+      .close()
+      .catch(() => undefined);
   }
   onClose(listener: () => void): void {
     this.page.once('close', listener);

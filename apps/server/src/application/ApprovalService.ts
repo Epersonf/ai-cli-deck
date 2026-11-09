@@ -1,4 +1,5 @@
 import type { ApprovalDecision, ApprovalRequest, Session } from '@deck/shared';
+import { existingDir } from './cwd.js';
 import { conflict, forbidden, notFound } from '../domain/errors.js';
 import type { EventBus } from '../domain/events.js';
 import type { SystemPort, WorktreePort } from '../domain/ports.js';
@@ -6,6 +7,8 @@ import type { SystemPort, WorktreePort } from '../domain/ports.js';
 export interface SessionDirectory {
   get(id: string): Session | undefined;
   applyWorktree(id: string, path: string, branch: string): void;
+  /** Moves the session's base folder (what Files, git and chats follow); the running program is not touched. */
+  setCwd(id: string, path: string): Promise<Session>;
 }
 
 export interface ApprovalDeps {
@@ -35,7 +38,9 @@ export class ApprovalService {
     if (!session) throw notFound(`Session ${sessionId}`);
     if (!session.worktree.enabled) throw forbidden('Worktrees are disabled for this session');
     if (session.worktree.path !== null) throw conflict('Session already has a worktree');
-    const pending = this.list('pending').find((r) => r.sessionId === sessionId);
+    const pending = this.list('pending').find(
+      (r) => r.sessionId === sessionId && r.kind === 'worktree',
+    );
     if (pending) return pending;
     const request: ApprovalRequest = {
       id: this.deps.system.newId(),
@@ -48,6 +53,28 @@ export class ApprovalService {
     };
     this.save(request);
     return request;
+  }
+
+  /** An agent asks to base the session in `path`; nothing changes until the user approves. */
+  async proposeFolder(sessionId: string, path: string, reason: string): Promise<ApprovalRequest> {
+    const session = this.deps.sessions.get(sessionId);
+    if (!session) throw notFound(`Session ${sessionId}`);
+    const folder = await existingDir(this.deps.system, path, true);
+    if (folder === session.cwd) throw conflict('Session is already based in that folder');
+    const pending = this.list('pending').find(
+      (r) => r.sessionId === sessionId && r.kind === 'folder' && r.path === folder,
+    );
+    if (pending) return pending;
+    return this.save({
+      id: this.deps.system.newId(),
+      sessionId,
+      kind: 'folder',
+      reason,
+      status: 'pending',
+      createdAt: this.deps.system.now().toISOString(),
+      resultPath: null,
+      path: folder,
+    });
   }
 
   get(id: string): ApprovalRequest {
@@ -67,6 +94,10 @@ export class ApprovalService {
     if (decision === 'reject') return this.save({ ...request, status: 'rejected' });
     const session = this.deps.sessions.get(request.sessionId);
     if (!session) throw notFound(`Session ${request.sessionId}`);
+    if (request.kind === 'folder' && request.path) {
+      await this.deps.sessions.setCwd(session.id, request.path);
+      return this.save({ ...request, status: 'approved', resultPath: request.path });
+    }
     const branch = `deck/${session.id}`;
     const targetPath = worktreePathFor(session.cwd, session.id);
     await this.deps.worktrees.add({ repoDir: session.cwd, branch, targetPath });

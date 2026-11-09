@@ -7,10 +7,12 @@ interface Props {
   dir: string;
   onGo(relative: string): void;
   onBack(): void;
+  /** Bases the session in the folder being shown. */
+  onUseFolder(absolute: string): void;
 }
 
 /** Back button plus an editable absolute folder path that can be copied or typed to jump. */
-export function PathBar({ cwd, dir, onGo, onBack }: Props) {
+export function PathBar({ cwd, dir, onGo, onBack, onUseFolder }: Props) {
   const t = useT();
   const shown = toAbsolute(cwd, dir);
   const [text, setText] = useState(shown);
@@ -46,6 +48,15 @@ export function PathBar({ cwd, dir, onGo, onBack }: Props) {
       />
       <button type="button" onClick={copy} title={t('files.copy')} aria-label={t('files.copy')}>
         ⧉
+      </button>
+      <button
+        type="button"
+        disabled={dir === ''}
+        onClick={() => onUseFolder(shown)}
+        title={t('files.useFolder')}
+        aria-label={t('files.useFolder')}
+      >
+        📌
       </button>
       {note !== null && <span className="hint path-note">{note}</span>}
     </div>

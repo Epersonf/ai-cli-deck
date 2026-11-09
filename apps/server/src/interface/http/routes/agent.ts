@@ -26,6 +26,10 @@ const PhoneCallBody = z.object({
   path: z.string().min(2).max(40),
   args: z.record(z.string(), z.unknown()).optional(),
 });
+const FolderBody = z.object({
+  path: z.string().min(1).max(1024),
+  reason: z.string().max(500).default(''),
+});
 const ReasonBody = z.object({ reason: z.string().min(1).max(500) });
 
 /** HTTP face of the agent tools, used by the `clideck` command. Loopback only. */
@@ -91,6 +95,10 @@ export function agentRoutes(app: FastifyInstance, c: Container): void {
   app.post(`${base}/worktree`, (request) =>
     tools(request.params).proposeWorktree(parseWith(ReasonBody, request.body).reason),
   );
+  app.post(`${base}/folder`, (request) => {
+    const body = parseWith(FolderBody, request.body);
+    return tools(request.params).proposeFolder(body.path, body.reason);
+  });
   app.get(`${base}/requests/:requestId`, (request) => {
     const { requestId } = parseWith(RequestParams, request.params);
     return tools(request.params).requestStatus(requestId);

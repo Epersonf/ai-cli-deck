@@ -107,6 +107,11 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
       return { status: 'pending' as const, requestId: request.id };
     },
 
+    proposeFolder: async (path: string, reason: string) => {
+      const request = await deps.approvals.proposeFolder(self().id, path, reason);
+      return { status: 'pending' as const, requestId: request.id, path: request.path };
+    },
+
     openPreview: (url: string) => ({ url: deps.preview.open(self().id, normalizeUrl(url)) }),
 
     suggestNewTab: (url: string) => ({

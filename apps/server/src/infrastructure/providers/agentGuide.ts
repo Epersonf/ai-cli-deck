@@ -14,6 +14,7 @@ export function agentGuide(options: { phone: boolean; devices?: readonly string[
     '`clideck preview <port|url>` shows a localhost app in the user\'s preview pane, `clideck newtab <url>` offers an "open in new tab" button,',
     '`clideck task run "<command>"` keeps a command running in the background (the user sees it in the deck; `task list|log|stop`),',
     '`clideck sessions` lists other terminals, `clideck worktree "<reason>"` asks the user to approve a git worktree (never create one yourself).',
+    '`clideck folder <path>` (MCP: propose_folder) asks the user to base the session in another folder, so Files and git changes follow it: offer it when you work mostly in one project outside the current base.',
     "The MCP server also has browser_* tools (navigate, snapshot, click, fill, type, press, screenshot) that drive a real Chromium shown in the user's preview pane.",
     ...(options.phone
       ? [

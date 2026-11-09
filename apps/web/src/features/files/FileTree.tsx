@@ -63,7 +63,16 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
         void upload([...e.dataTransfer.files]);
       }}
     >
-      <PathBar cwd={cwd} dir={dir} onGo={onDir} onBack={() => onDir(parentOf(dir))} />
+      <PathBar
+        cwd={cwd}
+        dir={dir}
+        onGo={onDir}
+        onBack={() => onDir(parentOf(dir))}
+        onUseFolder={(path) => {
+          onDir('');
+          void useSessions.getState().setFolder(sessionId, path);
+        }}
+      />
       <TreeTools
         busy={busy}
         canDelete={dir !== ''}

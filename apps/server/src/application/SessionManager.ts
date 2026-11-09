@@ -1,5 +1,4 @@
-import { parseLocalUrl, type CreateSessionBody, type Session } from '@deck/shared';
-import { conflict, invalid } from '../domain/errors.js';
+import { type CreateSessionBody, type Session } from '@deck/shared';
 import type { EventBus } from '../domain/events.js';
 import type {
   MultiplexerPort,
@@ -9,18 +8,18 @@ import type {
   SystemPort,
 } from '../domain/ports.js';
 import type { PortAllocator } from './PortAllocator.js';
-import { resolveCwd } from './cwd.js';
+import { existingDir } from './cwd.js';
 import { ScreenSaver } from './ScreenSaver.js';
 import { startRuntime, type StartOptions } from './startRuntime.js';
 import type { SessionLauncher } from './SessionLauncher.js';
 import { newSession } from './newSession.js';
-import { withMeta } from './sessionMeta.js';
 import {
   removeSession,
   restartSession,
   restoreSessions,
   type LifecycleCtx,
 } from './sessionLifecycle.js';
+import { SessionEdits } from './SessionEdits.js';
 import { SessionRegistry } from './SessionRegistry.js';
 
 export interface SessionManagerDeps {
@@ -41,6 +40,7 @@ export class SessionManager {
 
   constructor(private readonly deps: SessionManagerDeps) {
     this.reg = new SessionRegistry(deps.store, deps.bus, deps.replayBytes);
+    this.edits = new SessionEdits(this.reg, deps.system);
     this.screens = new ScreenSaver(deps.scrollback, deps.mux, this.reg.runtimes);
   }
 
@@ -52,8 +52,7 @@ export class SessionManager {
     const { system, ports, mux } = this.deps;
     // A sub-terminal hangs off its family's main session, never off another sub-terminal.
     const parentId = body.parentId ? this.reg.rootOf(body.parentId) : null;
-    const cwd = resolveCwd(body.cwd, system.homeDir());
-    if (!(await system.isDirectory(cwd))) throw invalid(`Not a directory: ${cwd}`);
+    const cwd = await existingDir(system, body.cwd, false);
     const session = newSession({ ...body, parentId }, cwd, await ports.allocate(), {
       id: system.newId(),
       now: system.now(),
@@ -111,33 +110,13 @@ export class SessionManager {
     return new Promise((resolve) => this.snapshot(id, resolve));
   }
 
-  /** Sets a note kept with the session (an empty value removes it). */
-  async setMeta(id: string, key: string, value: string): Promise<Record<string, string>> {
-    const meta = withMeta(this.reg.require(id).session.meta, key, value);
-    this.reg.update(id, { meta });
-    await this.reg.persist();
-    return meta;
-  }
-
-  async rename(id: string, name: string | null): Promise<Session> {
-    this.reg.update(id, { name });
-    await this.reg.persist();
-    return this.get(id) ?? this.reg.require(id).session;
-  }
-
-  setPreview(id: string, url: string): string {
-    const safe = parseLocalUrl(url);
-    if (safe === null) throw invalid('Preview URL must be http(s) on localhost');
-    this.reg.update(id, { previewUrl: safe });
-    return safe;
-  }
-
-  applyWorktree(id: string, path: string, branch: string): void {
-    const { worktree } = this.reg.require(id).session;
-    if (worktree.path !== null) throw conflict('Session already has a worktree');
-    this.reg.update(id, { cwd: path, worktree: { enabled: true, path, branch } });
-    void this.reg.persist();
-  }
+  private readonly edits: SessionEdits;
+  readonly setMeta = (id: string, key: string, value: string) => this.edits.setMeta(id, key, value);
+  readonly rename = (id: string, name: string | null) => this.edits.rename(id, name);
+  readonly setPreview = (id: string, url: string) => this.edits.setPreview(id, url);
+  readonly setCwd = (id: string, path: string) => this.edits.setCwd(id, path);
+  readonly applyWorktree = (id: string, path: string, branch: string) =>
+    this.edits.applyWorktree(id, path, branch);
 
   private start(session: Session, spawn: () => PtyHandle, options?: StartOptions): void {
     const { bus, system } = this.deps;

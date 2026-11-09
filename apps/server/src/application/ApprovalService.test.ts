@@ -84,3 +84,29 @@ describe('ApprovalService worktree flow', () => {
     expect(h.sessions.get(id)?.worktree.path).toBeNull();
   });
 });
+
+describe('ApprovalService folder flow', () => {
+  it('only moves the session base folder once the user approves', async () => {
+    const { h, approvals } = setup();
+    const { id } = await h.sessions.create(customBody('/work', false));
+    const request = await approvals.proposeFolder(id, '/work', 'x').catch((e: Error) => e);
+    expect(request).toBeInstanceOf(Error); // already based there
+
+    const asked = await approvals.proposeFolder(id, '/other', 'work mostly here');
+    expect(asked).toMatchObject({ kind: 'folder', status: 'pending', path: '/other' });
+    expect(h.sessions.get(id)?.cwd).toBe('/work');
+    expect((await approvals.proposeFolder(id, '/other', 'again')).id).toBe(asked.id);
+
+    const done = await approvals.decide(asked.id, 'approve');
+    expect(done).toMatchObject({ status: 'approved', resultPath: '/other' });
+    expect(h.sessions.get(id)?.cwd).toBe('/other');
+  });
+
+  it('rejecting leaves the folder alone', async () => {
+    const { h, approvals } = setup();
+    const { id } = await h.sessions.create(customBody('/work', false));
+    const asked = await approvals.proposeFolder(id, '/other', 'why');
+    await approvals.decide(asked.id, 'reject');
+    expect(h.sessions.get(id)?.cwd).toBe('/work');
+  });
+});

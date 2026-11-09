@@ -53,6 +53,8 @@ export const api = {
     request(SessionSchema, 'POST', `${session(id)}/terminal`, { path }),
   renameSession: (id: string, name: string | null) =>
     request(SessionSchema, 'PATCH', session(id), { name }),
+  setSessionFolder: (id: string, path: string) =>
+    request(SessionSchema, 'PUT', `${session(id)}/cwd`, { path }),
   templates: () => request(z.array(TemplateInfoSchema), 'GET', '/api/templates'),
   templateSkeleton: () =>
     request(z.object({ text: z.string() }), 'GET', '/api/templates/skeleton').then((r) => r.text),

@@ -15,6 +15,7 @@ export type Command =
   | { name: 'device'; args: string[] }
   | { name: 'phone'; action: string; text: string; title: string; args: string[] }
   | { name: 'worktree'; reason: string }
+  | { name: 'folder'; path: string; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
   | { name: 'setup'; provider: string | null }
@@ -100,6 +101,10 @@ export function parseArgs(argv: readonly string[]): Parsed {
       return ok({ name, title: text === '' ? null : text });
     case 'worktree':
       return text === '' ? fail('usage: clideck worktree "<reason>"') : ok({ name, reason: text });
+    case 'folder':
+      return rest[0] === undefined
+        ? fail('usage: clideck folder <path> ["<reason>"]')
+        : ok({ name, path: rest[0], reason: rest.slice(1).join(' ') });
     case 'status':
       return text === ''
         ? fail('usage: clideck status <requestId>')

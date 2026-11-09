@@ -82,6 +82,13 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
     return c.profiles.rename(id, label);
   });
 
+  // The person bases the session in another folder (the Files panel's "use this folder").
+  app.put('/api/sessions/:id/cwd', (request) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { path } = parseWith(z.object({ path: z.string().min(1).max(1024) }), request.body);
+    return c.sessions.setCwd(id, path);
+  });
+
   app.put('/api/sessions/:id/preview', (request) => {
     const { id } = parseWith(IdParams, request.params);
     const { url } = parseWith(PreviewBody, request.body);

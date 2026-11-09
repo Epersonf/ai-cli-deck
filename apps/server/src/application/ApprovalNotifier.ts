@@ -70,8 +70,11 @@ export class ApprovalNotifier {
     });
     const who = this.deps.label(request.sessionId);
     await phone.request('POST', '/notify', {
-      title: `${who} asks for a worktree`,
-      text: request.reason,
+      title: `${who} asks ${request.kind === 'folder' ? 'to change its folder' : 'for a worktree'}`,
+      text:
+        request.kind === 'folder'
+          ? `${request.path ?? ''} ${request.reason}`.trim()
+          : request.reason,
       actions,
     });
   }

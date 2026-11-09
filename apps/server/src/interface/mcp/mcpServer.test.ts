@@ -55,6 +55,7 @@ describe('MCP server', () => {
       'get_request_status',
       'list_sessions',
       'open_preview',
+      'propose_folder',
       'propose_worktree',
       'session_meta',
       'session_title',

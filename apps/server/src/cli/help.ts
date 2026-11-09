@@ -23,6 +23,8 @@ Commands:
   preview <url|port>       Open a localhost page in this session's preview panel
   newtab <url|port>        Offer the user a button to open a page in a new tab
   worktree "<reason>"      Ask the user to create a git worktree (needs approval)
+  folder <path> ["<reason>"]
+                           Ask the user to base this session in another folder (needs approval)
   status <requestId>       Check an approval request: pending, approved or rejected
   profile add "<name>" <template> [--url <api-base-url>] [--command <program>]
                            Clean terminal profile from a template (claude, codex, claude-deepseek, ...)

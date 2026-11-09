@@ -57,6 +57,10 @@ async function execute(
       return show(await call(deck, 'POST', '/preview', { url: command.url }));
     case 'newtab':
       return show(await call(deck, 'POST', '/newtab', { url: command.url }));
+    case 'folder':
+      return show(
+        await call(deck, 'POST', '/folder', { path: command.path, reason: command.reason }),
+      );
     case 'worktree':
       return show(await call(deck, 'POST', '/worktree', { reason: command.reason }));
     case 'status':

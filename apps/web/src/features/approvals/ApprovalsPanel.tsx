@@ -24,14 +24,20 @@ export function ApprovalsPanel() {
           const session = sessions.find((s) => s.id === request.sessionId);
           return (
             <article className="approval" key={request.id}>
-              <h3>{t('approvals.worktree')}</h3>
+              <h3>{request.kind === 'folder' ? t('approvals.folder') : t('approvals.worktree')}</h3>
               <p>{request.reason}</p>
               <p className="hint">
-                {t('approvals.detail', {
-                  provider: session?.provider ?? '?',
-                  cwd: session?.cwd ?? request.sessionId,
-                  id: request.sessionId,
-                })}
+                {request.kind === 'folder'
+                  ? t('approvals.folderDetail', {
+                      provider: session?.provider ?? '?',
+                      cwd: session?.cwd ?? request.sessionId,
+                      path: request.path ?? '?',
+                    })
+                  : t('approvals.detail', {
+                      provider: session?.provider ?? '?',
+                      cwd: session?.cwd ?? request.sessionId,
+                      id: request.sessionId,
+                    })}
               </p>
               <div className="row">
                 <button

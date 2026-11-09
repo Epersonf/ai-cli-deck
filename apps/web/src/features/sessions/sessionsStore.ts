@@ -12,6 +12,8 @@ interface SessionsState {
   upsert(session: Session): void;
   remove(id: string): Promise<void>;
   rename(id: string, name: string | null): Promise<void>;
+  /** Bases the session in another folder (Files, git and chats follow). */
+  setFolder(id: string, path: string): Promise<void>;
   select(id: string): void;
   setView(view: View): void;
 }
@@ -36,6 +38,9 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   async remove(id) {
     await api.deleteSession(id);
     await get().refresh();
+  },
+  async setFolder(id, path) {
+    get().upsert(await api.setSessionFolder(id, path));
   },
   async rename(id, name) {
     get().upsert(await api.renameSession(id, name));
