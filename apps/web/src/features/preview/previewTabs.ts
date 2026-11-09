@@ -31,10 +31,12 @@ export function addTab(tabs: PreviewTabs, mode: PreviewMode): PreviewTabs {
   return { list: [...tabs.list, { n, mode }], active: n };
 }
 
-/** Closes a tab (the last one stays). The tab before it, or the first, is shown when it was the active one. */
+/** Closes a tab (the last one is replaced by an empty tab). The tab before it, or the first, is shown when it was the active one. */
 export function closeTab(tabs: PreviewTabs, n: number): PreviewTabs {
   const index = tabs.list.findIndex((tab) => tab.n === n);
-  if (index < 0 || tabs.list.length <= 1) return tabs;
+  if (index < 0) return tabs;
+  // The last tab is replaced by an empty one on this device (a browser tab becomes an iframe one).
+  if (tabs.list.length <= 1) return firstTabs('frame');
   const list = tabs.list.filter((tab) => tab.n !== n);
   if (tabs.active !== n) return { ...tabs, list };
   return { list, active: (list[Math.max(0, index - 1)] ?? list[0])?.n ?? 1 };

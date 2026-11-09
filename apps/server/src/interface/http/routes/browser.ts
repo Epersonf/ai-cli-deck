@@ -25,6 +25,10 @@ export function browserRoutes(app: FastifyInstance, c: Container): void {
   app.get('/api/sessions/:id/browser', async (request) =>
     c.browser.state(parseWith(IdParams, request.params).id),
   );
+  app.delete('/api/sessions/:id/browser', async (request) => {
+    await c.browser.close(parseWith(IdParams, request.params).id);
+    return { ok: true };
+  });
   app.post('/api/sessions/:id/browser/navigate', async (request) =>
     c.browser.navigate(
       parseWith(IdParams, request.params).id,

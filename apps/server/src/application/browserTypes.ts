@@ -25,6 +25,10 @@ export interface PageDriver {
   resize(width: number, height: number): Promise<void>;
   /** Streams a JPEG each time the page changes; resolves to the function that stops it. */
   screencast(onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>>;
+  /** Closes the page (a tab the person closed). */
+  close(): Promise<void>;
+  /** Calls `listener` once when the page is gone: closed here, or its browser died. */
+  onClose(listener: () => void): void;
 }
 
 export interface PageDiagnosis {

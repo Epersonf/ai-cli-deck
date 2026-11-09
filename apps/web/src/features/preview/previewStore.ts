@@ -1,6 +1,7 @@
 import { parseLocalUrl, previewKey } from '@deck/shared';
 import { create } from 'zustand';
 import { PEER_ID } from '../../shared/api/base';
+import { api } from '../../shared/api/endpoints';
 import {
   activeTab,
   addTab,
@@ -84,6 +85,11 @@ export const usePreview = create<PreviewStore>()((set, get) => {
     addTab: (sessionId, mode) => setTabs(sessionId, (tabs) => addTab(tabs, mode)),
     selectTab: (sessionId, n) => setTabs(sessionId, (tabs) => ({ ...tabs, active: n })),
     closeTab(sessionId, n) {
+      // A closed browser tab frees its page in the deck's Chromium too.
+      const before = tabsOf(get().tabs, sessionId);
+      if (before.list.find((tab) => tab.n === n)?.mode === 'browser') {
+        void api.browserClose(previewKey(sessionId, n)).catch(() => undefined);
+      }
       setTabs(sessionId, (tabs) => closeTab(tabs, n));
       // A tab opened later with this number starts empty.
       const gone = previewKey(sessionId, n);

@@ -36,7 +36,7 @@ export function PreviewTabsBar({ sessionId, tabs }: Props) {
             {labels[tab.mode]}
             {tabs.list.filter((other) => other.mode === tab.mode).length > 1 && ` ${index + 1}`}
           </button>
-          {tabs.list.length > 1 && (
+          {(tabs.list.length > 1 || tab.mode === 'browser') && (
             <button
               type="button"
               className="preview-tab-close"

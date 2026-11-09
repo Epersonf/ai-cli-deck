@@ -14,6 +14,7 @@ export class FakeBrowserEngine implements BrowserEngine {
   newPage(): Promise<PageDriver> {
     const log = this.log;
     let current = 'about:blank';
+    const closed: (() => void)[] = [];
     const page: PageDriver = {
       goto: (url) => ((current = url), Promise.resolve(void log.push(`goto ${url}`))),
       back: () => Promise.resolve(void log.push('back')),
@@ -33,6 +34,8 @@ export class FakeBrowserEngine implements BrowserEngine {
         Promise.resolve({ webgl: 'fake', visibility: 'visible', canvases: [], problems: [] }),
       size: () => ({ width: 1000, height: 720 }),
       resize: (w, h) => Promise.resolve(void log.push(`resize ${w}x${h}`)),
+      close: () => (closed.forEach((l) => l()), Promise.resolve(void log.push('close'))),
+      onClose: (l) => void closed.push(l),
       screencast: (onFrame) => {
         onFrame(Buffer.from('frame'));
         return Promise.resolve(() => Promise.resolve(void log.push('stop')));

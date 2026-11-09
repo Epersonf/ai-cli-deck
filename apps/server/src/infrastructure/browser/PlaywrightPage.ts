@@ -82,6 +82,14 @@ export class PlaywrightPage implements PageDriver {
    * a moving one streams smoothly. Each frame is acknowledged once handed on, which paces Chromium to
    * what the link can take.
    */
+  async close(): Promise<void> {
+    // The page's own context holds only this page; closing it frees the memory too.
+    await this.page.context().close().catch(() => undefined);
+  }
+  onClose(listener: () => void): void {
+    this.page.once('close', listener);
+  }
+
   async screencast(onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>> {
     const cdp = await this.page.context().newCDPSession(this.page);
     const timers = new Set<NodeJS.Timeout>();

@@ -64,9 +64,33 @@ export class BrowserService {
 
   private async open(sessionId: string): Promise<PageDriver> {
     const page = await this.engine.newPage();
+    // A page that is gone (tab closed, Chromium died) must not stay cached: the next use opens a fresh one.
+    page.onClose(() => {
+      void this.pages.get(sessionId)?.then((cached) => {
+        if (cached === page) this.pages.delete(sessionId);
+      });
+    });
     const start = this.startUrl(sessionId);
     if (start) await page.goto(start).catch(() => undefined); // a dev server still starting is fine
     return page;
+  }
+
+  /** Runs `job` on the session's page; a page that turns out to be closed is replaced once and the job retried. */
+  private async run<T>(sessionId: string, job: (page: PageDriver) => Promise<T>): Promise<T> {
+    try {
+      return await job(await this.page(sessionId));
+    } catch (e) {
+      if (!/closed|disconnected|crashed/i.test(e instanceof Error ? e.message : '')) throw e;
+      this.pages.delete(sessionId);
+      return job(await this.page(sessionId));
+    }
+  }
+
+  /** Closes the page of a tab the person closed. Nothing happens when it was never opened. */
+  async close(sessionId: string): Promise<void> {
+    const page = this.pages.get(sessionId);
+    this.pages.delete(sessionId);
+    await (await page?.catch(() => undefined))?.close().catch(() => undefined);
   }
 
   private touch(): void {
@@ -77,28 +101,29 @@ export class BrowserService {
 
   async navigate(sessionId: string, raw: string): Promise<PageInfo> {
     return asBadRequest(async () => {
-      const page = await this.page(sessionId);
-      await page.goto(toHttpUrl(raw));
-      return this.info(page);
+      const url = toHttpUrl(raw);
+      return this.run(sessionId, async (page) => (await page.goto(url), this.info(page)));
     });
   }
 
   async state(sessionId: string): Promise<PageInfo> {
-    return asBadRequest(async () => this.info(await this.page(sessionId)));
+    return asBadRequest(() => this.run(sessionId, (page) => this.info(page)));
   }
 
   async diagnose(sessionId: string): Promise<PageDiagnosis> {
-    return asBadRequest(async () => (await this.page(sessionId)).diagnose());
+    return asBadRequest(() => this.run(sessionId, (page) => page.diagnose()));
   }
 
   async screenshot(sessionId: string): Promise<Buffer> {
-    return asBadRequest(async () => (await this.page(sessionId)).screenshot());
+    return asBadRequest(() => this.run(sessionId, (page) => page.screenshot()));
   }
 
   async outline(sessionId: string): Promise<PageInfo & { outline: string }> {
     return asBadRequest(async () => {
-      const page = await this.page(sessionId);
-      return { ...(await this.info(page)), outline: await page.outline() };
+      return this.run(sessionId, async (page) => ({
+        ...(await this.info(page)),
+        outline: await page.outline(),
+      }));
     });
   }
 
@@ -113,11 +138,13 @@ export class BrowserService {
 
   /** Streams the page while someone watches; resolves to the function that stops it. */
   async watch(sessionId: string, onFrame: (jpeg: Buffer) => void): Promise<() => Promise<void>> {
-    return asBadRequest(async () =>
-      (await this.page(sessionId)).screencast((jpeg) => {
-        this.touch(); // someone is looking: not idle
-        onFrame(jpeg);
-      }),
+    return asBadRequest(() =>
+      this.run(sessionId, (page) =>
+        page.screencast((jpeg) => {
+          this.touch(); // someone is looking: not idle
+          onFrame(jpeg);
+        }),
+      ),
     );
   }
 
@@ -131,9 +158,7 @@ export class BrowserService {
 
   private act(sessionId: string, job: (page: PageDriver) => Promise<void>): Promise<PageInfo> {
     return asBadRequest(async () => {
-      const page = await this.page(sessionId);
-      await job(page);
-      return this.info(page);
+      return this.run(sessionId, async (page) => (await job(page), this.info(page)));
     });
   }
 

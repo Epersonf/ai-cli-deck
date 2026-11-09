@@ -119,6 +119,8 @@ export const api = {
   browserStatus: () => request(BrowserStatusSchema, 'GET', '/api/browser'),
   browserInstall: () => request(BrowserStatusSchema, 'POST', '/api/browser/install'),
   browserState: (id: string) => request(PageInfoSchema, 'GET', `${session(id)}/browser`),
+  browserClose: (id: string) =>
+    request(z.object({ ok: z.boolean() }), 'DELETE', `${session(id)}/browser`),
   browserNavigate: (id: string, url: string) =>
     request(PageInfoSchema, 'POST', `${session(id)}/browser/navigate`, { url }),
   browserInput: (id: string, input: BrowserInput) =>

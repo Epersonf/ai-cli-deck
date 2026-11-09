@@ -61,7 +61,7 @@ export class PlaywrightEngine implements BrowserEngine {
 
   async newPage(): Promise<PageDriver> {
     const executablePath = this.executable();
-    this.browser ??= chromium.launch({
+    const launched = (this.browser ??= chromium.launch({
       headless: true,
       ...(executablePath ? { executablePath } : {}),
       // root + proot/Android: no user namespaces for the sandbox, and a tiny /dev/shm.
@@ -86,9 +86,14 @@ export class PlaywrightEngine implements BrowserEngine {
         '--disable-backgrounding-occluded-windows',
         '--disable-background-timer-throttling',
       ],
-    });
+    }));
     try {
-      const context = await (await this.browser).newContext({ viewport: VIEWPORT });
+      const browser = await this.browser;
+      // A crashed or killed Chromium must not stay cached: the next page starts a fresh one.
+      browser.once('disconnected', () => {
+        if (this.browser && this.browser === launched) this.browser = null;
+      });
+      const context = await browser.newContext({ viewport: VIEWPORT });
       return new PlaywrightPage(await context.newPage());
     } catch (e) {
       this.browser = null;
