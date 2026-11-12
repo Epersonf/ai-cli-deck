@@ -11,6 +11,7 @@
   font-size: 12px;
 }
 .header-pop-panel {
+  overflow: hidden;
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
@@ -102,13 +103,36 @@
 .chat-task-title {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
   font-family: var(--mono);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.chat-task-list button {
+.chat-task-full {
+  max-height: 50vh;
+  margin: 0;
+  overflow: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-task-list li > * {
+  min-width: 0;
+}
+.chat-task-list li > button.danger,
+.chat-task-list li > small,
+.chat-task-list li > .dot {
+  flex: none;
+}
+.chat-task-list button.danger {
   min-height: 26px;
   font-size: 12px;
 }
