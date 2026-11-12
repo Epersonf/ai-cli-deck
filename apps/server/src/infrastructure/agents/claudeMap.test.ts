@@ -59,6 +59,19 @@ describe('Claude Agent SDK messages as chat steps', () => {
     ]);
   });
 
+  it('keeps stream ids when the SDK sends one assistant message per block', () => {
+    const { events, feed } = collect();
+    feed(
+      { type: 'stream_event', event: { type: 'message_start', message: { id: 'm9' } } },
+      { type: 'assistant', message: { id: 'm9', content: [{ type: 'thinking', thinking: 'hmm' }] } },
+      { type: 'assistant', message: { id: 'm9', content: [{ type: 'text', text: 'Hi' }] } },
+    );
+    expect(events).toEqual([
+      { t: 'thinking', id: 'm9:0', text: 'hmm' },
+      { t: 'text', id: 'm9:1', text: 'Hi' },
+    ]);
+  });
+
   it('pairs a tool call with its result, text or structured, and keeps errors', () => {
     const { events, feed } = collect();
     feed(

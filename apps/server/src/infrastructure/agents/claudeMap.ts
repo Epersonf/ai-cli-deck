@@ -48,6 +48,8 @@ export interface MapState {
   authText: string | null;
   /** The background jobs of this run. */
   tasks: Tasks;
+  /** Blocks already finalized per API message id: the SDK sends one message per block, so each starts at its stream index. */
+  seen: Map<string, number>;
 }
 
 export const newMapState = (): MapState => ({
@@ -55,6 +57,7 @@ export const newMapState = (): MapState => ({
   chatId: null,
   authText: null,
   tasks: new Map(),
+  seen: new Map(),
 });
 
 const MAX_OUTPUT = 20_000;
@@ -75,11 +78,12 @@ export function outputText(content: unknown): string {
   return text.length > MAX_OUTPUT ? `${text.slice(0, MAX_OUTPUT)}\n… (cut)` : text;
 }
 
-function assistantEvents(msg: SdkMessage): ChatEvent[] {
+function assistantEvents(msg: SdkMessage, offset: number): ChatEvent[] {
   const mid = msg.message?.id ?? '';
   const blocks = Array.isArray(msg.message?.content) ? (msg.message.content as Block[]) : [];
   const out: ChatEvent[] = [];
-  blocks.forEach((block, i) => {
+  blocks.forEach((block, n) => {
+    const i = offset + n;
     if (block.type === 'text' && block.text?.trim())
       out.push({ t: 'text', id: `${mid}:${i}`, text: block.text });
     else if (block.type === 'thinking' && block.thinking?.trim())
@@ -132,7 +136,11 @@ export function mapClaudeMessage(msg: SdkMessage, state: MapState, sink: AgentSi
     if (reading) sink.usage(reading);
     const auth = assistantAuthLine(msg);
     if (auth !== null) state.authText = auth; // shown as the turn's error, not also as an answer
-    for (const event of assistantEvents(msg))
+    const mid = msg.message?.id ?? '';
+    const offset = state.seen.get(mid) ?? 0;
+    const count = Array.isArray(msg.message?.content) ? msg.message.content.length : 0;
+    state.seen.set(mid, offset + count);
+    for (const event of assistantEvents(msg, offset))
       if (auth === null || event.t !== 'text') sink.event(event);
   } else if (msg.type === 'user') {
     for (const event of resultEvents(msg)) sink.event(event);
