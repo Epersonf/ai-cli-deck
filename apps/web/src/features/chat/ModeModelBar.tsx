@@ -1,4 +1,4 @@
-import { EffortSchema, PermissionModeSchema, type ChatConfig } from '@deck/shared';
+import { AGENT_EFFORTS, AGENT_MODES, EffortSchema, PermissionModeSchema, type ChatConfig } from '@deck/shared';
 import { useT } from '../../shared/i18n/store';
 import { Dropdown } from '../../shared/ui/Dropdown';
 import { WarnIcon } from '../../shared/ui/GlyphIcons';
@@ -19,7 +19,7 @@ export function ModeModelBar({ sessionId, config }: { sessionId: string; config:
       <Dropdown
         caption={t('chat.mode')}
         value={config.mode}
-        options={PermissionModeSchema.options.map((m) => ({
+        options={AGENT_MODES[config.agent].map((m) => ({
           id: m,
           label: t(`chat.mode.${m}`),
           description: t(`chat.modeHint.${m}`),
@@ -35,7 +35,7 @@ export function ModeModelBar({ sessionId, config }: { sessionId: string; config:
         value={config.effort ?? ''}
         options={[
           { id: '', label: t('chat.effortDefault') },
-          ...EffortSchema.options.map((e) => ({ id: e, label: t(`chat.effort.${e}`) })),
+          ...AGENT_EFFORTS[config.agent].map((e) => ({ id: e, label: t(`chat.effort.${e}`) })),
         ]}
         onChange={(id) => {
           const next = EffortSchema.safeParse(id);

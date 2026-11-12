@@ -15,8 +15,18 @@ export const PermissionModeSchema = z.enum([
 ]);
 export type PermissionMode = z.infer<typeof PermissionModeSchema>;
 
-export const EffortSchema = z.enum(['low', 'medium', 'high']);
+export const EffortSchema = z.enum(['low', 'medium', 'high', 'xhigh', 'max']);
 export type Effort = z.infer<typeof EffortSchema>;
+
+/** What each agent offers: Codex only has a sandbox (read-only / workspace / full access) and no `max` effort. */
+export const AGENT_MODES: Record<AgentKind, readonly PermissionMode[]> = {
+  claude: PermissionModeSchema.options,
+  codex: ['plan', 'default', 'bypassPermissions'],
+};
+export const AGENT_EFFORTS: Record<AgentKind, readonly Effort[]> = {
+  claude: EffortSchema.options,
+  codex: ['low', 'medium', 'high', 'xhigh'],
+};
 
 /** An image or PDF the person attached to a message (sent as base64, never stored in the chat log). */
 export const ImageInputSchema = z.object({

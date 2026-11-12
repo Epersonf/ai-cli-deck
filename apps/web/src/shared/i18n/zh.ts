@@ -284,6 +284,8 @@ export const zh: Messages = {
   'chat.effort.low': '低',
   'chat.effort.medium': '中',
   'chat.effort.high': '高',
+  'chat.effort.xhigh': 'Extra high',
+  'chat.effort.max': 'Max',
   'chat.key.placeholder': 'API 密钥',
   'chat.key.save': '保存密钥',
   'chat.edit': '编辑消息',

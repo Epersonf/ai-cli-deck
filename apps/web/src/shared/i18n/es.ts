@@ -292,6 +292,8 @@ export const es: Messages = {
   'chat.effort.low': 'Bajo',
   'chat.effort.medium': 'Medio',
   'chat.effort.high': 'Alto',
+  'chat.effort.xhigh': 'Extra high',
+  'chat.effort.max': 'Max',
   'chat.key.placeholder': 'Clave de API',
   'chat.key.save': 'Guardar clave',
   'chat.edit': 'Editar mensaje',

@@ -294,6 +294,8 @@ export const ja: Messages = {
   'chat.effort.low': '低',
   'chat.effort.medium': '中',
   'chat.effort.high': '高',
+  'chat.effort.xhigh': 'Extra high',
+  'chat.effort.max': 'Max',
   'chat.key.placeholder': 'API キー',
   'chat.key.save': 'キーを保存',
   'chat.edit': 'メッセージを編集',

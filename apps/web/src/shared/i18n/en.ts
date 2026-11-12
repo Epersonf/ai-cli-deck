@@ -289,6 +289,8 @@ export const en = {
   'chat.effort.low': 'Low',
   'chat.effort.medium': 'Medium',
   'chat.effort.high': 'High',
+  'chat.effort.xhigh': 'Extra high',
+  'chat.effort.max': 'Max',
   'chat.key.placeholder': 'API key',
   'chat.key.save': 'Save key',
   'chat.edit': 'Edit message',

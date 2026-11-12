@@ -291,6 +291,8 @@ export const ru: Messages = {
   'chat.effort.low': 'Низкое',
   'chat.effort.medium': 'Среднее',
   'chat.effort.high': 'Высокое',
+  'chat.effort.xhigh': 'Extra high',
+  'chat.effort.max': 'Max',
   'chat.key.placeholder': 'API-ключ',
   'chat.key.save': 'Сохранить ключ',
   'chat.edit': 'Изменить сообщение',
