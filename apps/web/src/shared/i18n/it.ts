@@ -386,7 +386,6 @@ export const it: Messages = {
   'chat.modeHint.dontAsk':
     'Non chiedere: girano solo strumenti pre-approvati; il resto è rifiutato.',
   'chat.options.hide': 'Nascondi modalità, modello e impegno',
-  'chat.options.show': 'Mostra modalità, modello e impegno',
   'files.unpin': 'Rimuovi il blocco: torna a {folder}',
   'memory.title': 'Memoria',
   'memory.open': 'Apri la memoria',

@@ -11,6 +11,7 @@ import { StopIcon } from '../../shared/ui/ToolIcons';
 import { ACCEPT } from './attachFiles';
 import { Attachments } from './Attachments';
 import { MicButton } from './MicButton';
+import { OptionsToggle } from './OptionsToggle';
 import { useVoice } from '../voice/voiceStore';
 import { isLoginCommand } from '../signin/authError';
 import { useSignIn } from '../signin/signInStore';
@@ -105,6 +106,7 @@ export function Composer({ sessionId, busy, visible }: Props) {
         >
           +
         </button>
+        <OptionsToggle sessionId={sessionId} />
         <input
           ref={picker}
           type="file"

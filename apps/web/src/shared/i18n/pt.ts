@@ -385,7 +385,6 @@ export const pt: Messages = {
   'chat.modeHint.auto': 'Auto: um classificador aprova ações seguras ou pergunta a você.',
   'chat.modeHint.dontAsk': 'Não perguntar: só rodam ferramentas pré-aprovadas; o resto é recusado.',
   'chat.options.hide': 'Ocultar modo, modelo e esforço',
-  'chat.options.show': 'Mostrar modo, modelo e esforço',
   'files.unpin': 'Desafixar: voltar para {folder}',
   'memory.title': 'Memória',
   'memory.open': 'Abrir memória',

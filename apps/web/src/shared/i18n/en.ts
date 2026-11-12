@@ -380,7 +380,6 @@ export const en = {
   'chat.modeHint.auto': 'Auto: a classifier approves safe actions or asks you.',
   'chat.modeHint.dontAsk': 'Don’t ask: only pre-approved tools run; everything else is refused.',
   'chat.options.hide': 'Hide mode, model and effort',
-  'chat.options.show': 'Show mode, model and effort',
   'files.unpin': 'Unpin: go back to {folder}',
   'memory.title': 'Memory',
   'memory.open': 'Open memory',

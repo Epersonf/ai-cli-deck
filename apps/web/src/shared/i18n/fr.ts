@@ -390,7 +390,6 @@ export const fr: Messages = {
   'chat.modeHint.dontAsk':
     'Ne pas demander : seuls les outils pré-approuvés s’exécutent ; le reste est refusé.',
   'chat.options.hide': 'Masquer mode, modèle et effort',
-  'chat.options.show': 'Afficher mode, modèle et effort',
   'files.unpin': 'Détacher : revenir à {folder}',
   'memory.title': 'Mémoire',
   'memory.open': 'Ouvrir la mémoire',

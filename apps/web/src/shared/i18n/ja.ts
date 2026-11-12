@@ -385,7 +385,6 @@ export const ja: Messages = {
   'chat.modeHint.auto': '自動：分類器が安全な操作を承認し、そうでなければ確認します。',
   'chat.modeHint.dontAsk': '確認しない：事前承認済みのツールだけが実行され、他は拒否されます。',
   'chat.options.hide': 'モード・モデル・工数を隠す',
-  'chat.options.show': 'モード・モデル・工数を表示',
   'files.unpin': 'ピン留め解除：{folder} に戻す',
   'memory.title': 'メモリ',
   'memory.open': 'メモリを開く',

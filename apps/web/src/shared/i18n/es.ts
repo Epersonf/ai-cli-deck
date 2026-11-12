@@ -386,7 +386,6 @@ export const es: Messages = {
   'chat.modeHint.dontAsk':
     'No preguntar: solo se ejecutan herramientas preaprobadas; lo demás se rechaza.',
   'chat.options.hide': 'Ocultar modo, modelo y esfuerzo',
-  'chat.options.show': 'Mostrar modo, modelo y esfuerzo',
   'files.unpin': 'Desanclar: volver a {folder}',
   'memory.title': 'Memoria',
   'memory.open': 'Abrir memoria',

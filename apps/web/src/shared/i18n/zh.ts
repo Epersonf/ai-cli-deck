@@ -372,7 +372,6 @@ export const zh: Messages = {
   'chat.modeHint.auto': '自动：由分类器批准安全操作，否则询问您。',
   'chat.modeHint.dontAsk': '不询问：只运行已预先批准的工具，其余一律拒绝。',
   'chat.options.hide': '隐藏模式、模型和力度',
-  'chat.options.show': '显示模式、模型和力度',
   'files.unpin': '取消固定：返回 {folder}',
   'memory.title': '记忆',
   'memory.open': '打开记忆',

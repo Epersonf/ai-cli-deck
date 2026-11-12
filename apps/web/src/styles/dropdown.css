@@ -36,11 +36,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.plate.chip {
-  height: 32px;
-}
-.plate[aria-expanded='true'] > svg,
-.plate.chip > svg {
+.plate[aria-expanded='true'] > svg {
   transform: rotate(180deg);
 }
 
@@ -52,10 +48,6 @@
   padding: 8px 14px;
   border-top: 2px solid var(--brass-lo);
   background: linear-gradient(180deg, var(--leather), #1c120b);
-}
-.mode-bar.collapsed {
-  grid-template-columns: minmax(0, 1fr);
-  padding: 6px 14px;
 }
 .bar-tools {
   display: flex;
@@ -77,13 +69,6 @@
   border-color: var(--brass-hi);
   background: var(--brass-grad);
   color: var(--ink);
-}
-.icon-toggle.quiet {
-  width: 32px;
-  height: 32px;
-  border-color: transparent;
-  background: none;
-  color: var(--muted);
 }
 .risk-strip {
   grid-column: 1 / -1;
@@ -224,4 +209,44 @@
 }
 .drop-footer .notice {
   margin: 0;
+}
+
+.options-toggle {
+  position: relative;
+}
+.options-toggle.on {
+  border-color: var(--brass-hi);
+  color: var(--amber);
+}
+.risk-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 0 1px #000;
+}
+@media (max-width: 480px) {
+  .composer {
+    padding-inline: 8px;
+  }
+  .composer-row {
+    gap: 4px;
+  }
+  .composer-row .tool {
+    min-width: 0;
+    width: var(--ctl);
+    padding: 0;
+  }
+  .composer .send {
+    min-width: 0;
+    padding: 0 10px;
+  }
+  .composer textarea::placeholder {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }

@@ -383,7 +383,6 @@ export const ru: Messages = {
   'chat.modeHint.dontAsk':
     'Не спрашивать: работают только заранее одобренные инструменты, остальное отклоняется.',
   'chat.options.hide': 'Скрыть режим, модель и усилие',
-  'chat.options.show': 'Показать режим, модель и усилие',
   'files.unpin': 'Открепить: вернуться в {folder}',
   'memory.title': 'Память',
   'memory.open': 'Открыть память',
