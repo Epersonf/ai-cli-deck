@@ -17,7 +17,7 @@ function ForkDialog({ source }: { source: Session }) {
   const t = useT();
   const close = useFork((s) => s.close);
   const providers = useProfiles((s) => s.providers);
-  const options = forkChoices(providers, source.provider).filter((p) => p.id !== 'shell');
+  const options = forkChoices(providers, source.provider);
   const [provider, setProvider] = useState(source.provider);
   const [endAfter, setEndAfter] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -69,7 +69,7 @@ function ForkDialog({ source }: { source: Session }) {
             {provider === source.provider ? t('fork.native') : t('fork.handoff')}
           </p>
           {error !== null && <p className="notice error">{error}</p>}
-          <div className="row">
+          <div className="dialog-actions">
             <button type="submit" className="primary" disabled={busy}>
               {endAfter ? t('fork.move') : t('fork.go')}
             </button>

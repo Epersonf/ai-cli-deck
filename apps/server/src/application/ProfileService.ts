@@ -10,19 +10,17 @@ import type { ProfileStorePort } from '../domain/ports.js';
 
 export interface ProfileServiceDeps {
   store: ProfileStorePort;
-  /** The template a profile is made from, if it exists. */
   template(id: string): ProfileTemplate | undefined;
-  /** Makes a (new or renamed) profile available to the session launcher right away. */
   register(profile: Profile): void;
-  /** Takes a deleted profile out of the launcher and the install-status checks. */
   unregister(id: string): void;
-  /** Erases the profile's CLI config folder (logins, history). Must be safe to repeat. */
+  /** Erases the profile's config folder (logins, history). Must be safe to repeat. */
   wipeData(id: string): Promise<void>;
-  /** Ids already taken by built-in or configured providers. */
+  /** Keeps the profile's API key in its own folder (never anywhere else). */
+  saveSecret(id: string, secret: string): Promise<void>;
   reservedIds(): readonly string[];
 }
 
-/** Named, clean terminals. The base and id never change; only the display name can. */
+/** Named, clean agents. The base and id never change; only the display name can. */
 export class ProfileService {
   private profiles: Profile[] = [];
   private queue: Promise<unknown> = Promise.resolve();
@@ -57,7 +55,7 @@ export class ProfileService {
     return run;
   }
 
-  /** Picks up profiles written by another process (`clideck profile add`) since we last looked. */
+  /** Picks up profiles written by another process since we last looked. */
   private async sync(): Promise<void> {
     const known = new Set(this.profiles.map((p) => p.id));
     const added = (await this.deps.store.load()).filter((p) => !known.has(p.id));
@@ -87,9 +85,20 @@ export class ProfileService {
       // A new profile always starts empty, even if an old folder with this id was left behind.
       await this.deps.wipeData(profile.id);
       this.profiles = [...this.profiles, profile];
+      if (body.secret) await this.deps.saveSecret(profile.id, body.secret);
       await this.deps.store.save(this.profiles);
       this.deps.register(profile);
       return profile;
+    });
+  }
+
+  setSecret(id: string, secret: string): Promise<void> {
+    return this.serial(async () => {
+      await this.sync();
+      const profile = this.profiles.find((p) => p.id === id);
+      if (!profile) throw notFound(`Profile ${id}`);
+      await this.deps.saveSecret(id, secret);
+      this.deps.register(profile);
     });
   }
 

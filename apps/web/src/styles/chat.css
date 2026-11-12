@@ -1,0 +1,214 @@
+/* One session's chat: header strip, scrolling conversation, mode bar and composer. */
+.chat-pane {
+  position: relative;
+  min-width: 0;
+  border: 3px double var(--brass);
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(192 112 60 / 10%), transparent 60%), var(--ink);
+  box-shadow:
+    inset 0 0 40px rgb(0 0 0 / 55%),
+    0 0 0 1px var(--brass-lo);
+  overflow: hidden;
+}
+/* Rivets in the corners of the brass frame, like the dialogs. */
+.chat-pane::before,
+.chat-pane::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  z-index: 2;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass-lo));
+  pointer-events: none;
+}
+.chat-pane::before {
+  left: 5px;
+}
+.chat-pane::after {
+  right: 5px;
+}
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 22px;
+  border-bottom: 2px solid var(--brass-lo);
+  background: linear-gradient(180deg, #33231a, var(--leather));
+  box-shadow: 0 2px 0 rgb(0 0 0 / 50%);
+  font-size: 12px;
+}
+.chat-cwd {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-family: var(--mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* a long path loses its start, not the folder you are in */
+  text-align: left;
+}
+.chat-offline {
+  color: var(--amber);
+  font-style: italic;
+}
+.chat-scroll-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.chat-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 12px 10px 8px;
+}
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.chat-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin: 8vh auto 0;
+  max-width: 420px;
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+}
+.chat-empty p {
+  margin: 0;
+}
+.jump-latest {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  min-height: 32px;
+  border-radius: 16px;
+  border-width: 2px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 60%);
+}
+/* The busy indicator: two meshing brass gears turning, like the deck's own logo. */
+.working {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  padding: 4px 2px;
+}
+.gear.working-gear {
+  color: var(--amber);
+  animation: turn 2.4s linear infinite;
+}
+.gear.working-gear.back {
+  margin-left: -4px;
+  color: var(--brass);
+  animation-direction: reverse;
+  animation-duration: 1.8s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gear.working-gear {
+    animation: none;
+  }
+}
+.key-banner {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--brass-lo);
+  background: var(--leather-2);
+}
+.key-banner p {
+  margin: 0;
+}
+.key-banner input {
+  flex: 1;
+  min-width: 0;
+}
+.mode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 4px 22px;
+  border-top: 2px solid var(--brass-lo);
+  background: linear-gradient(180deg, var(--leather), #1c120b);
+  font-size: 12px;
+}
+.mode-bar label {
+  flex: 1 1 130px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+}
+.mode-bar select,
+.mode-bar input {
+  min-height: 28px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 6px;
+  font-size: 12px;
+}
+.composer {
+  padding: 8px 14px calc(10px + env(safe-area-inset-bottom));
+  border-top: 3px double var(--brass);
+  background: linear-gradient(180deg, #33231a, var(--leather));
+}
+.composer.over {
+  outline: 2px dashed var(--amber);
+  outline-offset: -4px;
+}
+.composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  max-height: 220px;
+  padding: 9px 10px;
+  resize: none;
+}
+.composer .send {
+  min-width: 64px;
+}
+.composer .stop {
+  color: var(--danger);
+}
+.composer-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 860px;
+  margin: 0 auto 6px;
+}
+.composer-file {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border: 2px solid var(--brass);
+  border-radius: 6px;
+  background: var(--ink);
+  box-shadow: 0 2px 0 var(--brass-lo);
+}
+.composer-file img {
+  max-height: 56px;
+  max-width: 96px;
+  border-radius: 4px;
+}
+.composer-file button {
+  min-height: 20px;
+  margin-left: 4px;
+  padding: 0 6px;
+}

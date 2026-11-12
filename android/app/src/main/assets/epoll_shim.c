@@ -13,7 +13,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 
-// Only node needs this shim: drop it from the environment so the shells, tmux and CLIs that node
+// Only node needs this shim: drop it from the environment so the shells and CLIs that node
 // starts do not inherit LD_PRELOAD.
 __attribute__((constructor)) static void shim_init(void) { unsetenv("LD_PRELOAD"); }
 

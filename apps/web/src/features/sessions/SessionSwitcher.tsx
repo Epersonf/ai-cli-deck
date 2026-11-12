@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { usePolling } from '../../shared/ui/usePolling';
 import { useTasks } from '../tasks/tasksStore';
+import { useMemory } from '../memory/memoryStore';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { groupSessions } from './groupSessions';
 import { PeerShortcuts } from '../devices/PeerShortcuts';
@@ -28,10 +29,7 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   // Reopening the drawer lands on the profile of the terminal you are in; "back" shows all profiles.
   usePolling(() => useTasks.getState().refresh(), 4000); // tasks change while the drawer is open
   const [openId, setOpenId] = useState<string | null>(() => {
-    const active = sessions.find((s) => s.id === activeId);
-    // A sub-terminal belongs to its main session's profile.
-    const root = sessions.find((s) => s.id === active?.parentId) ?? active;
-    return root?.provider ?? null;
+    return sessions.find((s) => s.id === activeId)?.provider ?? null;
   });
   // A profile that was deleted while open drops back to the list.
   const open = groups.find((g) => g.id === openId) ?? null;
@@ -53,6 +51,9 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
           <>
             <button type="button" className="primary" onClick={() => (onClose(), onProfile())}>
               {t('switcher.newProfile')}
+            </button>
+            <button type="button" onClick={() => (onClose(), useMemory.getState().show(null))}>
+              {t('memory.title')}
             </button>
             <ProfileList
               groups={groups}

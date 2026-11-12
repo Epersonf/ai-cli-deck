@@ -1,12 +1,6 @@
 import type { ReactNode } from 'react';
 import { useT } from '../../shared/i18n/store';
-import {
-  RefreshIcon,
-  SlidersIcon,
-  TerminalIcon,
-  TransferIcon,
-  TrashIcon,
-} from '../../shared/ui/Icons';
+import { RefreshIcon, SlidersIcon, TransferIcon, TrashIcon } from '../../shared/ui/Icons';
 
 interface ToolProps {
   tip: string;
@@ -37,21 +31,12 @@ interface Props {
   canDelete: boolean;
   onRefresh(): void;
   onTransfer(): void;
-  onTerminal(): void;
   onOptions(): void;
   onDelete(): void;
 }
 
 /** The explorer toolbar: one joined group of icon buttons. */
-export function TreeTools({
-  busy,
-  canDelete,
-  onRefresh,
-  onTransfer,
-  onTerminal,
-  onOptions,
-  onDelete,
-}: Props) {
+export function TreeTools({ busy, canDelete, onRefresh, onTransfer, onOptions, onDelete }: Props) {
   const t = useT();
   return (
     <div className="tree-tools">
@@ -61,9 +46,6 @@ export function TreeTools({
         </Tool>
         <Tool tip={t('files.transfer')} onClick={onTransfer} disabled={busy}>
           <TransferIcon />
-        </Tool>
-        <Tool tip={t('files.openTerminal')} onClick={onTerminal}>
-          <TerminalIcon />
         </Tool>
         <Tool tip={t('files.options')} onClick={onOptions}>
           <SlidersIcon />

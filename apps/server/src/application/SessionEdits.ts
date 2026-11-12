@@ -1,4 +1,5 @@
-import { parseLocalUrl, type Session } from '@deck/shared';
+import { CHAT_META, parseLocalUrl, type Session } from '@deck/shared';
+import type { AgentConfig } from '../domain/agent.js';
 import { conflict, invalid } from '../domain/errors.js';
 import type { SystemPort } from '../domain/ports.js';
 import { existingDir } from './cwd.js';
@@ -43,6 +44,21 @@ export class SessionEdits {
     this.reg.update(id, { cwd });
     await this.reg.persist();
     return this.get(id) ?? this.reg.require(id).session;
+  }
+
+  /** Keeps what the conversation needs to survive a restart: the agent's chat id and the chosen settings. */
+  async remember(id: string, patch: { chatId?: string; config?: AgentConfig }): Promise<void> {
+    const runtime = this.reg.runtimes.get(id);
+    if (!runtime) return;
+    let meta = runtime.session.meta;
+    if (patch.chatId !== undefined) meta = withMeta(meta, CHAT_META.chat, patch.chatId);
+    if (patch.config) {
+      meta = withMeta(meta, CHAT_META.model, patch.config.model ?? '');
+      meta = withMeta(meta, CHAT_META.mode, patch.config.mode);
+      meta = withMeta(meta, CHAT_META.effort, patch.config.effort ?? '');
+    }
+    this.reg.update(id, { meta });
+    await this.reg.persist();
   }
 
   applyWorktree(id: string, path: string, branch: string): void {

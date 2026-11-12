@@ -6,11 +6,11 @@ The server itself is unchanged: `npm run start` on Termux, Linux, macOS or Windo
 ## How it works
 
 - **Foreground service** (`DeckService`) with wake + Wi-Fi lock, a notification (Stop button) and
-  auto-start on boot. It restarts Node with backoff if it exits. It is not tied to any terminal session.
+  auto-start on boot. It restarts Node with backoff if it exits. It is not tied to any chat session.
 - **proot** (the Termux build, fetched from the Termux repo by `scripts/prepare.sh`) ships as `lib*.so`
   so it lands in `nativeLibraryDir`, where an app may exec from.
 - On first run the app downloads **Ubuntu base 24.04 (arm64)**, extracts it into app storage and runs
-  `assets/bootstrap.sh` inside proot: apt packages (tmux, git, build tools), Node 22, the deck source
+  `assets/bootstrap.sh` inside proot: apt packages (git, build tools), Node 22, the deck source
   bundled in the APK, `npm install`, and the `epoll_shim` that fixes the libuv/proot abort.
 - `assets/run.sh` starts the server; the UI is at `http://127.0.0.1:7842` in any browser on the phone.
 - LAN access (PC or other devices) is off by default; enable it in the app and set a password.
@@ -56,7 +56,7 @@ notifications, plus two opt-in capabilities with their own switch, warning and p
   The phone's storage has no symlinks or permissions, so use it to exchange files, not to keep git repositories.
   Newer Android also needs "Allow access to all files" for the app; the settings screen opens that page when needed.
 
-Background tasks (the drawer) and "notify me when a terminal goes quiet" are described in the main README.
+Background tasks (the drawer) and "notify me when it's done" are described in the main README.
 
 ## Capabilities (phase 4)
 

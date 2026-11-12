@@ -17,12 +17,12 @@ export function ConfirmHost() {
       <div className="modal confirm" role="alertdialog" onClick={(e) => e.stopPropagation()}>
         <h2>{request.title}</h2>
         <p>{request.message}</p>
-        <div className="row">
-          <button type="button" autoFocus onClick={dismiss}>
-            {request.cancelLabel}
-          </button>
+        <div className="dialog-actions">
           <button type="button" className="danger" onClick={() => (dismiss(), request.onConfirm())}>
             {request.confirmLabel}
+          </button>
+          <button type="button" autoFocus onClick={dismiss}>
+            {request.cancelLabel}
           </button>
         </div>
       </div>

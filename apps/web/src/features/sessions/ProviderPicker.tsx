@@ -1,18 +1,17 @@
-import type { ProviderInfo } from '@deck/shared';
+import { setupSpecFor, type ProviderInfo } from '@deck/shared';
 import { useT } from '../../shared/i18n/store';
 
 interface Props {
   providers: readonly ProviderInfo[];
   value: string;
   onChange(id: string): void;
-  onInstall(): void;
-  disabled: boolean;
 }
 
-/** CLI selector; flags CLIs that are not installed and offers to download them in a terminal. */
-export function ProviderPicker({ providers, value, onChange, onInstall, disabled }: Props) {
+/** Agent selector; flags the ones whose CLI is not installed and says how to get it. */
+export function ProviderPicker({ providers, value, onChange }: Props) {
   const t = useT();
   const current = providers.find((p) => p.id === value);
+  const command = current?.setupId ? setupSpecFor(current.setupId)?.install?.join(' ') : undefined;
   return (
     <>
       <label>
@@ -29,16 +28,10 @@ export function ProviderPicker({ providers, value, onChange, onInstall, disabled
       {current?.status === 'missing' && (
         <div className="notice error">
           <p>{t('provider.missing', { name: current.label })}</p>
-          {current.canInstall && (
-            <>
-              <button type="button" onClick={onInstall} disabled={disabled}>
-                {t('provider.install')}
-              </button>
-              <p className="hint">{t('provider.installHint')}</p>
-            </>
-          )}
+          {command && <p className="hint">{t('provider.installCmd', { command })}</p>}
         </div>
       )}
+      {current?.keyState === 'missing' && <p className="hint">{t('provider.keyMissing')}</p>}
     </>
   );
 }

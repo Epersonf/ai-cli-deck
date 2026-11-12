@@ -3,121 +3,29 @@ import { providerCtx } from '../testing/providerContext.js';
 import { assertSecureBind } from './config/bind.js';
 import { mergeConfig } from './config/loadConfig.js';
 import { parseGitStatus } from './git/GitCli.js';
-import { createClaudeLike } from './providers/claudeLike.js';
-import { claudeDeepseek } from './providers/claudeDeepseek.js';
+import { claude } from './providers/claude.js';
 import { codex } from './providers/codex.js';
-import { custom } from './providers/custom.js';
 import { createProviderRegistry } from './providers/registry.js';
-import { buildTmuxArgs } from './tmux/TmuxMultiplexer.js';
 
 const ctx = providerCtx;
 
 describe('providers', () => {
-  it('claude injects the MCP endpoint via --mcp-config', () => {
-    const claude = createClaudeLike('claude', 'Claude');
-    const mcp = claude.buildMcpConfig(ctx);
-    expect(mcp.args[0]).toBe('--mcp-config');
-    expect(JSON.parse(mcp.args[1] ?? '{}')).toEqual({
-      mcpServers: { deck: { type: 'http', url: ctx.mcpUrl } },
-    });
-  });
-
-  it('claude tells the agent it runs inside the deck and how to use clideck', () => {
-    const args = createClaudeLike('claude', 'Claude').buildMcpConfig(ctx).args;
-    expect(args[2]).toBe('--append-system-prompt');
-    expect(args[3]).toContain('clideck help');
-  });
-
-  it('claude-deepseek points Claude Code at DeepSeek and holds no key', () => {
-    const env = claudeDeepseek.buildCommand(ctx).env;
-    expect(env['ANTHROPIC_BASE_URL']).toBe('https://api.deepseek.com/anthropic');
-    expect(JSON.stringify(env)).not.toMatch(/KEY|AUTH_TOKEN/);
-  });
-
-  it('codex overrides mcp_servers and custom requires a command', () => {
-    const args = codex.buildMcpConfig(ctx).args;
-    expect(args.slice(0, 2)).toEqual(['-c', `mcp_servers.deck.url="${ctx.mcpUrl}"`]);
-    expect(args[3]).toContain('developer_instructions=');
-    expect(() => custom.buildCommand(ctx)).toThrow('command');
-    expect(custom.buildCommand({ ...ctx, command: 'bash', args: ['-l'] }).args).toEqual(['-l']);
+  it('claude and codex are agents on the machine own sign-in, with no environment of their own', () => {
+    expect(claude.agent).toBe('claude');
+    expect(codex.agent).toBe('codex');
+    expect(claude.buildAgent(ctx)).toEqual({ kind: 'claude', env: {}, model: null });
+    expect(codex.buildAgent(ctx).kind).toBe('codex');
   });
 
   it('registry exposes the built-in providers', () => {
     const ids = createProviderRegistry()
       .list()
       .map((p) => p.id);
-    expect(ids).toEqual(['shell', 'claude', 'codex', 'claude-deepseek', 'custom']);
+    expect(ids).toEqual(['claude', 'codex']);
   });
 });
 
-describe('tmux and git helpers', () => {
-  const size = { cols: 100, rows: 30 };
-
-  it('builds a control-mode create-or-attach command on a private socket with the status bar off', () => {
-    const args = buildTmuxArgs(
-      'deck-s1',
-      { command: 'claude', args: ['-x'], env: { A: '1', TMUX: 'x' }, cwd: '/w' },
-      size,
-    );
-    expect(args.slice(0, 4)).toEqual(['-u', '-L', 'deck', '-C']);
-    const at = args.indexOf('new-session');
-    expect(args.slice(at, at + 10)).toEqual([
-      'new-session',
-      '-A',
-      '-s',
-      'deck-s1',
-      '-x',
-      '100',
-      '-y',
-      '30',
-      '-c',
-      '/w',
-    ]);
-    expect(args).toContain('A=1');
-    expect(args).not.toContain('TMUX=x');
-    // The program is told it is not inside tmux: the browser terminal gets its output as written.
-    expect(args.slice(args.indexOf('env'), args.indexOf('claude') + 2)).toEqual([
-      'env',
-      ...['-u', 'TMUX', '-u', 'TMUX_PANE'],
-      'claude',
-      '-x',
-    ]);
-    expect(args.indexOf('status')).toBeLessThan(at);
-  });
-
-  it('hands the program its PATH through env, so `clideck` is found whatever tmux does with the pane environment', () => {
-    const args = buildTmuxArgs(
-      'deck-s1',
-      {
-        command: 'clideck',
-        args: ['ensure-key'],
-        env: { PATH: '/opt/deck/bin:/usr/bin' },
-        cwd: '/w',
-      },
-      size,
-    );
-    expect(args.slice(args.indexOf('env'), args.indexOf('clideck') + 2)).toEqual([
-      'env',
-      ...['-u', 'TMUX', '-u', 'TMUX_PANE'],
-      'PATH=/opt/deck/bin:/usr/bin',
-      'clideck',
-      'ensure-key',
-    ]);
-  });
-
-  it('leaves the mouse and the scrollback to the browser terminal, and answers colour queries', () => {
-    const args = buildTmuxArgs(
-      'deck-s1',
-      { command: 'claude', args: [], env: {}, cwd: '/w' },
-      size,
-    );
-    const option = (name: string): string | undefined => args[args.indexOf(name) + 1];
-    expect(option('mouse')).toBe('off');
-    expect(option('focus-events')).toBe('on');
-    expect(Number(option('history-limit'))).toBeGreaterThanOrEqual(10000);
-    expect(option('window-style')).toBe('fg=#ecdcb8,bg=#120d08');
-  });
-
+describe('git helpers', () => {
   it('parses porcelain status', () => {
     const out = '## main...origin/main\n M src/a.ts\n?? new.txt\n';
     expect(parseGitStatus(out)).toEqual({

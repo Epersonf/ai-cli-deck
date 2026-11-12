@@ -4,38 +4,36 @@
  */
 export const TEMPLATE_SKELETON = `{
   // Profile template for ai-cli-deck. JSON with comments: comments and trailing commas are allowed.
-  // A template says how to start ONE kind of AI CLI as a clean terminal (its own login and key).
-  // SECURITY: importing a template lets it run the program named below with your permissions.
-  // Only import templates you trust.
+  // A template says how to run ONE kind of agent as a clean profile (its own login and key).
 
   // Always 1 (the version of this format).
   "schema": 1,
 
   // Unique name of the template: lowercase letters, digits and dashes. Built-in ids cannot be reused.
-  "id": "my-ai-cli",
+  "id": "my-gateway",
 
   // Name shown in the lists.
-  "label": "My AI CLI",
+  "label": "My gateway",
 
   // One line about it (optional).
-  "description": "Example template: runs the 'myai' program against a gateway.",
+  "description": "Example template: Claude Code against a company gateway.",
 
-  // The program to start. Empty means the default shell.
-  // You can use {field.<key>} to run whatever the user types in a field below.
-  "command": "myai",
+  // The engine that runs the chat: "claude" (Claude Code, any Anthropic-compatible endpoint) or "codex".
+  "agent": "claude",
 
-  // Fixed arguments, placed before any the user adds. Each entry is one argument (no shell parsing).
-  "args": ["--interactive"],
+  // The model the chat starts with, or null for the agent's own default (changeable in the chat).
+  "model": null,
 
-  // Environment variables for the program. Values may use the placeholders listed at the end.
+  // Environment variables for the agent. Values may use the placeholders listed at the end;
+  // a value that ends up empty is left out.
   "env": {
-    "MYAI_API_URL": "{field.apiUrl}"
+    "ANTHROPIC_BASE_URL": "{field.apiUrl}"
   },
 
-  // The variable your CLI reads its config/login folder from. The deck sets it to a folder that
-  // belongs to this profile alone, which is what keeps one profile's login and keys apart from another's.
-  // Use null if the CLI has no such variable.
-  "home": { "env": "MYAI_HOME" },
+  // The variable the agent reads its config/login folder from. The deck sets it to a folder that
+  // belongs to this profile alone, which keeps one profile's login and keys apart from another's.
+  // Use null if the agent has no such variable.
+  "home": { "env": "CLAUDE_CONFIG_DIR" },
 
   // Values asked when the profile is created. "type" is "text" or "url" (checked as http/https).
   "fields": [
@@ -44,45 +42,24 @@ export const TEMPLATE_SKELETON = `{
       "label": "API address",
       "type": "url",
       "required": true,
-      "hint": "Where the CLI sends its requests.",
-      "placeholder": "https://llm.example.com"
+      "hint": "Where the agent sends its requests.",
+      "placeholder": "https://llm.example.com/anthropic"
     }
   ],
 
-  // Ask for an API key (typed hidden) when the terminal starts without one, then pass it in the
-  // variable "env". The deck never stores the key itself.
-  // "remember": true keeps it in <home>/settings.json under "env" (Claude Code's own settings file);
-  // leave false for CLIs that do not read that file, and the key is asked at every start.
-  // Use null if the CLI signs in by itself.
-  "apiKey": { "env": "MYAI_API_KEY", "label": "API key for {field.apiUrl.host}", "remember": false },
+  // An API key, typed hidden in the profile dialog and kept in the profile's own folder; it reaches the
+  // agent in the variable "env". "required": false lets the profile work with the machine's own sign-in.
+  // Use null if the agent needs no key.
+  "apiKey": { "env": "ANTHROPIC_AUTH_TOKEN", "label": "API key for {field.apiUrl.host}", "required": true },
 
-  // Arguments that give the CLI the deck's MCP server and the short briefing about the deck, so the agent can
-  // use \`clideck\` and its tools. Leave empty if the CLI cannot take them. Examples:
-  //   Claude Code: ["--mcp-config", "{mcpConfig}", "--append-system-prompt", "{guide}"]
-  //   Codex:       ["-c", "mcp_servers.deck.url={mcpUrlJson}", "-c", "developer_instructions={guideJson}"]
-  "mcpArgs": [],
+  // "claude" or "codex" if "clideck setup" can download the agent's CLI by installing one of those; else null.
+  "install": "claude"
 
-  // "claude" or "codex" if "clideck setup" can download your CLI by installing one of those; otherwise null
-  // (the profile then shows as missing until "command" is found in PATH).
-  "install": null,
-
-  // How the CLI keeps and continues its conversations, so a restarted terminal picks its chat up again and a
-  // chat can move to another AI. Use null if the CLI cannot continue chats. Every part is optional:
-  //   "format": "claude" or "codex" when the CLI stores chats like one of those (the deck then reads them:
-  //             it knows each terminal's chat, lists them and hands them over); null otherwise
-  //   "resume": arguments that continue one chat, with {chatId}       e.g. ["--resume", "{chatId}"]
-  //   "fork":   arguments that copy a chat into a new one, {chatId}   e.g. ["--resume", "{chatId}", "--fork-session"]
-  //   "last":   arguments that continue the latest chat in the folder e.g. ["--continue"]
-  //   "prompt": arguments that start with a first message, {prompt}  e.g. ["{prompt}"] (empty: the deck types it)
-  "chat": { "format": null, "resume": [], "fork": [], "last": ["--continue"], "prompt": ["{prompt}"] }
-
-  // Placeholders usable in command, args, env values, apiKey.label and mcpArgs:
+  // Placeholders usable in env values and apiKey.label:
   //   {home}            this profile's own folder
-  //   {port}            the PORT assigned to the terminal (dev servers should listen on it)
-  //   {cwd}             the folder the terminal opens in
+  //   {port}            the PORT assigned to the session (dev servers should listen on it)
+  //   {cwd}             the folder of the session
   //   {field.<key>}     what was typed for a field; {field.<key>.host} the host of a url field
-  //   {mcpUrl}          address of the deck's MCP server for this terminal ({mcpUrlJson} is JSON-quoted)
-  //   {mcpConfig}       a ready-made MCP config as JSON (Claude Code's format)
-  //   {guide}           the briefing text for agents ({guideJson} is JSON-quoted)
+  //   {mcpUrl}          address of the deck's MCP server for this session
 }
 `;

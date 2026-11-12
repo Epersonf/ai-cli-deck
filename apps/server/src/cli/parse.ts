@@ -1,6 +1,5 @@
 import { normalizeUrl } from '@deck/shared';
 import { DEVICE_USAGE } from './deviceCommand.js';
-import { parseEnsureKey, type EnsureKey } from './ensureKey.js';
 
 export type Command =
   | { name: 'help' }
@@ -13,14 +12,14 @@ export type Command =
   | { name: 'meta'; key: string | null; value: string | null }
   | { name: 'task'; action: string; args: string[] }
   | { name: 'device'; args: string[] }
+  | { name: 'memory'; args: string[] }
   | { name: 'phone'; action: string; text: string; title: string; args: string[] }
   | { name: 'worktree'; reason: string }
   | { name: 'folder'; path: string; reason: string }
   | { name: 'status'; requestId: string }
   | { name: 'install'; force: boolean }
   | { name: 'setup'; provider: string | null }
-  | { name: 'profile'; args: string[] }
-  | ({ name: 'ensure-key' } & EnsureKey);
+  | { name: 'profile'; args: string[] };
 
 const PHONE_USAGE =
   'usage: clideck phone help | battery | device | notify "<text>" | wifi ... | <capability> [action] [--option value]  (clideck phone help lists what is enabled)';
@@ -89,6 +88,8 @@ export function parseArgs(argv: readonly string[]): Parsed {
         return ok({ name, action: 'call', text: '', title: '', args: [action, ...words] });
       return fail(PHONE_USAGE);
     }
+    case 'memory':
+      return ok({ name, args: rest });
     case 'devices':
       return ok({ name: 'device', args: [] });
     case 'copy':
@@ -121,10 +122,6 @@ export function parseArgs(argv: readonly string[]): Parsed {
         : fail(
             'usage: clideck profile add "<name>" <template> [--<field> <value>]... (see clideck profile add with no template)',
           );
-    case 'ensure-key': {
-      const parsed = parseEnsureKey(rest);
-      return typeof parsed === 'string' ? fail(parsed) : ok({ name, ...parsed });
-    }
     case 'install':
       return ok({ name, force: rest.includes('--force') });
     default:

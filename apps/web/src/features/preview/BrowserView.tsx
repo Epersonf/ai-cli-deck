@@ -1,29 +1,23 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useT } from '../../shared/i18n/store';
-import { textChange } from '../terminal/mobileKeyboard';
+import { textChange } from './mobileKeyboard';
 import { useBrowserStream } from './useBrowserStream';
 import { usePageGestures } from './usePageGestures';
+import { EnterIcon } from '../../shared/ui/GlyphIcons';
+import { RefreshIcon } from '../../shared/ui/Icons';
 
 interface Props {
   sessionId: string;
   visible: boolean;
   /** Address the agent (or a terminal link) asked to show. */
   requested: string | null;
-  toggle: ReactNode;
 }
 
 /**
  * The session's real Chromium, live: the page is sized to this pane, frames stream as it changes, a tap
  * clicks, a drag scrolls, and the text box types as you write. The agent drives this same page.
  */
-export function BrowserView({ sessionId, visible, requested, toggle }: Props) {
+export function BrowserView({ sessionId, visible, requested }: Props) {
   const t = useT();
   const { frame, page, error, send, resize } = useBrowserStream(sessionId, visible);
   const screen = useRef<HTMLDivElement>(null);
@@ -82,7 +76,6 @@ export function BrowserView({ sessionId, visible, requested, toggle }: Props) {
   return (
     <>
       <form className="preview-bar" onSubmit={navigate}>
-        {toggle}
         <button type="button" onClick={() => send({ kind: 'back' })} aria-label={t('common.back')}>
           ←
         </button>
@@ -95,7 +88,7 @@ export function BrowserView({ sessionId, visible, requested, toggle }: Props) {
           title={t('common.refresh')}
           aria-label={t('common.refresh')}
         >
-          ⟳
+          <RefreshIcon size={16} />
         </button>
         <input
           value={draft}
@@ -123,7 +116,9 @@ export function BrowserView({ sessionId, visible, requested, toggle }: Props) {
           autoCapitalize="off"
           spellCheck={false}
         />
-        <button type="submit">↵</button>
+        <button type="submit" aria-label={t('preview.typeHere')}>
+          <EnterIcon size={16} />
+        </button>
       </form>
     </>
   );

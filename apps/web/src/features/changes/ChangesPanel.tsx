@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { ChangeRow } from './ChangeRow';
 import { useReview } from './useReview';
+import { RefreshIcon } from '../../shared/ui/Icons';
 
 interface Props {
   sessionId: string;
@@ -49,7 +50,7 @@ export function ChangesPanel({ sessionId, visible }: Props) {
           aria-label={t('common.refresh')}
           onClick={() => void git.refresh()}
         >
-          ⟳
+          <RefreshIcon size={16} />
         </button>
       </header>
       {git.error && <pre className="error changes-output">{git.error}</pre>}

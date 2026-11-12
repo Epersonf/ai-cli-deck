@@ -8,33 +8,42 @@
   a tiny wrapper: see the README setup section.
 - **No build step for the server.** The server runs with `tsx`; `@deck/shared` is consumed as
   TypeScript source (`exports` points at `src/index.ts`). Fewer moving parts on a phone.
-- **node-pty works** on ARM64 PRoot (spawned `bash` in a pty successfully), so the non-interactive
-  fallback is not needed.
 - **Type-checked ESLint is off.** `typescript-eslint` strict (syntactic) only, to keep lint fast and
   light on RAM. `tsc --strict` already covers type errors.
-- **Providers are data.** Built-ins (`shell`, `claude`, `codex`, `claude-deepseek`, `custom`) are one
-  file each; any other CLI is declared in `config.json` (command, args, env, `mcpArgs`) with no code.
-- **tmux on a private socket** (`-L deck`) so deck sessions never mix with the user's own tmux.
-- **tmux keeps programs alive; the browser terminal is the terminal.** The server talks to tmux in
-  control mode (`tmux -C`, `TmuxControlClient`): `%output` lines carry the program's own bytes, which go
-  to xterm.js unchanged, so the browser keeps the only scrollback (one scroll, local, no round trip) and
-  sees everything a native terminal would (clearing the scrollback, synchronized output, OSC 52, links).
-  Keys go in with `send-keys -l`. tmux's mouse is off and its own history is only used to rebuild the
-  screen for a device that connects later. tmux still answers the program's queries (cursor position,
-  colours from `window-style`), so xterm keeps quiet on those (`upstreamReplies.ts`). Drawing through
-  `tmux attach` instead meant two scrollbacks (tmux's and xterm's) and lost `ESC [3J`, so every redraw of
-  an agent's chat piled up again in the browser's scrollback.
-- **Programs are told they are not in tmux.** They start under `env -u TMUX -u TMUX_PANE`: their output
-  reaches xterm.js as written, so they must not adapt to tmux (wrapped escape sequences, tmux tips).
-- **Conversations belong to the CLIs; the deck only finds them.** `ChatService` knows each terminal's
-  chat without asking the agent: Claude Code reports it through a `SessionStart` hook passed with
-  `--settings` (it writes the hook's JSON to `$DECK_CHAT_FILE`); otherwise the deck reads the CLI's own chat
-  files (`claudeChats`, `codexChats`) and takes the one this terminal's run touched (`meta.runAt`),
-  skipping chats other terminals are on. On exit the id is kept in `meta.chat`. `ChatActions` restarts
-  with the CLI's resume arguments, forks natively, or hands the chat to another profile as a Markdown
-  transcript in `<cwd>/.deck/chats/` (listed in `.git/info/exclude`) plus a first message asking to read
-  it. Templates describe this in their `chat` block, so a new CLI needs no code. Restarting keeps the
-  terminal size and may change the profile.
+- **Providers are data.** The built-ins are `claude` and `codex` (one file each, on the machine's own sign-in);
+  everything else is a profile made from a template: JSON that names the engine (`agent`), environment,
+  fields to ask, and an optional API key. The built-in templates are Claude Code, Claude Code (custom
+  provider), Claude Code (DeepSeek) and Codex.
+- **No terminal: every session is a chat driven by a headless agent.** The server runs the agent itself and
+  shows its conversation in the browser, so there is no pty, no tmux and no terminal emulation (their latency
+  made typing into an agent unpleasant). Two engines, behind `AgentPort`: `claudeDriver` uses the Claude Agent
+  SDK (`query()` with a streaming input channel, `canUseTool` for permissions, `resume`/`forkSession`), which
+  also covers any Anthropic-compatible endpoint (custom provider, DeepSeek) through environment variables;
+  `codexDriver` runs `codex exec --json` once per message (`exec resume <thread>` afterwards) and maps its
+  sandbox to the permission mode (it cannot ask in this mode). Both turn their events into the same
+  `ChatEvent`s (`claudeMap`, `codexMap` are pure and unit tested).
+- **The conversation is ours to show, the agent's to continue.** `ChatRuntime` keeps a session's steps
+  (`ChatBook`: memory + `<state>/chats/<id>.jsonl`, repaired after a restart), the answer being written
+  (`partials`), a queue of messages sent while it answers, and the settings (model, mode, effort) which are
+  also saved in `session.meta`. The agent's own conversation id is kept in `meta.chat`: after the agent
+  process ends (idle for 15 minutes, a crash, a restart of the deck) the next message resumes it. Saved
+  chats of Claude and Codex (`claudeChats`, `codexChats`) are still read to list and open old conversations,
+  and a conversation moves to another AI as a Markdown transcript in `<cwd>/.deck/chats/` plus a first message
+  asking to read it (`ChatActions`).
+- **Editing, side chats and background tasks.** Each `user` step has a uuid that Claude keeps as its message
+  uuid, so an edit (`rewind`) can resume the saved chat at the entry just before it (`resumeSessionAt`,
+  found in Claude's own JSONL; the files come back through the SDK's file checkpoints). Codex cannot go back
+  in a thread, and neither can a chat saved without those uuids: the edit starts a new thread whose first
+  message replays what was kept (`chatRewind`). A side chat is a fork (`forkSession` for Claude, a handover
+  for Codex) with `parentId` set to the main session. Background jobs of Claude are `task` steps from the SDK's
+  task messages; the run stays open while one runs. `UsageMeter` adds a chat's cost and context, and
+  `LimitBook` keeps the account's last usage window per profile (`<state>/limits.json`), shared by its chats.
+- **Voice** (`WhisperEngine`): whisper.cpp, downloaded on Windows (pinned sha256, resumed after a stall), an
+  installed `whisper-cli` elsewhere; the model is `<state>/voice/ggml-small.bin`.
+- **Keys are files, not terminals.** A profile's API key is typed in the profile dialog and kept in
+  `<profile folder>/.deck-key` (mode 0600); the launcher adds it to the agent's environment. A Claude Code
+  token (`sk-ant-oat...`) goes in `CLAUDE_CODE_OAUTH_TOKEN`, other Claude keys in `ANTHROPIC_API_KEY`. A
+  profile whose key is optional and empty uses the machine's own sign-in instead of a folder of its own.
 - **Decks pair and use each other through this deck, not the browser.** `NetworkService` (sharing setting,
   paired decks in `network.json`) drives `PeerNode` (`infrastructure/peers`): UDP discovery, a peer port that
   only speaks `/pair` and `/link` WebSockets, the PAKE pairing, and one encrypted link per paired deck
@@ -44,26 +53,32 @@
   deck with no code per feature; the web app only prefixes its API and socket URLs (`shared/api/base.ts`)
   and is built with relative asset paths. Links carry no knowledge of the network path, so they also work
   over a VPN address added by hand; a public relay could carry them too, since they are end-to-end encrypted.
-- **Reattach without a provider.** After a server restart, live `deck-*` tmux sessions are
-  re-attached with a control-mode `attach-session` (the provider is not needed again).
-- **Screens survive a dead machine.** `ScreenSaver` writes each live session's screen (tmux
-  `capture-pane`, or the ring buffer without tmux) to `<state dir>/scrollback/<id>.bin` every 5 s
-  when there was output. tmux dies with Termux, so on restart an ended session replays that file
-  instead of an empty buffer. Deleting a session deletes its file. It restores the screen, not the process.
-- **`SessionRegistry`** holds the runtimes (session, pty, replay buffer), publishes changes and
-  persists `sessions.json`; `SessionManager` only orchestrates.
-- **Second instance for self-hosting work.** `DECK_TMUX_SOCKET` gives an instance its own tmux server
-  and `dev.sh` its own port, config and state, so the deck can be edited from inside a session.
+- **`SessionRegistry`** holds the runtimes (session + chat), publishes changes and persists `sessions.json`;
+  `SessionManager` creates, restores and removes them and `SessionChats` is everything done with a conversation.
+- **Second instance for self-hosting work.** `dev.sh` gives an instance its own port, config and state, so the
+  deck can be edited from inside a session.
 - **Approvals poll, not push.** The badge polls every 3 s; per-session approval events also arrive
   on that session's socket.
 - **Media goes through `/raw`**, not through JSON, so the browser can stream and seek audio/video.
 - **One agent surface.** `createAgentTools` backs both the MCP tools and the `clideck` command.
 - **`clideck` is on every session's PATH** (`apps/server/bin`) with `DECK_URL` and `DECK_SESSION_ID`
   exported; `clideck install` adds `/clideck` slash commands for Claude Code and Codex.
-- **Profiles** (`ProfileService`, `profiles.json`) are clean terminals on a base. Each gets its own empty CLI
-  config folder; the deck stores no credentials. The endpoint bases (custom endpoint, DeepSeek) set
-  `ANTHROPIC_BASE_URL` and start `claude` through `clideck ensure-key`, which asks for the key in the terminal
-  and saves it in that profile's own Claude `settings.json`. Agent tools only see terminals of the same profile.
+- **Profiles** (`ProfileService`, `profiles.json`) are clean agents on a template. Each gets its own empty config
+  folder and, when the template asks for one, its own API key (`.deck-key`); a deck never stores credentials
+  anywhere else. Agent tools only see sessions of the same profile.
+- **Models are asked for, never listed in code.** `ModelCatalog` asks each provider's `discoverModels()` (Claude
+  through the SDK's `supportedModels()`, Codex through `codex debug models` with `models_cache.json` as backup,
+  endpoint profiles through `GET {baseUrl}/v1/models`, else the profile's `ANTHROPIC_MODEL`) and keeps the answer
+  for ten minutes. `ModelBook` (`models.json`) keeps each provider's default model, default permission mode and the
+  last model that really answered. Chats are told when any of them changes.
+- **Finished answers always notify.** `TurnNotifier` turns a `turn-done` (answer ended, not stopped by the person) or
+  a permission request into a `notify` push and a phone notification; there is no per-chat opt-in.
+- **Memory is notes in files, applied per run.** `MemoryService` keeps the global and per-profile trees in memory and
+  writes `memory/global.json` / `memory/profiles/<id>.json` atomically on each change (`JsonMemoryStore`); pure
+  folder rules (depth, count, no cycles, cascade delete) live in `memoryFolders`. `AgentLauncher` appends
+  `memoryBriefing` to the guide whenever a run starts, so edits apply to the next run without a restart. Agents reach
+  it through `agentMemory` (MCP tool and `clideck memory`); their global writes and imports go through the approval
+  service (`kind: 'memory'`) and only `applyMemoryRequest` performs them after the person approves.
 - **Auth is a domain service** (`AuthService`) behind ports, so password rules are unit tested
   without touching disk or crypto.
 - **Localization without a library.** `apps/web/src/shared/i18n` holds one typed dictionary per

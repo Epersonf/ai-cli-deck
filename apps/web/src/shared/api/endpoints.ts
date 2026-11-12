@@ -17,27 +17,20 @@ import {
   type CreateSessionBody,
 } from '@deck/shared';
 import { z } from 'zod';
+import {
+  BrowserStatusSchema,
+  PageInfoSchema,
+  type BrowserInput,
+  type BrowserStatus,
+  type PageInfo,
+} from './browserTypes';
 import { extensionOf, request, sendRaw, withToken } from './client';
 
-const BrowserStatusSchema = z.object({
-  installed: z.boolean(),
-  installing: z.boolean(),
-  error: z.string().nullable(),
-});
-const PageInfoSchema = z.object({ url: z.string(), title: z.string() });
-
-export type BrowserStatus = z.infer<typeof BrowserStatusSchema>;
-export type PageInfo = z.infer<typeof PageInfoSchema>;
-export type BrowserInput =
-  | { kind: 'click'; x: number; y: number }
-  | { kind: 'type'; text: string }
-  | { kind: 'key'; key: string }
-  | { kind: 'scroll'; dy: number }
-  | { kind: 'back' | 'forward' | 'reload' };
+export type { BrowserInput, BrowserStatus, PageInfo };
+type CreateSessionBodyInput = Omit<CreateSessionBody, 'chatId'> & { chatId?: string | null };
 
 const enc = encodeURIComponent;
 const session = (id: string): string => `/api/sessions/${enc(id)}`;
-
 export const api = {
   authStatus: () => request(AuthStatusSchema, 'GET', '/api/auth'),
   login: (password: string) => request(LoginResponseSchema, 'POST', '/api/login', { password }),
@@ -46,11 +39,9 @@ export const api = {
   config: () => request(PublicConfigSchema, 'GET', '/api/config'),
   providers: () => request(z.array(ProviderInfoSchema), 'GET', '/api/providers'),
   sessions: () => request(z.array(SessionSchema), 'GET', '/api/sessions'),
-  createSession: (body: Omit<CreateSessionBody, never>) =>
+  createSession: (body: CreateSessionBodyInput) =>
     request(SessionSchema, 'POST', '/api/sessions', body),
-  /** A plain shell in a folder of this session, opened as a sub-terminal. */
-  openTerminal: (id: string, path: string) =>
-    request(SessionSchema, 'POST', `${session(id)}/terminal`, { path }),
+  openSide: (id: string) => request(SessionSchema, 'POST', `${session(id)}/side`, {}),
   renameSession: (id: string, name: string | null) =>
     request(SessionSchema, 'PATCH', session(id), { name }),
   setSessionFolder: (id: string, path: string) =>
@@ -72,15 +63,6 @@ export const api = {
   taskLog: (id: string) =>
     request(TaskLogSchema, 'GET', `/api/tasks/${encodeURIComponent(id)}/log`).then((r) => r.text),
   removeTask: (id: string) => request(z.void(), 'DELETE', `/api/tasks/${encodeURIComponent(id)}`),
-  notifyIdle: (sessionId: string, on: boolean) =>
-    request(
-      z.object({ task: TaskSchema.nullable() }),
-      'POST',
-      `${session(sessionId)}/notify-idle`,
-      {
-        on,
-      },
-    ),
   createProfile: (body: CreateProfileBody) => request(ProfileSchema, 'POST', '/api/profiles', body),
   deleteProfile: (id: string, force = false) =>
     request(
@@ -88,6 +70,9 @@ export const api = {
       'DELETE',
       `/api/profiles/${enc(id)}${force ? '?force=1' : ''}`,
     ),
+  /** Replaces the API key of a profile (kept in its own folder, never sent back). */
+  setProfileSecret: (id: string, secret: string) =>
+    request(z.void(), 'PUT', `/api/profiles/${enc(id)}/secret`, { secret }),
   renameProfile: (id: string, label: string) =>
     request(ProfileSchema, 'PATCH', `/api/profiles/${enc(id)}`, { label }),
   deleteSession: (id: string) => request(z.void(), 'DELETE', session(id)),
@@ -101,8 +86,6 @@ export const api = {
     request(z.object({ tabs: z.array(z.number()) }), 'PUT', `${session(id)}/browser-tabs`, {
       tabs,
     }),
-  setPreview: (id: string, url: string) =>
-    request(z.object({ url: z.string() }), 'PUT', `${session(id)}/preview`, { url }),
   tree: (id: string, path: string, show: { hidden: boolean; ignored: boolean }) =>
     request(
       TreeResponseSchema,

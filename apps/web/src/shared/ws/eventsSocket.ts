@@ -7,6 +7,16 @@ export interface EventsHandlers {
   onMessage(message: PushMessage): void;
   /** True once connected (the caller should then fetch the current state once), false when the link drops. */
   onLive(live: boolean): void;
+  /** The deck's memory changed (a scope, and the profile for the profile scope). */
+  onMemory?(scope: string, profileId: string | null): void;
+}
+
+/** `{type:'memory', scope, profileId}`: refetch that memory. */
+function memoryPush(raw: unknown): { scope: string; profileId: string | null } | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const m = raw as { type?: unknown; scope?: unknown; profileId?: unknown };
+  if (m.type !== 'memory' || typeof m.scope !== 'string') return null;
+  return { scope: m.scope, profileId: typeof m.profileId === 'string' ? m.profileId : null };
 }
 
 /** Quiet on purpose: one tiny ping now and then, because every wake-up costs the phone battery. */
@@ -47,7 +57,10 @@ export function openEventsSocket(handlers: EventsHandlers): () => void {
       heardAt = Date.now();
       if (typeof event.data !== 'string') return;
       try {
-        const parsed = PushMessageSchema.safeParse(JSON.parse(event.data));
+        const raw: unknown = JSON.parse(event.data);
+        const memory = memoryPush(raw);
+        if (memory) return handlers.onMemory?.(memory.scope, memory.profileId);
+        const parsed = PushMessageSchema.safeParse(raw);
         if (parsed.success) handlers.onMessage(parsed.data);
       } catch {
         // ignore malformed frames

@@ -1,6 +1,7 @@
 import type { GitReview } from '@deck/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { gitApi } from '../../shared/api/reviewApi';
+import { useFilesTick } from '../files/filesTick';
 
 const message = (e: unknown): string => (e instanceof Error ? e.message : 'failed');
 
@@ -12,6 +13,7 @@ export function useReview(sessionId: string, visible: boolean) {
   /** What git said after the last commit or push. */
   const [output, setOutput] = useState<string | null>(null);
 
+  const tick = useFilesTick((s) => s.byId[sessionId] ?? 0);
   const refresh = useCallback(
     () =>
       gitApi
@@ -22,7 +24,7 @@ export function useReview(sessionId: string, visible: boolean) {
   );
   useEffect(() => {
     if (visible) void refresh();
-  }, [visible, refresh]);
+  }, [visible, refresh, tick]);
 
   /** Runs one action, then shows what changed; returns false when git refused it. */
   const act = async (run: () => Promise<unknown>): Promise<boolean> => {

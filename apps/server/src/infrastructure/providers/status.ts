@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { access } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { posix, win32 } from 'node:path';
@@ -12,6 +13,8 @@ export interface StatusDeps {
   home: string;
   platform: NodeJS.Platform;
   exists(path: string): Promise<boolean>;
+  /** True when the Claude Agent SDK ships its own Claude Code for this platform (no `claude` needed). */
+  sdkBinary(): boolean;
 }
 
 export const realStatusDeps = (): StatusDeps => ({
@@ -23,6 +26,18 @@ export const realStatusDeps = (): StatusDeps => ({
       () => true,
       () => false,
     ),
+  sdkBinary: () => {
+    const require = createRequire(import.meta.url);
+    const base = `@anthropic-ai/claude-agent-sdk-${process.platform}-${process.arch}`;
+    return [base, `${base}-musl`].some((name) => {
+      try {
+        require.resolve(`${name}/package.json`);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  },
 });
 
 /** True when `name` resolves to a file in PATH (honours PATHEXT on Windows). */
@@ -40,11 +55,10 @@ export async function findExecutable(name: string, deps: StatusDeps): Promise<bo
 
 const READY: ProviderStatusInfo = { status: 'ready', hint: null, canInstall: false, setupId: null };
 
-/** Tells the UI whether a provider's CLI is installed. Sign-in is the CLI's own flow. */
+/** Tells the UI whether an agent can run: Claude Code ships inside the SDK, Codex must be in PATH. */
 export class ProviderStatusResolver {
   constructor(
     private readonly specs: readonly SetupSpec[],
-    private readonly configured: { id: string; command: string }[],
     private readonly deps: StatusDeps,
   ) {}
 
@@ -57,30 +71,13 @@ export class ProviderStatusResolver {
 
   unregister(id: string): void {
     this.aliases.delete(id);
-    const at = this.configured.findIndex((d) => d.id === id);
-    if (at >= 0) this.configured.splice(at, 1);
-  }
-
-  register(entry: { id: string; command: string }): void {
-    const at = this.configured.findIndex((d) => d.id === entry.id);
-    if (at >= 0) this.configured.splice(at, 1);
-    this.configured.push(entry);
   }
 
   async resolve(id: string): Promise<ProviderStatusInfo> {
-    const def = this.configured.find((d) => d.id === id);
-    if (def) {
-      return (await findExecutable(def.command, this.deps))
-        ? READY
-        : {
-            status: 'missing',
-            hint: `"${def.command}" was not found in PATH`,
-            canInstall: false,
-            setupId: null,
-          };
-    }
     const spec = this.specs.find((s) => s.id === (this.aliases.get(id) ?? id));
-    if (!spec || (await findExecutable(spec.binary, this.deps))) return READY;
+    if (!spec) return READY;
+    if (spec.id === 'claude' && this.deps.sdkBinary()) return READY;
+    if (await findExecutable(spec.binary, this.deps)) return READY;
     return {
       status: 'missing',
       hint: `${spec.binary} is not installed`,

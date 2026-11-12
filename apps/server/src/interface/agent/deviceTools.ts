@@ -50,30 +50,24 @@ export function createDeviceTools(deps: DeviceDeps) {
       };
     },
 
-    /** Starts a terminal there (a profile's agent, or a plain shell with `command`). */
-    open: async (name: string, profile: string, cwd?: string, command?: string) => {
-      const body = {
-        provider: profile,
-        cwd: cwd ?? '~',
-        useWorktree: false,
-        command: command ?? null,
-        args: [],
-      };
+    /** Starts a chat session there with a profile's agent. */
+    open: async (name: string, profile: string, cwd?: string) => {
+      const body = { provider: profile, cwd: cwd ?? '~', useWorktree: false };
       const session = await call<Session>(name, 'POST', '/api/sessions', body);
       return { terminal: session.id, profile: session.provider, cwd: session.cwd };
     },
 
-    /** Types into one of its terminals (an agent's chat box, a shell), Enter after by default. */
-    send: async (name: string, id: string, text: string, enter = true) => {
-      await call(name, 'POST', `${terminal(id)}/input`, { text, enter });
+    /** Sends a message to one of its sessions' agents. */
+    send: async (name: string, id: string, text: string) => {
+      await call(name, 'POST', `${terminal(id)}/input`, { text });
       return { sent: true };
     },
 
-    /** One of its terminals as text, as a person would see it. */
+    /** One of its sessions' recent conversation as text. */
     read: (name: string, id: string, lines = 60) =>
       call<ScreenText>(name, 'GET', `${terminal(id)}/screen?lines=${lines}`),
 
-    /** Starts an ended terminal again: its conversation continued (default) or a new one. */
+    /** Starts a session's conversation over (`fresh`); otherwise nothing to do: a chat just continues. */
     restart: async (name: string, id: string, fresh = false) => {
       await call(name, 'POST', `${terminal(id)}/restart`, { mode: fresh ? 'new' : 'continue' });
       return { restarted: true };

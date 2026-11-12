@@ -5,29 +5,23 @@ import { $, click, mount, setWide, useSmokeApp } from './testing/smokeHarness';
 
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
-vi.mock('@xterm/xterm', () => import('./testing/fakeXterm'));
-vi.mock('@xterm/addon-fit', () => import('./testing/fakeXterm'));
-vi.mock('@xterm/addon-web-links', () => import('./testing/fakeXterm'));
-vi.mock('@xterm/addon-unicode11', () => import('./testing/fakeXterm'));
-vi.mock('@xterm/addon-webgl', () => import('./testing/fakeXterm'));
-
 useSmokeApp();
 
 describe('App dialogs', () => {
   it('asks with the app dialog (not window.confirm) before ending a session', async () => {
     await mount();
-    click($('button[aria-label="All terminals"]'));
+    click($('button[aria-label="All chats"]'));
     click([...document.querySelectorAll('.profile-row')].pop() ?? null); // the Shell profile
     click($('.session-list button[aria-label="More actions"]'));
     click([...document.querySelectorAll('.menu-pop button')].pop() ?? null);
-    expect($('[role="alertdialog"]')?.textContent).toContain('Shell · beta'); // the newest session is the first row
-    click($('[role="alertdialog"] .row button'));
+    expect($('[role="alertdialog"]')?.textContent).toContain('Claude Code · beta'); // the newest session is the first row
+    click($('[role="alertdialog"] .dialog-actions button:last-child')); // Cancel
     expect($('[role="alertdialog"]')).toBeNull();
   });
 
-  it('offers clean profiles: a name and a base; the key is asked inside the terminal', async () => {
+  it('offers clean profiles: a name and a base, with no key until the base wants one', async () => {
     await mount();
-    click($('button[aria-label="All terminals"]'));
+    click($('button[aria-label="All chats"]'));
     click($('.drawer-back')); // the drawer opens on the active terminal's profile
     const buttons = [...document.querySelectorAll('.drawer > button')];
     click(buttons.find((b) => b.textContent === 'New profile') ?? null);
@@ -40,14 +34,33 @@ describe('App dialogs', () => {
       'Claude Code (custom endpoint)',
       'Claude Code (DeepSeek)',
       'Codex',
-      'Custom',
     ]);
-    expect(document.querySelector('.modal')?.textContent).not.toMatch(/api key|password/i);
+    expect($('.modal input[type="password"]')).toBeNull();
+  });
+
+  it('a base that needs an API key asks for it, hidden, and requires it', async () => {
+    await mount();
+    click($('button[aria-label="All chats"]'));
+    click($('.drawer-back'));
+    click(
+      [...document.querySelectorAll('.drawer > button')].find(
+        (b) => b.textContent === 'New profile',
+      ) ?? null,
+    );
+    await act(async () => undefined);
+    const select = $('.modal select') as HTMLSelectElement;
+    await act(async () => {
+      select.value = 'claude-endpoint';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    const key = $('.modal input[type="password"]') as HTMLInputElement;
+    expect(key).not.toBeNull();
+    expect(key.required).toBe(true);
   });
 
   it('the custom endpoint base asks for the API base URL', async () => {
     await mount();
-    click($('button[aria-label="All terminals"]'));
+    click($('button[aria-label="All chats"]'));
     click($('.drawer-back')); // the drawer opens on the active terminal's profile
     const buttons = [...document.querySelectorAll('.drawer > button')];
     click(buttons.find((b) => b.textContent === 'New profile') ?? null);
@@ -77,7 +90,6 @@ describe('App dialogs', () => {
       'Claude Code (custom endpoint)',
       'Claude Code (DeepSeek)',
       'Codex',
-      'Custom',
     ]);
     const open2 = [...document.querySelectorAll('.modal .button-pair button')].find(
       (b) => b.textContent === 'Import template…',
@@ -115,7 +127,7 @@ describe('App dialogs', () => {
     });
     expect(document.documentElement.lang).toBe('ja');
     expect($('.modal h2')?.textContent).toBe('設定');
-    expect($('button[aria-label="すべてのターミナル"]')).not.toBeNull();
+    expect($('button[aria-label="すべてのチャット"]')).not.toBeNull();
   });
 
   it('desktop: toggles the optional side panel next to the terminal', async () => {

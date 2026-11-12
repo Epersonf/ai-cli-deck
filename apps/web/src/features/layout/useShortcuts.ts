@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { shortcutFor, targetSession } from './shortcuts';
 
-/** Window-level terminal switching; runs in the capture phase so xterm never swallows it. */
+/** Window-level session switching; runs in the capture phase so a focused text box never swallows it. */
 export function useShortcuts(
   ids: readonly string[],
   activeId: string | null,

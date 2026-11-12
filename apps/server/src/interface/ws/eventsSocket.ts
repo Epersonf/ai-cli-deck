@@ -10,14 +10,24 @@ function toPush(event: DeckEvent): PushMessage | null {
       return { type: 'session', session: event.session };
     case 'approval':
       return { type: 'approval', request: event.request };
-    case 'exit':
-      return { type: 'exit', sessionId: event.sessionId, code: event.code };
+    case 'memory':
+      return { type: 'memory', scope: event.scope, profileId: event.profileId };
+    case 'notify':
+      return {
+        type: 'notify',
+        sessionId: event.sessionId,
+        title: event.title,
+        text: event.text,
+        reason: event.reason,
+      };
+    case 'removed':
+      return { type: 'exit', sessionId: event.sessionId, code: null };
     default:
       return null;
   }
 }
 
-/** Session and approval changes for the whole deck, pushed as they happen (terminal output is not here). */
+/** Session and approval changes for the whole deck, pushed as they happen (the conversations are not here). */
 export function eventsSocket(app: FastifyInstance, c: Container): void {
   app.get(EVENTS_WS_PATH, { websocket: true }, (socket: WebSocket) => {
     const unsubscribe = c.bus.subscribe((event) => {

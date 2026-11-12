@@ -3,12 +3,11 @@ import type { CreateSessionBody, Session } from '@deck/shared';
 interface Origin {
   id: string;
   now: Date;
-  persistent: boolean;
 }
 
-/** A fresh session record in the "starting" state, before its process is spawned. */
+/** A fresh session record, waiting for its first message. */
 export function newSession(
-  body: CreateSessionBody,
+  body: Pick<CreateSessionBody, 'provider' | 'useWorktree'> & { parentId?: string | null },
   cwd: string,
   port: number,
   from: Origin,
@@ -17,12 +16,11 @@ export function newSession(
     id: from.id,
     provider: body.provider,
     cwd,
-    status: 'starting',
+    status: 'idle',
     createdAt: from.now.toISOString(),
     previewUrl: null,
     port,
     worktree: { enabled: body.useWorktree, path: null, branch: null },
-    persistent: from.persistent,
     sharedCwdWith: [],
     name: null,
     parentId: body.parentId ?? null,

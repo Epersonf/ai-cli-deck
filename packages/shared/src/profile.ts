@@ -10,7 +10,7 @@ export const isHttpUrl = (text: string): boolean => {
   }
 };
 
-/** A named, clean terminal made from a template (`base` is the template's id). */
+/** A named, clean agent made from a template (`base` is the template's id). */
 export const ProfileSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
   label: z.string().trim().min(1).max(60),
@@ -24,9 +24,14 @@ export const CreateProfileBodySchema = z.object({
   label: z.string().trim().min(1).max(60),
   base: z.string().min(1).max(40),
   values: z.record(z.string(), z.string().max(300)).default({}),
+  /** The API key for a template that asks for one; saved in the profile's own folder, never returned. */
+  secret: z.string().trim().max(500).optional(),
 });
 /** What a client sends: `values` may be left out. */
 export type CreateProfileBody = z.input<typeof CreateProfileBodySchema>;
+
+/** Replaces the API key of a profile. */
+export const SetProfileSecretBodySchema = z.object({ secret: z.string().trim().min(1).max(500) });
 
 export const RenameProfileBodySchema = z.object({ label: z.string().trim().min(1).max(60) });
 

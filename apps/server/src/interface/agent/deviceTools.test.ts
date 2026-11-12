@@ -73,7 +73,7 @@ describe('devices for agents', () => {
     await tools.read('Meu PC', 'abc', 20);
     await tools.restart('PC', 'abc', true);
     expect(calls).toEqual([
-      ['p1', 'POST', '/api/sessions/abc/input', '{"text":"hello","enter":true}'],
+      ['p1', 'POST', '/api/sessions/abc/input', '{"text":"hello"}'],
       ['p1', 'GET', '/api/sessions/abc/screen?lines=20', ''],
       ['p1', 'POST', '/api/sessions/abc/restart', '{"mode":"new"}'],
     ]);

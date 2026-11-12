@@ -14,7 +14,7 @@ export interface ProfileRequest {
 
 const usage = (templates: readonly ProfileTemplate[]): string =>
   `usage: clideck profile add "<name>" <${templates.map((t) => t.id).join('|')}> [--<field> <value>]...
-  e.g. --url <api-base-url> (same as --baseUrl) and --command <program>; a template lists its fields.`;
+  e.g. --url <api-base-url> (same as --baseUrl) and --model <name>; a template lists its fields.`;
 
 /** `--url` is the short form of the endpoint template's `baseUrl` field. */
 const ALIASES: Readonly<Record<string, string>> = { url: 'baseUrl' };
@@ -67,5 +67,5 @@ export async function addProfile(request: ProfileRequest, env = process.env): Pr
     all.map((p) => p.id),
   );
   await store.save([...all, { ...request, id }]);
-  return `Profile "${request.label}" (${id}) saved: a clean terminal, no login linked. Restart the deck to use it.`;
+  return `Profile "${request.label}" (${id}) saved: a clean agent profile. Restart the deck to use it, then add its API key there.`;
 }

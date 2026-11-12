@@ -1,67 +1,46 @@
 import { describe, expect, it } from 'vitest';
 import type { ChatEntry } from '../domain/chat.js';
-import { createHarness, customBody } from '../testing/harness.js';
+import { agentBody, createHarness } from '../testing/harness.js';
 
-const claude = { ...customBody('/work'), provider: 'claude', command: null };
-/** Minutes after the deck's fake "now" (2026-01-01 00:00 UTC), when every run starts. */
 const at = (minutes: number): Date => new Date(Date.UTC(2026, 0, 1, 0, minutes));
-const chat = (id: string, started: number, updated: number): ChatEntry => ({
+const chat = (id: string): ChatEntry => ({
   id,
   path: `/chats/${id}.jsonl`,
   title: `chat ${id}`,
-  startedAt: at(started),
-  updatedAt: at(updated),
+  startedAt: at(0),
+  updatedAt: at(5),
 });
 
-describe('which conversation a terminal is on', () => {
-  it('takes the one the CLI reported, when it reports', async () => {
+describe('the conversations a session knows', () => {
+  it('lists the saved chats of a profile in a folder', async () => {
     const h = createHarness();
-    const { id } = await h.sessions.create(claude);
-    h.reader.chats = [chat('newer', 0, 10), chat('mine', 0, 1)];
-    h.chatFiles.reports.set(id, { id: 'mine', path: '' });
-    expect((await h.chats.current(id))?.id).toBe('mine');
+    h.reader.chats = [chat('a'), chat('b')];
+    expect((await h.chats.list('claude', '/work')).map((c) => c.id)).toEqual(['a', 'b']);
+    expect(await h.chats.list('nope', '/work')).toEqual([]);
   });
 
-  it('otherwise takes the newest chat touched since the run started, not another terminal’s', async () => {
+  it('says what a session can continue once its agent reported a chat', async () => {
     const h = createHarness();
-    const a = await h.sessions.create(claude);
-    const b = await h.sessions.create(claude);
-    h.reader.chats = [chat('before', -90, -60), chat('of-a', 1, 5), chat('of-b', 2, 6)];
-    h.chatFiles.reports.set(b.id, { id: 'of-b', path: '' });
-    expect((await h.chats.current(a.id))?.id).toBe('of-a');
-  });
-
-  it('keeps the chat with the session when its program ends, and offers to continue it', async () => {
-    const h = createHarness();
-    const { id } = await h.sessions.create(claude);
-    h.reader.chats = [chat('abc-123', 1, 30)];
-    h.ptyPort.spawned[0]?.pty.exit(0);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(h.sessions.get(id)?.meta['chat']).toBe('abc-123');
-    expect(await h.chats.info(id, true)).toEqual({
-      chat: { id: 'abc-123', title: 'chat abc-123', updatedAt: '2026-01-01T00:30:00.000Z' },
+    const { id } = await h.sessions.create(agentBody());
+    expect(await h.chats.info(id)).toMatchObject({ chat: null, native: false, canContinue: false });
+    await h.sessions.send(id, 'hello there');
+    h.agent.last.sink.chatId('abc-123');
+    expect(await h.chats.info(id)).toMatchObject({
+      chat: { id: 'abc-123', title: 'hello there' },
       native: true,
       canContinue: true,
     });
   });
 
-  it('names each terminal by the first thing asked in its chat, reusing the answer for a moment', async () => {
+  it('names each session by the first thing asked in it, reusing the answer for a moment', async () => {
     const h = createHarness();
-    const mine = await h.sessions.create(claude);
-    const shell = await h.sessions.create(customBody('/work'));
-    h.reader.chats = [chat('abc', 1, 5)];
+    const mine = await h.sessions.create(agentBody());
+    const quiet = await h.sessions.create(agentBody());
+    await h.sessions.send(mine.id, 'fix the login bug');
     const first = await h.chats.titles();
-    expect(first).toEqual({ [mine.id]: 'chat abc' });
-    expect(first[shell.id]).toBeUndefined();
-    h.reader.chats = [];
+    expect(first).toEqual({ [mine.id]: 'fix the login bug' });
+    expect(first[quiet.id]).toBeUndefined();
+    await h.sessions.send(quiet.id, 'later');
     expect(await h.chats.titles()).toEqual(first);
-  });
-
-  it('has nothing to read for a CLI without chat support, but can still continue from the screen', async () => {
-    const h = createHarness();
-    const { id } = await h.sessions.create(customBody('/work'));
-    expect(await h.chats.current(id)).toBeNull();
-    expect(await h.chats.info(id, true)).toEqual({ chat: null, native: false, canContinue: true });
-    expect((await h.chats.info(id, false)).canContinue).toBe(false);
   });
 });

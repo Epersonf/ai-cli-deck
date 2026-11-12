@@ -45,7 +45,7 @@ function PeerRow({ peer, onChange }: { peer: PeerInfo; onChange(): void }) {
         </button>
       </div>
       {address !== null && (
-        <form className="row" onSubmit={(e) => (e.preventDefault(), add())}>
+        <form className="field-inline" onSubmit={(e) => (e.preventDefault(), add())}>
           <input
             value={address}
             autoFocus

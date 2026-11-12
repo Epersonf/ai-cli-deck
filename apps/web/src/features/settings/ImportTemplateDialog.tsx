@@ -27,7 +27,7 @@ export function ImportTemplateDialog({ onClose, onImported }: Props) {
       title: t('templates.confirmTitle'),
       message: t('templates.confirmBody', {
         name: checked.label,
-        command: checked.command || '(shell)',
+        command: `${checked.agent} · ${Object.keys(checked.env).join(', ') || '—'}`,
       }),
       confirmLabel: t('templates.import'),
       cancelLabel: t('common.cancel'),

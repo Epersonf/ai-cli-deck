@@ -3,6 +3,8 @@ import { downloadUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { ConfirmDelete } from './ConfirmDelete';
+import { DownloadIcon } from '../../shared/ui/GlyphIcons';
+import { TrashIcon } from '../../shared/ui/Icons';
 
 interface Props {
   sessionId: string;
@@ -41,10 +43,10 @@ export function FileActionDialog({ sessionId, path, onOpen, onDeleted, onClose }
           {t('common.open')}
         </button>
         <a className="btn" href={downloadUrl(sessionId, path)} download onClick={onClose}>
-          ⬇ {t('files.download')}
+          <DownloadIcon size={16} /> {t('files.download')}
         </a>
         <button type="button" className="danger" onClick={() => setConfirming(true)}>
-          🗑 {t('files.delete')}
+          <TrashIcon size={16} /> {t('files.delete')}
         </button>
       </div>
     </div>

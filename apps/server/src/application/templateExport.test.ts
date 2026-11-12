@@ -7,7 +7,7 @@ describe('exportTemplate', () => {
   it('writes every built-in template as commented JSON that reads back identical', () => {
     for (const template of BUILTIN_TEMPLATES) {
       const text = exportTemplate(template);
-      expect(text).toContain('// The program to start');
+      expect(text).toContain('// The engine that runs the chat');
       expect(ProfileTemplateSchema.parse(parseJsonc(text))).toEqual(template);
     }
   });

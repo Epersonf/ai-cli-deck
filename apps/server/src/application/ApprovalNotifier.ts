@@ -16,8 +16,6 @@ export interface ApprovalNotifierDeps {
   approvals: ApprovalService;
   bus: EventBus;
   phone: PhonePort | null;
-  /** The terminals the person asked to be notified about (the watch behind "tell me when it goes quiet"). */
-  watched(sessionId: string): boolean;
   /** What to call this terminal in the notification. */
   label(sessionId: string): string;
   /** Where the phone reaches this deck (loopback), without a trailing slash. */
@@ -54,7 +52,7 @@ export class ApprovalNotifier {
 
   private async notify(request: ApprovalRequest): Promise<void> {
     const { phone } = this.deps;
-    if (!phone || !this.deps.watched(request.sessionId)) return;
+    if (!phone) return;
     const actions = (['approve', 'reject'] as const).map((decision) => {
       const token = randomUUID();
       this.pending.set(token, {

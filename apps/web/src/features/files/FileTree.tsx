@@ -9,6 +9,8 @@ import { parentOf } from './explorerPath';
 import { PathBar } from './PathBar';
 import { TransferDialog } from './TransferDialog';
 import { TreeTools } from './TreeTools';
+import { useFilesTick } from './filesTick';
+import { usePins } from './pinStore';
 import { useUpload } from './Uploader';
 
 interface Props {
@@ -26,7 +28,10 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
+  const [manualKey, setReloadKey] = useState(0);
+  // The agent finished a tool or a turn: reload as if the refresh button was pressed.
+  const reloadKey = manualKey + useFilesTick((s) => s.byId[sessionId] ?? 0);
+  const pinnedFrom = usePins((s) => s.from[sessionId] ?? null);
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
   const { upload, note, busy } = useUpload({
@@ -34,16 +39,6 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
     dir,
     onDone: () => setReloadKey((k) => k + 1),
   });
-
-  /** A plain shell in the folder being viewed, as a new tab of this session (for git, tests, anything). */
-  const openTerminal = (): void =>
-    void api
-      .openTerminal(sessionId, dir)
-      .then((session) => {
-        useSessions.getState().upsert(session);
-        useSessions.getState().select(session.id);
-      })
-      .catch(() => undefined);
 
   useEffect(() => {
     api
@@ -68,9 +63,17 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
         dir={dir}
         onGo={onDir}
         onBack={() => onDir(parentOf(dir))}
-        onUseFolder={(path) => {
+        pinnedFrom={pinnedFrom}
+        onPin={(path) => {
+          usePins.getState().pin(sessionId, cwd);
           onDir('');
           void useSessions.getState().setFolder(sessionId, path);
+        }}
+        onUnpin={() => {
+          if (pinnedFrom === null) return;
+          usePins.getState().unpin(sessionId);
+          onDir('');
+          void useSessions.getState().setFolder(sessionId, pinnedFrom);
         }}
       />
       <TreeTools
@@ -78,7 +81,6 @@ export function FileTree({ sessionId, cwd, dir, selected, onDir, onOpen }: Props
         canDelete={dir !== ''}
         onRefresh={() => setReloadKey((k) => k + 1)}
         onTransfer={() => setTransferOpen(true)}
-        onTerminal={openTerminal}
         onOptions={() => setOptionsOpen(true)}
         onDelete={() => setDeleteOpen(true)}
       />

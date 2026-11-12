@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { transcript, transcriptFor } from './transcript.js';
+import { transcript } from './transcript.js';
 
 const origin = { from: 'Claude Code', cwd: '/work', date: new Date('2026-01-01T12:34:56Z') };
 
@@ -33,12 +33,5 @@ describe('the transcript handed to another AI', () => {
     expect(text).toMatch(/_\(\d+ earlier messages left out to keep this short\.\)_/);
     expect(text).toContain('59 xxx');
     expect(text).not.toContain('## User\n\n0 xxx');
-  });
-
-  it('falls back to what the terminal showed, and to nothing when there is nothing', () => {
-    expect(transcriptFor(null, 'aider> hello\nHi there', origin)).toContain(
-      '```text\naider> hello',
-    );
-    expect(transcriptFor([], '   ', origin)).toBeNull();
   });
 });

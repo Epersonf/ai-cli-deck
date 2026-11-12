@@ -2,23 +2,14 @@ import { useState } from 'react';
 import { PEER_ID } from '../../shared/api/base';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
-import type { KeysMode } from '../terminal/keysPreference';
-import { KeysSection } from './KeysSection';
 import { LanguageSection } from './LanguageSection';
-import { NotifySection } from './NotifySection';
 import { SaverSection } from './SaverSection';
 import { PasswordDialog } from './PasswordDialog';
 import { TemplatesDialog } from './TemplatesDialog';
+import { useMemory } from '../memory/memoryStore';
 import { DevicesDialog } from '../devices/DevicesDialog';
 
-interface Props {
-  keysMode: KeysMode;
-  touchScreen: boolean;
-  onKeysChange(mode: KeysMode): void;
-  onClose(): void;
-}
-
-export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }: Props) {
+export function SettingsDialog({ onClose }: { onClose(): void }) {
   const t = useT();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
@@ -30,10 +21,19 @@ export function SettingsDialog({ keysMode, touchScreen, onKeysChange, onClose }:
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()}>
         <ModalTitle title={t('settings.title')} onClose={onClose} />
+        <div className="setting memory-entry">
+          <h3>{t('memory.title')}</h3>
+          <p className="hint">{t('memory.settingsHint')}</p>
+          <button
+            type="button"
+            className="primary"
+            onClick={() => (onClose(), useMemory.getState().show(null, true))}
+          >
+            {t('memory.open')}
+          </button>
+        </div>
         <LanguageSection />
-        <KeysSection mode={keysMode} touchScreen={touchScreen} onChange={onKeysChange} />
         <SaverSection />
-        <NotifySection />
         <div className="setting">
           <h3>{t('shortcuts.title')}</h3>
           <p className="hint">{t('shortcuts.body')}</p>

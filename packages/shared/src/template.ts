@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ChatFormatSchema } from './chat.js';
+import { AgentKindSchema } from './agent.js';
 
 const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
@@ -15,27 +15,10 @@ export const TemplateFieldSchema = z.object({
 });
 export type TemplateField = z.infer<typeof TemplateFieldSchema>;
 
-const chatArgs = z.array(z.string().max(500)).max(10).default([]);
-
-/** How a CLI keeps and continues its conversations. The deck uses whatever is given. */
-export const TemplateChatSchema = z.object({
-  /** Built-in reader of the CLI's chat files: the deck then knows, lists and hands over its chats. */
-  format: ChatFormatSchema.nullable().default(null),
-  /** Continue one chat (`{chatId}`). */
-  resume: chatArgs,
-  /** Fork one chat into a new one (`{chatId}`). */
-  fork: chatArgs,
-  /** Continue the CLI's latest chat in this folder, when its id is not known. */
-  last: chatArgs,
-  /** Start a new chat whose first message is `{prompt}`; empty: the deck types the message instead. */
-  prompt: chatArgs,
-});
-export type TemplateChat = z.infer<typeof TemplateChatSchema>;
-
 /**
- * How to start one kind of AI CLI as a clean profile. Pure data (JSON): the deck runs `command`
- * with `args` and `env`, nothing else. Built-in templates (Claude Code, Codex, DeepSeek...) use this
- * same format, so anyone can add another CLI by importing a file.
+ * How to run one kind of agent as a clean profile. Pure data (JSON): the deck starts the `agent` engine
+ * with `env`, nothing else. Built-in templates (Claude Code, Codex, DeepSeek...) use this same format,
+ * so anyone can add another endpoint by importing a file.
  */
 export const ProfileTemplateSchema = z.object({
   schema: z.literal(1),
@@ -45,9 +28,10 @@ export const ProfileTemplateSchema = z.object({
     .max(40),
   label: z.string().trim().min(1).max(60),
   description: z.string().max(300).default(''),
-  /** Program to run. Empty means the default shell. */
-  command: z.string().max(200).default(''),
-  args: z.array(z.string().max(500)).max(50).default([]),
+  /** The engine that runs the chat: Claude Code's SDK or the Codex CLI. */
+  agent: AgentKindSchema,
+  /** Model the chat starts with (the person can change it in the chat). */
+  model: z.string().max(100).nullable().default(null),
   env: z
     .record(z.string().regex(ENV_NAME, 'an environment variable name'), z.string().max(500))
     .default({}),
@@ -57,22 +41,22 @@ export const ProfileTemplateSchema = z.object({
     .nullable()
     .default(null),
   fields: z.array(TemplateFieldSchema).max(10).default([]),
-  /** Ask for an API key (hidden) on first start, via `clideck ensure-key`. */
+  /**
+   * An API key typed in the profile dialog (hidden) and kept in the profile's own folder; it reaches the
+   * agent as `env`. For `claude` with `env` ANTHROPIC_API_KEY, a Claude Code token (`sk-ant-oat...`) is
+   * passed as CLAUDE_CODE_OAUTH_TOKEN instead.
+   */
   apiKey: z
     .object({
       env: z.string().regex(ENV_NAME),
       label: z.string().min(1).max(100),
-      /** Remember it in `<home>/settings.json` (Claude Code's own config); otherwise it is asked every start. */
-      remember: z.boolean().default(false),
+      /** False: the profile works without one (the CLI's own sign-in in the home folder, if any). */
+      required: z.boolean().default(true),
     })
     .nullable()
     .default(null),
-  /** Arguments that give the CLI the deck's MCP server and briefing (see the placeholders). */
-  mcpArgs: z.array(z.string().max(500)).max(20).default([]),
   /** Built-in CLI that `clideck setup` can download for this template (so the profile shows "install"). */
   install: z.enum(['claude', 'codex']).nullable().default(null),
-  /** How its conversations are continued, forked and handed over (null: the deck can only start new ones). */
-  chat: TemplateChatSchema.nullable().default(null),
 });
 export type ProfileTemplate = z.infer<typeof ProfileTemplateSchema>;
 

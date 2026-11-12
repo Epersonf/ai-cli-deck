@@ -57,4 +57,8 @@ export const CHAT_META = {
   runAt: 'runAt',
   /** The conversation id the terminal last had. */
   chat: 'chat',
+  /** The settings picked in the chat (kept so a restart or another device sees the same). */
+  model: 'model',
+  mode: 'mode',
+  effort: 'effort',
 } as const;

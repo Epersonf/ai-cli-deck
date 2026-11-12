@@ -32,7 +32,7 @@ export const DeviceActionShape = {
   profile: z.string().max(80).optional(),
   terminal: z.string().max(80).optional(),
   text: z.string().max(20_000).optional(),
-  enter: z.boolean().optional(),
+  enter: z.boolean().optional().describe('ignored: a message is always sent whole'),
   lines: z.number().int().min(1).max(500).optional(),
   fresh: z.boolean().optional().describe('restart: a new conversation instead of continuing'),
   id: z.string().max(80).optional().describe('a task id'),
@@ -81,9 +81,9 @@ export function runDeviceAction(
     case 'terminals':
       return tools.terminals(device);
     case 'open':
-      return tools.open(device, need(input.profile, 'profile'), input.cwd, input.command);
+      return tools.open(device, need(input.profile, 'profile'), input.cwd);
     case 'send':
-      return tools.send(device, terminal(), input.text ?? '', input.enter);
+      return tools.send(device, terminal(), input.text ?? '');
     case 'read':
       return tools.read(device, terminal(), input.lines);
     case 'restart':

@@ -4,7 +4,6 @@ import type { ChatTurn } from '../domain/chat.js';
 const MAX_TOTAL = 120_000;
 const MAX_REQUEST = 8_000;
 const MAX_ANSWER = 6_000;
-const MAX_CAPTURE = 60_000;
 
 export interface TranscriptOrigin {
   /** The CLI or profile the conversation happened in. */
@@ -61,23 +60,4 @@ export function transcript(turns: readonly ChatTurn[], origin: TranscriptOrigin)
   }
   const note = dropped > 0 ? [`_(${dropped} earlier messages left out to keep this short.)_`] : [];
   return [header(origin), ...note, ...parts].join('\n\n') + '\n';
-}
-
-/** For a CLI whose chat files the deck cannot read: what its terminal last showed. */
-export function captureTranscript(text: string, origin: TranscriptOrigin): string {
-  const recent = text.length > MAX_CAPTURE ? text.slice(-MAX_CAPTURE) : text;
-  const intro = "This is what the terminal showed (the CLI's chat files could not be read):";
-  const shown = ['```text', recent.trimEnd(), '```'].join('\n');
-  return [header(origin), intro, shown].join('\n\n') + '\n';
-}
-
-/** The conversation for the next AI: from the CLI's chat when it could be read, else from the screen. */
-export function transcriptFor(
-  turns: readonly ChatTurn[] | null,
-  screen: string,
-  origin: TranscriptOrigin,
-): string | null {
-  if (turns && turns.length > 0) return transcript(turns, origin);
-  if (screen.trim() !== '') return captureTranscript(screen, origin);
-  return null;
 }

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { AgentTools } from '../agent/agentTools.js';
 import type { DeviceTools } from '../agent/deviceTools.js';
 import { registerDeviceTool } from './deviceTool.js';
+import { registerMemoryTool } from './memoryTool.js';
 import { registerBrowserTools } from './browserTools.js';
 import { registerPhoneAndTaskTools } from './phoneTaskTools.js';
 import { run, runAsync } from './mcpResult.js';
@@ -88,6 +89,7 @@ export function buildMcpServer(
 
   registerPhoneAndTaskTools(server, tools);
   registerBrowserTools(server, tools);
+  registerMemoryTool(server, tools);
   if (devices) registerDeviceTool(server, devices.tools, devices.cwd);
   return server;
 }

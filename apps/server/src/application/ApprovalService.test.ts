@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WorktreePort } from '../domain/ports.js';
-import { createHarness, customBody } from '../testing/harness.js';
+import { createHarness, agentBody } from '../testing/harness.js';
 import { ApprovalService, worktreePathFor } from './ApprovalService.js';
 
 function setup() {
@@ -24,7 +24,7 @@ function setup() {
 describe('ApprovalService worktree flow', () => {
   it('proposing never touches git', async () => {
     const { h, approvals, added } = setup();
-    const { id } = await h.sessions.create(customBody('/work', true));
+    const { id } = await h.sessions.create(agentBody('/work', true));
     const request = approvals.propose(id, 'parallel work');
     expect(request).toMatchObject({ status: 'pending', resultPath: null, kind: 'worktree' });
     expect(added).toHaveLength(0);
@@ -33,13 +33,13 @@ describe('ApprovalService worktree flow', () => {
 
   it('refuses proposals when worktrees are off for the session', async () => {
     const { h, approvals } = setup();
-    const { id } = await h.sessions.create(customBody('/work', false));
+    const { id } = await h.sessions.create(agentBody('/work', false));
     expect(() => approvals.propose(id, 'why')).toThrow('disabled');
   });
 
   it('creates the worktree only after approval and updates the session', async () => {
     const { h, approvals, added } = setup();
-    const { id } = await h.sessions.create(customBody('/work', true));
+    const { id } = await h.sessions.create(agentBody('/work', true));
     const request = approvals.propose(id, 'why');
     const done = await approvals.decide(request.id, 'approve');
     expect(added).toEqual([
@@ -52,7 +52,7 @@ describe('ApprovalService worktree flow', () => {
 
   it('rejecting never creates a worktree', async () => {
     const { h, approvals, added } = setup();
-    const { id } = await h.sessions.create(customBody('/work', true));
+    const { id } = await h.sessions.create(agentBody('/work', true));
     const request = approvals.propose(id, 'why');
     expect((await approvals.decide(request.id, 'reject')).status).toBe('rejected');
     expect(added).toHaveLength(0);
@@ -61,7 +61,7 @@ describe('ApprovalService worktree flow', () => {
 
   it('cannot decide twice and reuses the pending request', async () => {
     const { h, approvals } = setup();
-    const { id } = await h.sessions.create(customBody('/work', true));
+    const { id } = await h.sessions.create(agentBody('/work', true));
     const first = approvals.propose(id, 'a');
     expect(approvals.propose(id, 'b').id).toBe(first.id);
     await approvals.decide(first.id, 'reject');
@@ -77,7 +77,7 @@ describe('ApprovalService worktree flow', () => {
       system: h.system,
       bus: h.bus,
     });
-    const { id } = await h.sessions.create(customBody('/work', true));
+    const { id } = await h.sessions.create(agentBody('/work', true));
     const request = approvals.propose(id, 'why');
     await expect(approvals.decide(request.id, 'approve')).rejects.toThrow('git boom');
     expect(approvals.get(request.id).status).toBe('pending');
@@ -88,7 +88,7 @@ describe('ApprovalService worktree flow', () => {
 describe('ApprovalService folder flow', () => {
   it('only moves the session base folder once the user approves', async () => {
     const { h, approvals } = setup();
-    const { id } = await h.sessions.create(customBody('/work', false));
+    const { id } = await h.sessions.create(agentBody('/work', false));
     const request = await approvals.proposeFolder(id, '/work', 'x').catch((e: Error) => e);
     expect(request).toBeInstanceOf(Error); // already based there
 
@@ -104,7 +104,7 @@ describe('ApprovalService folder flow', () => {
 
   it('rejecting leaves the folder alone', async () => {
     const { h, approvals } = setup();
-    const { id } = await h.sessions.create(customBody('/work', false));
+    const { id } = await h.sessions.create(agentBody('/work', false));
     const asked = await approvals.proposeFolder(id, '/other', 'why');
     await approvals.decide(asked.id, 'reject');
     expect(h.sessions.get(id)?.cwd).toBe('/work');

@@ -6,6 +6,7 @@ import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { useProfiles } from '../sessions/profilesStore';
 import { templateName } from '../sessions/templateName';
 import { ImportTemplateDialog } from './ImportTemplateDialog';
+import { toast } from '../../shared/ui/toast';
 import { copyText, downloadText } from './templateFile';
 
 const message = (e: unknown): string => (e instanceof Error ? e.message : 'failed');
@@ -35,7 +36,7 @@ export function TemplatesDialog({ onClose }: { onClose(): void }) {
       label: t('templates.copy'),
       onSelect: () =>
         withText(api.exportTemplate(id), (text) =>
-          copyText(text).then(() => setNote(t('templates.copied'))),
+          copyText(text).then(() => toast(t('templates.copied'))),
         ),
     },
     ...(builtin

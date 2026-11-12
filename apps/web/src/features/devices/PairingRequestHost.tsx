@@ -36,7 +36,7 @@ export function PairingRequestHost() {
           {request.code.slice(0, 3)} {request.code.slice(3)}
         </p>
         <p className="hint">{t('devices.requestHint')}</p>
-        <div className="row">
+        <div className="dialog-actions">
           <button type="button" className="danger" onClick={refuse}>
             {t('devices.refuse')}
           </button>

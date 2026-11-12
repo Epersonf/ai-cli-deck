@@ -1,6 +1,6 @@
 /**
- * How to download a built-in CLI. Signing in is NEVER handled here: every CLI runs its own
- * login the first time it starts, in the terminal, and we only display it.
+ * How to download a built-in CLI. Signing in is not handled here: use an API key / token in the profile,
+ * or the CLI's own login on this machine.
  */
 export interface SetupSpec {
   id: string;
@@ -19,12 +19,6 @@ export const SETUP_SPECS: readonly SetupSpec[] = [
     label: 'Codex',
     binary: 'codex',
     install: ['npm', 'install', '-g', '@openai/codex'],
-  },
-  {
-    id: 'claude-deepseek',
-    label: 'Claude Code (DeepSeek)',
-    binary: 'claude',
-    install: CLAUDE_INSTALL,
   },
 ];
 

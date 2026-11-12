@@ -1,5 +1,5 @@
-/* What a terminal is doing: a pulsing dot while it prints, and its last line under the name. */
-.dot.running.busy {
+/* What a chat is doing: a pulsing dot while the agent answers, and its last line under the name. */
+.dot.working {
   animation: dot-busy 1.1s ease-in-out infinite;
 }
 @keyframes dot-busy {
@@ -17,7 +17,7 @@
   font-style: italic;
 }
 @media (prefers-reduced-motion: reduce) {
-  .dot.running.busy {
+  .dot.working {
     animation: none;
   }
 }

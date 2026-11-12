@@ -2,6 +2,7 @@ import { mediaKindOf, type FileContent } from '@deck/shared';
 import { useEffect, useState } from 'react';
 import { api, downloadUrl, rawUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { DownloadIcon, ExternalIcon } from '../../shared/ui/GlyphIcons';
 
 interface Props {
   sessionId: string;
@@ -29,7 +30,7 @@ function TextBody({ sessionId, path, raw }: { sessionId: string; path: string; r
       <p className="empty">
         {t('files.binary', { size: file.size })}{' '}
         <a href={raw} target="_blank" rel="noopener noreferrer">
-          {t('files.openRaw')} ↗
+          {t('files.openRaw')} <ExternalIcon size={14} />
         </a>
       </p>
     );
@@ -55,10 +56,10 @@ export function FileViewer({ sessionId, path, onClose }: Props) {
         </button>
         <span className="viewer-title">{path}</span>
         <a className="btn" href={raw} target="_blank" rel="noopener noreferrer">
-          {t('common.open')} ↗
+          {t('common.open')} <ExternalIcon size={14} />
         </a>
         <a className="btn" href={downloadUrl(sessionId, path)} download>
-          ⬇ {t('files.download')}
+          <DownloadIcon size={16} /> {t('files.download')}
         </a>
       </div>
       <div className="viewer-body">

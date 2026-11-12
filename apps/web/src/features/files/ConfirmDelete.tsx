@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
+import { TrashIcon } from '../../shared/ui/Icons';
 
 interface Props {
   sessionId: string;
@@ -35,7 +36,7 @@ export function ConfirmDelete({ sessionId, path, kind, onDeleted, onClose }: Pro
         </p>
         {error !== null && <p className="notice error">{error}</p>}
         <button type="button" className="danger" disabled={busy} onClick={confirm}>
-          🗑 {t('files.delete')}
+          <TrashIcon size={16} /> {t('files.delete')}
         </button>
         <button type="button" disabled={busy} onClick={onClose}>
           {t('common.cancel')}

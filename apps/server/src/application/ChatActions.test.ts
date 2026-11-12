@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createHarness, customBody } from '../testing/harness.js';
+import { agentBody, createHarness } from '../testing/harness.js';
 
-const claude = { ...customBody('/work'), provider: 'claude', command: null };
 const later = new Date(Date.UTC(2026, 0, 1, 0, 30));
 const theChat = {
   id: 'abc-123',
@@ -11,90 +10,78 @@ const theChat = {
   updatedAt: later,
 };
 
-/** A Claude terminal that had a conversation and has ended. */
-async function ended() {
-  const h = createHarness({ tmux: false });
-  const { id } = await h.sessions.create(claude);
+/** A Claude session that had a conversation (its agent reported a chat id). */
+async function talked() {
+  const h = createHarness();
+  const { id } = await h.sessions.create(agentBody());
+  await h.sessions.send(id, 'fix the login bug');
+  h.agent.last.sink.chatId('abc-123');
+  h.agent.last.sink.event({ t: 'tool', id: 't1', name: 'Bash', input: { command: 'npm test' } });
+  h.agent.last.reply('Fixed: the token was not refreshed.');
   h.reader.chats = [theChat];
   h.reader.turns.set('abc-123', [
     { role: 'user', text: 'fix the login bug' },
-    { role: 'tool', text: 'Bash: npm test' },
-    { role: 'assistant', text: 'Fixed: the token was not refreshed.' },
+    { role: 'assistant', text: 'Fixed.' },
   ]);
-  h.ptyPort.spawned[0]?.pty.exit(0);
-  return { h, id, args: (n: number) => h.ptyPort.spawned[n]?.spec.args ?? [] };
+  return { h, id };
 }
 
 describe('continuing a conversation', () => {
-  it('restarts an ended terminal on the same chat with its own CLI', async () => {
-    const { h, id, args } = await ended();
-    await h.chatActions.restart(id, { mode: 'continue' });
-    expect(args(1).slice(0, 2)).toEqual(['--resume', 'abc-123']);
-    expect(h.sessions.get(id)?.status).toBe('running');
-  });
-
-  it('starts a fresh chat when asked for a new one', async () => {
-    const { h, id, args } = await ended();
+  it('starts the conversation over in the same session when asked for a new one', async () => {
+    const { h, id } = await talked();
     await h.chatActions.restart(id, { mode: 'new' });
-    expect(args(1).join(' ')).not.toMatch(/--resume|deck\]/);
+    const snapshot = await h.sessions.snapshot(id);
+    expect(snapshot.events).toEqual([]);
+    expect(h.sessions.get(id)?.meta['chat']).toBeUndefined();
   });
 
   it('moves the conversation to another AI as a transcript it is asked to read', async () => {
-    const { h, id, args } = await ended();
+    const { h, id } = await talked();
     await h.chatActions.restart(id, { mode: 'continue', provider: 'codex' });
     expect(h.sessions.get(id)?.provider).toBe('codex');
     const [file, text] = [...h.chatFiles.transcripts.entries()][0] ?? [];
     expect(file).toMatch(/^\/work\/\.deck\/chats\/.+\.md$/);
     expect(text).toContain('## User\n\nfix the login bug');
     expect(text).toContain('→ Bash: npm test');
-    expect(args(1)[0]).toMatch(
+    const first = h.agent.last.sent[0]?.text ?? '';
+    expect(first).toMatch(
       /^\[deck\] This chat continues a conversation the user had with Claude Code/,
     );
-    expect(args(1)[0]).toContain('.deck/chats/');
+    expect(first).toContain('.deck/chats/');
+    expect(h.agent.last.spec.kind).toBe('codex');
   });
 
-  it('forks natively in the same CLI, and hands over to another', async () => {
-    const { h, id, args } = await ended();
+  it('forks natively in the same agent (resuming a copy), and hands over to another', async () => {
+    const { h, id } = await talked();
     const copy = await h.chatActions.fork(id, {});
-    expect(args(1).slice(0, 3)).toEqual(['--resume', 'abc-123', '--fork-session']);
-    expect(copy.cwd).toBe('/work');
+    await h.sessions.send(copy.id, 'and now?');
+    expect(h.agent.last.spec).toMatchObject({ resumeId: 'abc-123', fork: true });
+    expect((await h.sessions.snapshot(copy.id)).events.some((e) => e.t === 'user')).toBe(true);
     await h.chatActions.fork(id, { provider: 'codex' });
-    expect(args(2)[0]).toContain('[deck] This chat continues');
+    expect(h.agent.last.sent[0]?.text).toContain('[deck] This chat continues');
   });
 
-  it('types the first message for a CLI that takes none on its command line', async () => {
-    const { h, id } = await ended();
-    h.providers.add({
-      id: 'tiny-ai',
-      label: 'Tiny AI',
-      buildCommand: () => ({ command: 'tiny', args: [], env: {} }),
-      buildMcpConfig: () => ({ args: [], env: {} }),
-    });
-    await h.chatActions.restart(id, { mode: 'continue', provider: 'tiny-ai' });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const typed = h.ptyPort.spawned.at(-1)?.pty.writes.join('') ?? '';
-    expect(typed).toContain('[deck] This chat continues');
-    expect(typed.endsWith('\r')).toBe(true);
-  });
-
-  it('never types a conversation into a plain shell', async () => {
-    const { h, id } = await ended();
-    await h.chatActions.restart(id, { mode: 'continue', provider: 'shell' });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(h.ptyPort.spawned.at(-1)?.pty.writes).toEqual([]);
-    expect(h.chatFiles.transcripts.size).toBe(0);
-  });
-
-  it('opens a saved chat in a new terminal, and nothing that is not one', async () => {
-    const { h, args } = await ended();
+  it('opens a saved chat in a new session showing its turns, and nothing that is not one', async () => {
+    const { h } = await talked();
     const opened = await h.chatActions.open({
       provider: 'claude',
       cwd: '/work',
       chatId: 'abc-123',
     });
-    expect(args(1).slice(0, 2)).toEqual(['--resume', 'abc-123']);
     expect(h.sessions.get(opened.id)?.meta['chat']).toBe('abc-123');
+    const events = (await h.sessions.snapshot(opened.id)).events;
+    expect(events.map((e) => e.t)).toEqual(['user', 'text']);
+    await h.sessions.send(opened.id, 'continue');
+    expect(h.agent.last.spec.resumeId).toBe('abc-123');
     const missing = { provider: 'claude', cwd: '/work', chatId: 'nope' };
     await expect(h.chatActions.open(missing)).rejects.toThrow(/not found/i);
+  });
+
+  it('refuses to hand over a conversation that has not started', async () => {
+    const h = createHarness();
+    const { id } = await h.sessions.create(agentBody());
+    await expect(
+      h.chatActions.restart(id, { mode: 'continue', provider: 'codex' }),
+    ).rejects.toThrow(/no conversation/);
   });
 });

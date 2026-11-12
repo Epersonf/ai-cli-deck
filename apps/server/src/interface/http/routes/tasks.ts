@@ -1,4 +1,4 @@
-import { NotifyIdleBodySchema, StartTaskBodySchema, type Session } from '@deck/shared';
+import { StartTaskBodySchema, type Session } from '@deck/shared';
 import { machinePath } from '../../../infrastructure/machine/fileTransfer.js';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ import { parseWith } from '../errors.js';
 
 const IdParams = z.object({ id: z.string().min(1) });
 
-/** What the user sees of the background tasks: the list, a task's output, stop/clear, and "notify when quiet". */
+/** What the user sees of the background tasks: the list, a task's output, stop/clear,. */
 export function taskRoutes(app: FastifyInstance, c: Container): void {
   app.get('/api/tasks', () => c.tasks.board.list());
 
@@ -31,29 +31,21 @@ export function taskRoutes(app: FastifyInstance, c: Container): void {
     return reply.code(204).send();
   });
 
-  app.post('/api/sessions/:id/notify-idle', (request) => {
-    const { id } = parseWith(IdParams, request.params);
-    const { on } = parseWith(NotifyIdleBodySchema, request.body);
-    const owner = c.sessions.get(id);
-    if (!owner) throw notFound(`Session ${id}`);
-    return { task: c.tasks.setIdle(owner, on) ?? null };
-  });
+  // Every finished answer notifies by itself now; old apps still send this and need not know.
+  app.post('/api/sessions/:id/notify-idle', (_request, reply) => reply.code(204).send());
 }
 
 const TASKS_TERMINAL = 'Background tasks';
 
-/** The plain terminal that owns tasks started from another device: found, or opened once. */
+/** The session that owns tasks started from another device: found, or opened once. */
 async function tasksTerminal(c: Container): Promise<Session> {
-  const open = c.sessions
-    .list()
-    .find((s) => s.name === TASKS_TERMINAL && s.provider === 'shell' && s.status === 'running');
+  const open = c.sessions.list().find((s) => s.name === TASKS_TERMINAL);
   if (open) return open;
   const created = await c.sessions.create({
-    provider: 'shell',
+    provider: 'claude',
     cwd: '~',
     useWorktree: false,
-    command: null,
-    args: [],
+    chatId: null,
   });
   return c.sessions.rename(created.id, TASKS_TERMINAL);
 }

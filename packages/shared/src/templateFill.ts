@@ -2,16 +2,7 @@ import { isHttpUrl } from './profile.js';
 import type { ProfileTemplate } from './template.js';
 
 /** Placeholders every template may use; `{field.<key>}` (and `{field.<key>.host}` for URLs) come from its fields. */
-export const TEMPLATE_VARS = [
-  'home',
-  'port',
-  'cwd',
-  'mcpUrl',
-  'mcpUrlJson',
-  'mcpConfig',
-  'guide',
-  'guideJson',
-] as const;
+export const TEMPLATE_VARS = ['home', 'port', 'cwd', 'mcpUrl'] as const;
 
 const PLACEHOLDER = /\{([A-Za-z][A-Za-z0-9_.]*)\}/g;
 
@@ -43,10 +34,7 @@ export function fieldVars(
 }
 
 const strings = (template: ProfileTemplate): string[] => [
-  template.command,
-  ...template.args,
   ...Object.values(template.env),
-  ...template.mcpArgs,
   template.apiKey?.label ?? '',
 ];
 

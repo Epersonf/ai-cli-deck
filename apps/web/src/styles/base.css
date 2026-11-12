@@ -74,7 +74,7 @@ a {
   flex-wrap: wrap;
 }
 
-/* Themed scrollbars everywhere (file lists, drawer, dialogs, viewers, xterm). */
+/* Themed scrollbars everywhere (file lists, drawer, dialogs, viewers, the chat). */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--brass-lo) transparent;

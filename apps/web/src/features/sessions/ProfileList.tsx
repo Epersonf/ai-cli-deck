@@ -21,11 +21,11 @@ function ProfileRow({ group, onOpen, onNewSession }: RowProps) {
   const t = useT();
   const actions = useProfileActions(group, onNewSession);
   if (actions.editing) return <ProfileRename actions={actions} />;
-  const live = group.sessions.filter((s) => s.status === 'running').length;
+  const live = group.sessions.filter((s) => s.status === 'working').length;
   return (
     <>
       <button type="button" className="profile-row" onClick={onOpen}>
-        <span className={`dot ${live > 0 ? 'running' : 'exited'}`} />
+        <span className={`dot ${live > 0 ? 'working' : 'idle'}`} />
         <h3 title={group.label}>{group.label}</h3>
         <span className="profile-count" title={t('switcher.title')}>
           {group.sessions.length}

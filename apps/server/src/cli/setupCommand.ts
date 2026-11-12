@@ -2,7 +2,7 @@ import { SETUP_SPECS, setupSpecFor } from '@deck/shared';
 import { setupProvider } from './setup.js';
 import { terminalIo } from './terminalIo.js';
 
-/** `clideck setup [provider]`: downloads a CLI in this terminal; the CLI handles its own login. */
+/** `clideck setup [provider]`: downloads a CLI in this terminal. */
 export async function runSetup(providerId: string | null): Promise<string> {
   const ids = SETUP_SPECS.map((spec) => spec.id).join(', ');
   const spec = providerId === null ? undefined : setupSpecFor(providerId);
@@ -11,6 +11,5 @@ export async function runSetup(providerId: string | null): Promise<string> {
     return `${prefix}Usage: clideck setup <provider>   (providers: ${ids})`;
   }
   await setupProvider(spec, terminalIo);
-  await terminalIo.ask('\nPress Enter to close this session... ');
   return '';
 }

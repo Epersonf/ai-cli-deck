@@ -1,5 +1,6 @@
 import {
   CHAT_META,
+  type ChatEvent,
   type CreateSessionBody,
   type ForkSessionBody,
   type OpenChatBody,
@@ -7,135 +8,132 @@ import {
   type Session,
 } from '@deck/shared';
 import { HANDOVER_START, type ChatFilesPort } from '../domain/chat.js';
-import { conflict, invalid, notFound } from '../domain/errors.js';
+import { invalid, notFound } from '../domain/errors.js';
 import type { ProviderRegistry } from '../domain/provider.js';
+import { eventsToTurns, turnsToEvents } from './chatHistory.js';
 import type { ChatService } from './ChatService.js';
-import { stripAnsi } from './stripAnsi.js';
-import { transcriptFor } from './transcript.js';
-
-/** How a CLI is started to carry on: its arguments, or a first message the deck types once it is up. */
-interface Start {
-  args: string[];
-  typed: string | null;
-}
-
-/** A CLI that takes no first message on its command line gets it typed, once it has had time to start. */
-const TYPE_AFTER_MS = 4000;
-const SHELL = 'shell';
-const SUBMIT_AFTER_MS = 300;
+import type { CreateOptions } from './SessionManager.js';
+import { transcript } from './transcript.js';
 
 export interface ChatActionsDeps {
   chats: ChatService;
   sessions: {
-    restart(id: string, plan: { provider: string; args: string[] }): Promise<void>;
-    create(body: CreateSessionBody): Promise<Session>;
-    sendInput(id: string, data: string): void;
-    replay(id: string): Promise<Uint8Array>;
-    setMeta(id: string, key: string, value: string): Promise<Record<string, string>>;
+    create(body: CreateSessionBody, options?: CreateOptions): Promise<Session>;
+    send(id: string, text: string): Promise<void>;
+    clear(id: string): Promise<void>;
+    switchProvider(id: string, provider: string): Promise<void>;
+    snapshotEvents(id: string): Promise<ChatEvent[]>;
+    seed(id: string, events: ChatEvent[]): Promise<void>;
   };
   files: ChatFilesPort;
   providers: ProviderRegistry;
   now(): Date;
-  wait(ms: number): Promise<void>;
 }
 
-/** Restarting, forking and moving conversations, between any CLIs. The agent is never asked anything. */
+const newBody = (
+  provider: string,
+  cwd: string,
+  parentId: string | null = null,
+): CreateSessionBody => ({
+  provider,
+  cwd,
+  useWorktree: false,
+  chatId: null,
+  parentId,
+});
+
+/** The settings a side chat takes over from the chat it branches from. */
+const SETTINGS = [CHAT_META.model, CHAT_META.mode, CHAT_META.effort];
+
+/** Starting over, forking and moving conversations, between any agents. The agent is never asked anything. */
 export class ChatActions {
   constructor(private readonly deps: ChatActionsDeps) {}
 
-  /** Starts an ended terminal again: the same conversation (natively, or handed over), or a new one. */
-  async restart(id: string, body: RestartSessionBody): Promise<void> {
-    const { chats, sessions, files } = this.deps;
+  /** A new conversation in the same session, or the conversation carried on by another profile's agent. */
+  async restart(id: string, request: RestartSessionBody): Promise<void> {
+    const { chats, sessions } = this.deps;
     const source = chats.must(id);
-    if (source.status !== 'exited') throw conflict('Only an ended terminal can be restarted');
-    const target = body.provider ?? source.provider;
+    const target = request.provider ?? source.provider;
     this.label(target); // unknown profile: fail before anything changes
-    const chat = await chats.remember(id);
-    const support = chats.support(target);
-    let start: Start = { args: [], typed: null };
-    const same = body.mode === 'continue' && target === source.provider;
-    if (same && chat && support?.resume) start = { args: support.resume(chat.id), typed: null };
-    // "The latest chat here" only for a CLI whose chats the deck cannot read: it could be another's.
-    else if (same && support?.last && !support.format) start = { args: support.last, typed: null };
-    else if (body.mode === 'continue') start = await this.handover(source, target);
-    await files.forget(id);
-    await sessions.restart(id, { provider: target, args: start.args });
-    if (start.typed) this.typeLater(id, start.typed);
+    if (target === source.provider) {
+      if (request.mode === 'new') await sessions.clear(id);
+      return;
+    }
+    const prompt = request.mode === 'continue' ? await this.handover(source) : null;
+    await sessions.switchProvider(id, target);
+    if (prompt) await sessions.send(id, prompt);
   }
 
-  /** A new terminal carrying on this one's conversation: forked natively in the same CLI, else handed over. */
-  async fork(id: string, body: ForkSessionBody): Promise<Session> {
-    const { chats } = this.deps;
+  /** A new session carrying on this one's conversation: forked natively in the same agent, else handed over. */
+  async fork(id: string, request: ForkSessionBody): Promise<Session> {
+    const { chats, sessions, providers } = this.deps;
     const source = chats.must(id);
-    if (source.parentId !== null) throw invalid('A sub-terminal has no conversation to fork');
-    const target = body.provider ?? source.provider;
+    const target = request.provider ?? source.provider;
     this.label(target);
-    const chat = await chats.remember(id);
-    const support = chats.support(target);
-    const start: Start =
-      target === source.provider && chat && support?.fork
-        ? { args: support.fork(chat.id), typed: null }
-        : await this.handover(source, target);
-    return this.launch({ provider: target, cwd: source.cwd }, start);
-  }
-
-  /** Continues a saved conversation (from the list) in a new terminal. */
-  async open(body: OpenChatBody): Promise<Session> {
-    const { chats } = this.deps;
-    const chat = (await chats.list(body.provider, body.cwd)).find((c) => c.id === body.chatId);
-    if (!chat) throw notFound(`Chat ${body.chatId}`);
-    const resume = chats.support(body.provider)?.resume;
-    if (!resume) throw invalid('This CLI cannot continue a saved chat');
-    const created = await this.launch(body, { args: resume(chat.id), typed: null });
-    await this.deps.sessions.setMeta(created.id, CHAT_META.chat, chat.id);
+    const chatId = source.meta[CHAT_META.chat];
+    const native =
+      target === source.provider && Boolean(chatId) && providers.get(target)?.agent === 'claude';
+    const created = await sessions.create(
+      newBody(target, source.cwd),
+      native && chatId ? { chatId, fork: true } : {},
+    );
+    if (native) await sessions.seed(created.id, await sessions.snapshotEvents(id));
+    else await sessions.send(created.id, await this.handover(source));
     return created;
   }
 
-  /** The conversation written down for `target`, and how to start it reading that. */
-  private async handover(source: Session, target: string): Promise<Start> {
-    const { chats, files, now } = this.deps;
-    if (target === SHELL) return { args: [], typed: null }; // a plain shell has no chat to continue
+  /**
+   * A side chat: a copy of this conversation to ask something aside, kept under the same main session
+   * (`parentId`), with the same profile and folder. Claude forks its saved chat; others get a handover.
+   */
+  async side(id: string): Promise<Session> {
+    const { chats, sessions, providers } = this.deps;
+    const source = chats.must(id);
+    const chatId = source.meta[CHAT_META.chat];
+    const native = Boolean(chatId) && providers.get(source.provider)?.agent === 'claude';
+    const meta = Object.fromEntries(
+      SETTINGS.flatMap((key) => (source.meta[key] ? [[key, source.meta[key]]] : [])),
+    );
+    const created = await sessions.create(newBody(source.provider, source.cwd, source.id), {
+      meta,
+      ...(native && chatId ? { chatId, fork: true } : {}),
+    });
+    const events = await sessions.snapshotEvents(id);
+    if (native) await sessions.seed(created.id, events);
+    else if (eventsToTurns(events).length > 0)
+      await sessions.send(created.id, await this.handover(source));
+    return created;
+  }
+
+  /** Continues a saved conversation (from the list) in a new session. */
+  async open(request: OpenChatBody): Promise<Session> {
+    const { chats, sessions, now } = this.deps;
+    const list = await chats.list(request.provider, request.cwd);
+    const chat = list.find((c) => c.id === request.chatId);
+    const reader = chats.reader(request.provider);
+    if (!chat || !reader) throw notFound(`Chat ${request.chatId}`);
+    const created = await sessions.create(newBody(request.provider, request.cwd), {
+      chatId: chat.id,
+    });
+    const turns = await reader.read(chat);
+    await sessions.seed(created.id, turnsToEvents(turns, now().toISOString()));
+    return created;
+  }
+
+  /** The conversation written down for the next AI, as the message that makes it read it. */
+  private async handover(source: Session): Promise<string> {
+    const { sessions, files, now } = this.deps;
+    const turns = eventsToTurns(await sessions.snapshotEvents(source.id));
+    if (turns.length === 0) throw invalid('There is no conversation to hand over yet');
     const from = this.label(source.provider);
-    const reader = chats.reader(source.provider);
-    const chat = reader ? await chats.current(source.id) : null;
-    const turns = chat && reader ? await reader.read(chat) : null;
-    const screen = turns
-      ? ''
-      : stripAnsi(Buffer.from(await this.deps.sessions.replay(source.id)).toString('utf8'));
-    const text = transcriptFor(turns, screen, { from, cwd: source.cwd, date: now() });
-    if (text === null) return { args: [], typed: null };
+    const text = transcript(turns, { from, cwd: source.cwd, date: now() });
     const stamp = now().toISOString().slice(0, 16).replace(/[:T]/g, '-');
     const file = await files.writeTranscript(source.cwd, `${stamp}-${source.id}.md`, text);
-    const prompt =
+    return (
       `${HANDOVER_START}${from} in this folder. ` +
       `Read ${file} first: it is that conversation so far. Then say in one short line that you ` +
-      'have the context, and wait for the user.';
-    const support = chats.support(target);
-    return support?.prompt
-      ? { args: support.prompt(prompt), typed: null }
-      : { args: [], typed: prompt };
-  }
-
-  private async launch(where: { provider: string; cwd: string }, start: Start): Promise<Session> {
-    const created = await this.deps.sessions.create({
-      ...where,
-      useWorktree: false,
-      command: null,
-      args: start.args,
-      parentId: null,
-    });
-    if (start.typed) this.typeLater(created.id, start.typed);
-    return created;
-  }
-
-  private typeLater(id: string, text: string): void {
-    const { sessions, wait } = this.deps;
-    void (async () => {
-      await wait(TYPE_AFTER_MS);
-      sessions.sendInput(id, text);
-      await wait(SUBMIT_AFTER_MS);
-      sessions.sendInput(id, '\r');
-    })().catch(() => undefined);
+      'have the context, and wait for the user.'
+    );
   }
 
   private label(provider: string): string {

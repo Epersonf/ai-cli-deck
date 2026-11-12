@@ -1,20 +1,15 @@
 import { parseLocalUrl, previewKey } from '@deck/shared';
 import { create } from 'zustand';
-import { PEER_ID } from '../../shared/api/base';
 import { api } from '../../shared/api/endpoints';
 import {
   activeTab,
   addTab,
   closeTab,
   firstTabs,
-  showMode,
   withBrowserTabs,
-  type PreviewMode,
   type PreviewTabs,
 } from './previewTabs';
 import { shareBrowserTabs } from './tabSync';
-
-export type { PreviewMode } from './previewTabs';
 
 export interface PreviewState {
   history: string[];
@@ -22,30 +17,19 @@ export interface PreviewState {
   reloadKey: number;
 }
 
-const MODE_KEY = 'deck-preview-mode';
-const savedMode = (): PreviewMode => {
-  try {
-    return localStorage.getItem(MODE_KEY) === 'browser' ? 'browser' : 'frame';
-  } catch {
-    return 'frame';
-  }
-};
-
 interface PreviewStore {
   byId: Record<string, PreviewState>;
-  /** Per session; one not listed has a single tab of the mode last picked on this device (see tabsOf). */
+  /** Per session; one not listed has a single tab (see tabsOf). */
   tabs: Record<string, PreviewTabs>;
-  /** Shows the first tab of that mode, opening one when there is none. */
-  setMode(sessionId: string, mode: PreviewMode, remember?: boolean): void;
-  addTab(sessionId: string, mode: PreviewMode): void;
+  addTab(sessionId: string): void;
+  /** A tab of its own at this address; false when the address is not a local page. */
+  openInNewTab(sessionId: string, url: string): boolean;
   selectTab(sessionId: string, n: number): void;
   closeTab(sessionId: string, n: number): void;
-  newTab: Record<string, string | null>;
   open(sessionId: string, url: string): boolean;
   back(sessionId: string): void;
   forward(sessionId: string): void;
   reload(sessionId: string): void;
-  suggestNewTab(sessionId: string, url: string | null): void;
   /** The browser tabs the deck says this session has (from another device, or on load). */
   applyServerTabs(sessionId: string, numbers: readonly number[]): void;
 }
@@ -73,21 +57,12 @@ export const usePreview = create<PreviewStore>()((set, get) => {
   return {
     byId: {},
     tabs: {},
-    setMode(sessionId, mode, remember = true) {
-      setTabs(sessionId, (tabs) => showMode(tabs, mode));
-      if (!remember) return;
-      try {
-        localStorage.setItem(MODE_KEY, mode);
-      } catch {
-        // only this page load remembers it
-      }
-    },
-    addTab: (sessionId, mode) => setTabs(sessionId, (tabs) => addTab(tabs, mode)),
+    addTab: (sessionId) => setTabs(sessionId, addTab),
     selectTab: (sessionId, n) => setTabs(sessionId, (tabs) => ({ ...tabs, active: n })),
     closeTab(sessionId, n) {
       // A closed browser tab frees its page in the deck's Chromium too.
       const before = tabsOf(get().tabs, sessionId);
-      if (before.list.find((tab) => tab.n === n)?.mode === 'browser') {
+      if (before.list.includes(n)) {
         void api.browserClose(previewKey(sessionId, n)).catch(() => undefined);
       }
       setTabs(sessionId, (tabs) => closeTab(tabs, n));
@@ -95,12 +70,11 @@ export const usePreview = create<PreviewStore>()((set, get) => {
       const gone = previewKey(sessionId, n);
       set({ byId: Object.fromEntries(Object.entries(get().byId).filter(([key]) => key !== gone)) });
     },
-    newTab: {},
     open(sessionId, url) {
       const safe = previewable(url, window.location.origin);
       if (safe === null) return false;
       // The link goes to the tab being shown.
-      const key = previewKey(sessionId, activeTab(tabsOf(get().tabs, sessionId)).n);
+      const key = previewKey(sessionId, activeTab(tabsOf(get().tabs, sessionId)));
       update(key, (s) =>
         s.history[s.index] === safe
           ? s
@@ -108,24 +82,25 @@ export const usePreview = create<PreviewStore>()((set, get) => {
       );
       return true;
     },
+    openInNewTab(sessionId, url) {
+      if (previewable(url, window.location.origin) === null) return false;
+      get().addTab(sessionId);
+      return get().open(sessionId, url);
+    },
     back: (id) => update(id, (s) => ({ ...s, index: Math.max(s.index - 1, 0) })),
     forward: (id) =>
       update(id, (s) => ({ ...s, index: Math.min(s.index + 1, s.history.length - 1) })),
     reload: (id) => update(id, (s) => ({ ...s, reloadKey: s.reloadKey + 1 })),
-    suggestNewTab: (id, url) => set({ newTab: { ...get().newTab, [id]: url } }),
     applyServerTabs: (sessionId, numbers) =>
       set({
         tabs: {
           ...get().tabs,
-          [sessionId]: withBrowserTabs(tabsOf(get().tabs, sessionId), numbers, firstMode()),
+          [sessionId]: withBrowserTabs(tabsOf(get().tabs, sessionId), numbers),
         },
       }),
   };
 });
 
-/** On a paired deck's app the iframe would load this device's ports, so its own browser is used. */
-export const firstMode = (): PreviewMode => (PEER_ID ? 'browser' : savedMode());
-
-/** A session's tabs: what was set, else one tab of the usual mode. */
+/** A session's tabs: what was set, else one tab. */
 export const tabsOf = (tabs: Record<string, PreviewTabs>, sessionId: string): PreviewTabs =>
-  tabs[sessionId] ?? firstTabs(firstMode());
+  tabs[sessionId] ?? firstTabs();

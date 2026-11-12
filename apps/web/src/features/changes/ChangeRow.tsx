@@ -4,6 +4,7 @@ import { useT } from '../../shared/i18n/store';
 import { useConfirm } from '../confirm/confirmStore';
 import { DiffView } from './DiffView';
 import { codeLetter } from './useReview';
+import { UndoIcon } from '../../shared/ui/GlyphIcons';
 
 interface Props {
   sessionId: string;
@@ -60,7 +61,7 @@ export function ChangeRow({
           aria-label={t('changes.discard')}
           onClick={discard}
         >
-          ↺
+          <UndoIcon size={16} />
         </button>
       </div>
       {open && <DiffView sessionId={sessionId} path={change.path} version={version} />}

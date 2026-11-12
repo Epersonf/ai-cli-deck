@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { useSessions } from '../sessions/sessionsStore';
+import { MemoryApproval } from './MemoryApproval';
 import { useApprovals } from './approvalsStore';
 
 export function ApprovalsPanel() {
@@ -24,22 +25,30 @@ export function ApprovalsPanel() {
           const session = sessions.find((s) => s.id === request.sessionId);
           return (
             <article className="approval" key={request.id}>
-              <h3>{request.kind === 'folder' ? t('approvals.folder') : t('approvals.worktree')}</h3>
+              {request.kind === 'memory' && request.memory ? (
+                <MemoryApproval request={request.memory} />
+              ) : (
+                <h3>
+                  {request.kind === 'folder' ? t('approvals.folder') : t('approvals.worktree')}
+                </h3>
+              )}
               <p>{request.reason}</p>
               <p className="hint">
-                {request.kind === 'folder'
-                  ? t('approvals.folderDetail', {
-                      provider: session?.provider ?? '?',
-                      cwd: session?.cwd ?? request.sessionId,
-                      path: request.path ?? '?',
-                    })
-                  : t('approvals.detail', {
-                      provider: session?.provider ?? '?',
-                      cwd: session?.cwd ?? request.sessionId,
-                      id: request.sessionId,
-                    })}
+                {request.kind === 'memory'
+                  ? ''
+                  : request.kind === 'folder'
+                    ? t('approvals.folderDetail', {
+                        provider: session?.provider ?? '?',
+                        cwd: session?.cwd ?? request.sessionId,
+                        path: request.path ?? '?',
+                      })
+                    : t('approvals.detail', {
+                        provider: session?.provider ?? '?',
+                        cwd: session?.cwd ?? request.sessionId,
+                        id: request.sessionId,
+                      })}
               </p>
-              <div className="row">
+              <div className="dialog-actions">
                 <button
                   type="button"
                   className="primary"

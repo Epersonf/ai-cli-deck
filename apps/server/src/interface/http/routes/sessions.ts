@@ -3,6 +3,7 @@ import {
   CreateSessionBodySchema,
   RenameProfileBodySchema,
   RenameSessionBodySchema,
+  SetProfileSecretBodySchema,
 } from '@deck/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
@@ -19,11 +20,14 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
 
   app.get('/api/providers', () =>
     Promise.all(
-      c.providers.list().map(async ({ id, label }) => ({
-        id,
-        label,
-        profile: c.profiles.has(id),
-        ...(await c.providerStatus(id)),
+      c.providers.list().map(async (provider) => ({
+        id: provider.id,
+        label: provider.label,
+        profile: c.profiles.has(provider.id),
+        agent: provider.agent,
+        keyState: provider.keyState?.() ?? 'none',
+        signIn: provider.signIn ?? 'account',
+        ...(await c.providerStatus(provider.id)),
       })),
     ),
   );
@@ -32,30 +36,13 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
 
   app.post('/api/sessions', async (request, reply) => {
     const body = parseWith(CreateSessionBodySchema, request.body);
-    // parentId is only ever set by the sub-terminal route below.
+    // parentId is only ever set by the server (side chats).
     return reply.code(201).send(await c.sessions.create({ ...body, parentId: null }));
-  });
-
-  // A plain shell in a folder of this session (inside its root), as a sub-terminal: for git, tests, anything by hand.
-  app.post('/api/sessions/:id/terminal', async (request, reply) => {
-    const { id } = parseWith(IdParams, request.params);
-    const { path } = parseWith(z.object({ path: z.string().default('') }), request.body ?? {});
-    const cwd = await c.workspace.resolveDir(id, path);
-    const body = {
-      provider: 'shell',
-      cwd,
-      useWorktree: false,
-      command: null,
-      args: [],
-      parentId: id,
-    };
-    return reply.code(201).send(await c.sessions.create(body));
   });
 
   app.delete('/api/sessions/:id', async (request, reply) => {
     const { id } = parseWith(IdParams, request.params);
     await c.sessions.remove(id);
-    await c.chats.forget(id);
     return reply.code(204).send();
   });
 
@@ -74,6 +61,16 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
     const { id } = parseWith(IdParams, request.params);
     const { force } = parseWith(ForceQuery, request.query);
     return removeProfile(c, id, force === '1');
+  });
+
+  // Replaces the profile's API key (never read back: only its state is shown).
+  app.put('/api/profiles/:id/secret', async (request, reply) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { secret } = parseWith(SetProfileSecretBodySchema, request.body);
+    await c.profiles.setSecret(id, secret);
+    c.catalog.invalidate(id); // the endpoint may list other models with the new key
+    void c.catalog.refresh(id);
+    return reply.code(204).send();
   });
 
   app.patch('/api/profiles/:id', async (request) => {

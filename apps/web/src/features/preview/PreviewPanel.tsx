@@ -3,8 +3,7 @@ import { useEffect } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { BrowserInstall } from './BrowserInstall';
 import { BrowserView } from './BrowserView';
-import { FrameView } from './FrameView';
-import { currentUrl, firstMode, tabsOf, usePreview } from './previewStore';
+import { currentUrl, tabsOf, usePreview } from './previewStore';
 import { shareBrowserTabs } from './tabSync';
 import { PreviewTabsBar } from './PreviewTabsBar';
 import { firstTabs } from './previewTabs';
@@ -15,12 +14,12 @@ interface Props {
   visible: boolean;
 }
 
-/** A session's preview: an iframe on this device, or the deck's Chromium that the agent also drives. */
+/** A session's preview: tabs of the deck's own Chromium, the pages the agent also drives. */
 export function PreviewPanel({ sessionId, visible }: Props) {
   const stored = usePreview((s) => s.tabs[sessionId]);
   const byId = usePreview((s) => s.byId);
-  const tabs = stored ?? firstTabs(firstMode());
-  // Another device may already have browser tabs open for this session: show the same ones.
+  const tabs = stored ?? firstTabs();
+  // Another device may already have tabs open for this session: show the same ones.
   useEffect(() => {
     void api
       .browserTabs(sessionId)
@@ -31,26 +30,22 @@ export function PreviewPanel({ sessionId, visible }: Props) {
       })
       .catch(() => undefined);
   }, [sessionId]);
-  const [browser, setBrowser] = useBrowserStatus(tabs.list.some((tab) => tab.mode === 'browser'));
+  const [browser, setBrowser] = useBrowserStatus(true);
   return (
     <section className={`pane preview-pane${visible ? '' : ' hidden'}`}>
       <PreviewTabsBar sessionId={sessionId} tabs={tabs} />
-      {tabs.list.map((tab) => {
-        const key = previewKey(sessionId, tab.n);
-        const shown = visible && tab.n === tabs.active;
+      {tabs.list.map((n) => {
+        const key = previewKey(sessionId, n);
         return (
-          <div key={tab.n} className={`preview-tab${tab.n === tabs.active ? '' : ' hidden'}`}>
-            {tab.mode === 'frame' ? (
-              <FrameView sessionId={sessionId} tabKey={key} visible={shown} toggle={null} />
-            ) : browser?.installed ? (
+          <div key={n} className={`preview-tab${n === tabs.active ? '' : ' hidden'}`}>
+            {browser?.installed ? (
               <BrowserView
                 sessionId={key}
-                visible={shown}
+                visible={visible && n === tabs.active}
                 requested={currentUrl(byId[key])}
-                toggle={null}
               />
             ) : (
-              <BrowserInstall status={browser} onStatus={setBrowser} toggle={null} />
+              <BrowserInstall status={browser} onStatus={setBrowser} />
             )}
           </div>
         );

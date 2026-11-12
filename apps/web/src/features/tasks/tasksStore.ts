@@ -14,7 +14,3 @@ export const useTasks = create<TasksState>()((set) => ({
     set({ tasks: await api.tasks() });
   },
 }));
-
-/** The running "notify when quiet" watcher of a terminal, if any. */
-export const idleWatcher = (tasks: readonly Task[], sessionId: string): Task | undefined =>
-  tasks.find((t) => t.kind === 'idle' && t.sessionId === sessionId && t.status === 'running');

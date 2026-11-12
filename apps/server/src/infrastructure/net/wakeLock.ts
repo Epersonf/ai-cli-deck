@@ -1,4 +1,4 @@
-import type { Runner } from '../tmux/exec.js';
+import type { Runner } from '../machine/exec.js';
 
 /**
  * On a phone the CPU and Wi-Fi sleep when the screen turns off, and every keystroke then waits

@@ -6,7 +6,7 @@ const template = ProfileTemplateSchema.parse({
   schema: 1,
   id: 't',
   label: 'T',
-  command: 'x',
+  agent: 'claude',
   fields: [{ key: 'api', label: 'API', type: 'url', required: true }],
   env: { U: '{field.api}', H: '{field.api.host}' },
 });
@@ -22,7 +22,7 @@ describe('template placeholders and fields', () => {
 
   it('reports unknown placeholders only', () => {
     expect(templateProblems(template)).toEqual([]);
-    const withJson = { ...template, args: ['{mcpUrl}', '{oops}', '{"json": 1}'] };
+    const withJson = { ...template, env: { A: '{mcpUrl}', B: '{oops}', C: '{"json": 1}' } };
     expect(templateProblems(withJson)).toEqual(['unknown placeholder {oops}']);
   });
 

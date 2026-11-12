@@ -1,6 +1,6 @@
 import type { GitStatus } from '@deck/shared';
 import type { GitPort, WorktreePort } from '../../domain/ports.js';
-import type { Runner } from '../tmux/exec.js';
+import type { Runner } from '../machine/exec.js';
 
 /** Parses `git status --porcelain=v1 -b` output. */
 export function parseGitStatus(output: string): GitStatus {

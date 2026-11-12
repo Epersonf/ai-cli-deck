@@ -1,5 +1,10 @@
 import type { PublicConfig } from '@deck/shared';
+import type { AgentMemoryDeps } from '../application/AgentMemory.js';
+import type { MemoryService } from '../application/MemoryService.js';
+import type { ModelBook } from '../application/ModelBook.js';
+import type { ModelCatalog } from '../application/ModelCatalog.js';
 import type { ProfileService } from '../application/ProfileService.js';
+import type { SignInService } from '../application/SignInService.js';
 import type { TaskService } from '../application/TaskService.js';
 import type { TemplateService } from '../application/TemplateService.js';
 import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
@@ -21,6 +26,7 @@ import type { PairingFlow } from '../application/PairingFlow.js';
 import type { PairingRequests } from '../application/PairingRequests.js';
 import type { EventBus } from '../domain/events.js';
 import type { PhonePort } from '../domain/ports.js';
+import type { VoicePort } from '../domain/voice.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 import type { MachinePort } from '../infrastructure/machine/machineWiring.js';
 import type { DeviceRequest } from '../infrastructure/peers/deviceCall.js';
@@ -61,6 +67,18 @@ export interface Container {
   /** Profiles packed to move to another device, and unpacked from one. */
   profileBundles: ProfileBundles;
   tasks: TaskService;
+  /** The deck's notes, global and per profile. */
+  memory: MemoryService;
+  /** What the agents' memory tool works with. */
+  memoryAccess: AgentMemoryDeps;
+  /** The default model of each provider, and the last that answered. */
+  models: ModelBook;
+  /** The models each provider offers right now. */
+  catalog: ModelCatalog;
+  /** Signing in and out of the agents, and who is signed in. */
+  signIn: SignInService;
+  /** Speech to text for the microphone button. */
+  voice: VoicePort;
   security: SecurityOptions;
   /** Sharing this deck and its paired decks; `tunnel()` gives the link the `/peer/` proxy uses. */
   network: NetworkService<unknown>;

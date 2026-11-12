@@ -103,7 +103,7 @@ export function PasswordSection() {
       {message !== null && (
         <p className={`notice${message.error ? ' error' : ''}`}>{message.text}</p>
       )}
-      <div className="row">
+      <div className="dialog-actions">
         <button type="submit" className="primary" disabled={busy}>
           {t('password.save')}
         </button>

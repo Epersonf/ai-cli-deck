@@ -12,7 +12,7 @@ const request: ApprovalRequest = {
   resultPath: null,
 };
 
-function setup(watched = true) {
+function setup() {
   const sent: { body: { actions: { label: string; url: string }[] } }[] = [];
   const decide = vi.fn().mockResolvedValue(request);
   let clock = 0;
@@ -23,7 +23,6 @@ function setup(watched = true) {
     phone: {
       request: (_m: string, _p: string, body: never) => (sent.push({ body }), Promise.resolve()),
     },
-    watched: () => watched,
     label: () => 'Work',
     baseUrl: 'http://127.0.0.1:1',
     now: () => clock,
@@ -59,11 +58,7 @@ describe('ApprovalNotifier', () => {
     expect(await notifier.press(reject.token)).toBe(false);
   });
 
-  it('says nothing for a terminal nobody asked to watch, and buttons expire', async () => {
-    const quiet = setup(false);
-    await quiet.ask();
-    expect(quiet.sent).toHaveLength(0);
-
+  it('its buttons expire', async () => {
     const { notifier, sent, ask, tick } = setup();
     await ask();
     tick(31 * 60_000);

@@ -61,7 +61,8 @@
 - Upload names are reduced to a base name without separators or control characters, never overwrite
   an existing file, and go through `resolveInside`. The `.zip` export skips symlinks, `.git` and
   `node_modules`, and downloads are served as attachments with `nosniff` and the sandbox CSP.
-- Saved terminal screens (`<state dir>/scrollback/*.bin`) may contain secrets printed in a terminal.
+- Saved conversations (`<state dir>/chats/*.jsonl`) hold everything said and every tool output, so they may contain secrets the agent read.
+- API keys of profiles are plain files (`<config dir>/profiles/<id>/.deck-key`, mode 0600) and travel inside a profile bundle.
   They are mode 0600, only written for ids that are plain tokens, and deleted with the session.
   Deleting a profile also erases its CLI config folder (logins, history).
 

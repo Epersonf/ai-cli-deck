@@ -15,6 +15,7 @@ function setup(reserved: string[] = ['claude']) {
     unregister: (id) => void removed.push(id),
     reservedIds: () => reserved,
     wipeData: (id) => (wiped.push(id), Promise.resolve()),
+    saveSecret: () => Promise.resolve(),
   });
   return { service, saved, registered, removed, wiped };
 }
@@ -47,6 +48,7 @@ describe('ProfileService id collisions', () => {
         save: (p) => ((stored = [...p]), Promise.resolve()),
       },
       register: (p) => void registered.push(p.id),
+      saveSecret: () => Promise.resolve(),
       unregister: () => undefined,
       reservedIds: () => [],
       wipeData: () => Promise.resolve(),

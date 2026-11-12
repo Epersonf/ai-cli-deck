@@ -1,6 +1,7 @@
 import { normalizeUrl } from '@deck/shared';
 import { forbidden, invalid, notFound } from '../../domain/errors.js';
 import type { BatteryRule } from '../../application/batteryRule.js';
+import { agentMemory } from '../../application/AgentMemory.js';
 import type { Container } from '../container.js';
 
 const TITLE_MAX = 60;
@@ -9,7 +10,7 @@ const ASK_MS = 45_000;
 
 export type AgentDeps = Pick<
   Container,
-  'sessions' | 'phone' | 'tasks' | 'approvals' | 'preview' | 'browser'
+  'sessions' | 'phone' | 'tasks' | 'approvals' | 'preview' | 'browser' | 'memoryAccess'
 >;
 
 /**
@@ -35,6 +36,9 @@ export function createAgentTools(deps: AgentDeps, sessionId: string) {
   };
 
   return {
+    /** The deck's memory: notes for every chat and for this profile. */
+    memory: agentMemory(deps.memoryAccess, sessionId),
+
     whoami: () => {
       const { id, provider, cwd, port, previewUrl, worktree, status } = self();
       return { id, provider, cwd, port, previewUrl, worktree, status };

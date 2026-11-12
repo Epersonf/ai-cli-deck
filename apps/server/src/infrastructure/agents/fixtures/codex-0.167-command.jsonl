@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"th-real"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item_0","type":"command_execution","command":"\"C:\\\\WINDOWS\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command 'echo hi'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_0","type":"command_execution","command":"\"C:\\\\WINDOWS\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command 'echo hi'","aggregated_output":"hi\r\n","exit_code":0,"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"pong"}}
+{"type":"turn.completed","usage":{"input_tokens":39196,"cached_input_tokens":19328,"cache_write_input_tokens":0,"output_tokens":38,"reasoning_output_tokens":0}}

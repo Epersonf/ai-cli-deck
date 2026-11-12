@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { zipUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
+import { DownloadIcon, UploadIcon } from '../../shared/ui/GlyphIcons';
 
 interface Props {
   sessionId: string;
@@ -20,10 +21,10 @@ export function TransferDialog({ sessionId, dir, busy, onFiles, onClose }: Props
       <div className="modal" onClick={(event) => event.stopPropagation()}>
         <ModalTitle title={t('files.transfer')} onClose={onClose} />
         <button type="button" disabled={busy} onClick={() => input.current?.click()}>
-          ⬆ {t('files.upload')}
+          <UploadIcon size={16} /> {t('files.upload')}
         </button>
         <a className="btn" href={zipUrl(sessionId, dir)} download onClick={onClose}>
-          ⬇ {t('files.downloadZip')}
+          <DownloadIcon size={16} /> {t('files.downloadZip')}
         </a>
         <input
           ref={input}

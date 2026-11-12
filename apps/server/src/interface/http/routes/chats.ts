@@ -13,14 +13,13 @@ import { parseWith } from '../errors.js';
 const IdParams = z.object({ id: z.string().min(1) });
 const ListQuery = z.object({ provider: z.string().min(1), cwd: z.string().min(1) });
 
-/** Conversations: what a terminal can continue, restarting, forking or moving them, and the saved ones. */
+/** Conversations: what a session can continue, starting over, forking or moving them, and the saved ones. */
 export function chatRoutes(app: FastifyInstance, c: Container): void {
   const idOf = (params: unknown): string => parseWith(IdParams, params).id;
 
   app.get('/api/sessions/:id/chat', async (request): Promise<SessionChat> => {
     const id = idOf(request.params);
-    const screen = await c.sessions.replay(id);
-    return c.chats.info(id, screen.byteLength > 0);
+    return c.chats.info(id);
   });
 
   app.post('/api/sessions/:id/restart', async (request, reply) => {
@@ -32,6 +31,11 @@ export function chatRoutes(app: FastifyInstance, c: Container): void {
   app.post('/api/sessions/:id/fork', async (request, reply) => {
     const body = parseWith(ForkSessionBodySchema, request.body ?? {});
     return reply.code(201).send(await c.chatActions.fork(idOf(request.params), body));
+  });
+
+  // A side chat: a branch of this conversation under the same main session.
+  app.post('/api/sessions/:id/side', async (request, reply) => {
+    return reply.code(201).send(await c.chatActions.side(idOf(request.params)));
   });
 
   app.get('/api/chats/titles', () => c.chats.titles());

@@ -1,4 +1,5 @@
 import type {
+  ChatEvent,
   FileContent,
   FileEntry,
   GitChange,
@@ -10,40 +11,22 @@ import type {
   Session,
 } from '@deck/shared';
 
-export interface LaunchSpec {
+export interface ProcessSpec {
   command: string;
   args: string[];
   env: Record<string, string>;
   cwd: string;
 }
 
-export interface PtyHandle {
-  write(data: string): void;
-  resize(cols: number, rows: number): void;
+/** A background command (a task): output chunks, one exit, and a way to stop it. */
+export interface ProcessHandle {
   onData(listener: (data: Uint8Array) => void): void;
   onExit(listener: (code: number | null) => void): void;
   kill(): void;
-  /**
-   * The screen as it is (scrollback, cursor, modes), handed over at an exact point of the output: what
-   * `onData` gave before `done` runs is part of it, what comes after is not. Null when it is not available.
-   */
-  snapshot?(done: (screen: Uint8Array | null) => void): void;
 }
 
-export interface PtyPort {
-  spawn(spec: LaunchSpec, size: { cols: number; rows: number }): PtyHandle;
-}
-
-export interface MultiplexerPort {
-  /** True when sessions outlive the server (tmux). */
-  readonly available: boolean;
-  /** Starts `spec` as the session `name`. */
-  launch(name: string, spec: LaunchSpec, size: { cols: number; rows: number }): PtyHandle;
-  /** Connects again to a session that outlived a server restart. */
-  reattach(name: string, spec: LaunchSpec): PtyHandle;
-  list(): Promise<string[]>;
-  capture(name: string): Promise<Uint8Array | null>;
-  kill(name: string): Promise<void>;
+export interface ProcessPort {
+  spawn(spec: ProcessSpec): ProcessHandle;
 }
 
 export interface SessionStorePort {
@@ -51,10 +34,12 @@ export interface SessionStorePort {
   save(sessions: Session[]): Promise<void>;
 }
 
-/** Last screen contents of each terminal, so a dead session can still be read after a restart. */
-export interface ScrollbackStorePort {
-  load(id: string): Promise<Uint8Array | null>;
-  save(id: string, data: Uint8Array): Promise<void>;
+/** The steps of each session's conversation, kept on disk so a chat survives restarts and reloads. */
+export interface ChatLogPort {
+  load(id: string): Promise<ChatEvent[]>;
+  append(id: string, events: readonly ChatEvent[]): Promise<void>;
+  /** Rewrites the log with exactly these events. */
+  replace(id: string, events: readonly ChatEvent[]): Promise<void>;
   remove(id: string): Promise<void>;
 }
 

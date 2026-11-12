@@ -59,7 +59,7 @@ export function SendProfileHost() {
           </>
         )}
         {message && <p className={`notice${message.error ? ' error' : ''}`}>{message.text}</p>}
-        <div className="row">
+        <div className="dialog-actions">
           {peers.length > 0 && (
             <button type="button" className="primary" disabled={busy || !target} onClick={send}>
               {t('devices.send')}

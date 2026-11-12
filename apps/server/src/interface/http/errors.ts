@@ -16,6 +16,11 @@ export function registerErrorHandler(app: FastifyInstance): void {
     if (error instanceof DeckError) {
       return reply.code(error.httpStatus).send({ error: error.message });
     }
+    // Fastify's own refusals (a body too large, bad JSON...) keep their 4xx status.
+    const status = (error as { statusCode?: number }).statusCode;
+    if (status !== undefined && status >= 400 && status < 500) {
+      return reply.code(status).send({ error: (error as Error).message });
+    }
     request.log.error({ err: error }, 'unhandled error');
     return reply.code(500).send({ error: 'Internal server error' });
   });

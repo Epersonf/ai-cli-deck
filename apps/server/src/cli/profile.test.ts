@@ -11,12 +11,12 @@ describe('clideck profile add', () => {
       base: 'claude',
       values: {},
     });
-    expect(parseProfileArgs(['Mine', 'custom', '--command', 'aider'])).toMatchObject({
-      values: { command: 'aider' },
-    });
+    expect(
+      parseProfileArgs(['Mine', 'claude-endpoint', '--url', 'https://x.dev', '--model', 'm1']),
+    ).toMatchObject({ values: { baseUrl: 'https://x.dev', model: 'm1' } });
     expect(typeof parseProfileArgs(['x', 'gemini'])).toBe('string');
     expect(typeof parseProfileArgs([])).toBe('string');
-    expect(typeof parseProfileArgs(['x', 'custom', '--command'])).toBe('string');
+    expect(typeof parseProfileArgs(['x', 'claude', '--model'])).toBe('string');
   });
 
   it('a custom endpoint needs its URL, and only templates with that field take one', () => {

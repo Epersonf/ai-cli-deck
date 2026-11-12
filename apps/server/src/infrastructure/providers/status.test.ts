@@ -13,6 +13,7 @@ function deps(
     home: '/home/u',
     platform,
     exists: (p) => Promise.resolve(present.has(p)),
+    sdkBinary: () => false,
   };
 }
 
@@ -32,8 +33,7 @@ describe('findExecutable', () => {
   });
 });
 
-const resolver = (d: StatusDeps) =>
-  new ProviderStatusResolver(SETUP_SPECS, [{ id: 'aider', command: 'aider' }], d);
+const resolver = (d: StatusDeps) => new ProviderStatusResolver(SETUP_SPECS, d);
 
 describe('ProviderStatusResolver', () => {
   it('treats a profile like its base CLI, so it installs the base', async () => {
@@ -56,16 +56,21 @@ describe('ProviderStatusResolver', () => {
   });
 
   it('shares the claude binary with the DeepSeek provider', async () => {
-    expect((await resolver(deps(['/usr/bin/claude'])).resolve('claude-deepseek')).status).toBe(
-      'ready',
-    );
-    expect((await resolver(deps([])).resolve('claude-deepseek')).status).toBe('missing');
+    const r = resolver(deps(['/usr/bin/claude']));
+    r.alias('claude-deepseek', 'claude');
+    expect((await r.resolve('claude-deepseek')).status).toBe('ready');
+    const none = resolver(deps([]));
+    none.alias('claude-deepseek', 'claude');
+    expect((await none.resolve('claude-deepseek')).status).toBe('missing');
   });
 
-  it('checks configured commands and trusts shell/custom', async () => {
-    expect((await resolver(deps([])).resolve('aider')).status).toBe('missing');
-    expect((await resolver(deps([])).resolve('aider')).canInstall).toBe(false);
-    expect((await resolver(deps(['/usr/bin/aider'])).resolve('aider')).status).toBe('ready');
-    expect((await resolver(deps([])).resolve('shell')).status).toBe('ready');
+  it('needs no claude binary when the SDK ships its own, but codex must be installed', async () => {
+    const bundled = { ...deps([]), sdkBinary: () => true };
+    expect((await resolver(bundled).resolve('claude')).status).toBe('ready');
+    expect((await resolver(bundled).resolve('codex')).status).toBe('missing');
+  });
+
+  it('trusts anything it has no installer for', async () => {
+    expect((await resolver(deps([])).resolve('whatever')).status).toBe('ready');
   });
 });

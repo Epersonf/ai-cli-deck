@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isAllowedHost, isAllowedOrigin, isLoopbackAddress, tokensMatch } from './http/guards.js';
-import { eventToMessage, outputFrame } from './ws/messages.js';
+import { eventToMessage } from './ws/messages.js';
 
 describe('http guards', () => {
   it('only accepts same-origin or allow-listed origins', () => {
@@ -28,11 +28,20 @@ describe('http guards', () => {
 });
 
 describe('eventToMessage', () => {
-  it('sends terminal output as binary frames, never as JSON', () => {
-    const event = { kind: 'output' as const, sessionId: 's1', data: Buffer.from('hi') };
-    expect(eventToMessage(event, 's1')).toBeNull();
-    expect([...outputFrame(Buffer.from('hi'))]).toEqual([0, 0x68, 0x69]);
-    expect(outputFrame(Buffer.from('hi'), true)[0]).toBe(1);
+  it('sends the steps of the chat, and only to that session', () => {
+    const event = { t: 'turn-start' as const };
+    expect(eventToMessage({ kind: 'chat', sessionId: 's1', event }, 's1')).toEqual({
+      type: 'event',
+      event,
+    });
+    expect(eventToMessage({ kind: 'chat', sessionId: 's2', event }, 's1')).toBeNull();
+    expect(eventToMessage({ kind: 'busy', sessionId: 's1', busy: true }, 's1')).toEqual({
+      type: 'busy',
+      busy: true,
+    });
+    expect(
+      eventToMessage({ kind: 'delta', sessionId: 's1', id: 'a', part: 'text', text: 'hi' }, 's1'),
+    ).toEqual({ type: 'delta', id: 'a', kind: 'text', text: 'hi' });
   });
 
   it('maps preview and new-tab events', () => {

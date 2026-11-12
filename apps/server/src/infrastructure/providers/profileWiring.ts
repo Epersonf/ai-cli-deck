@@ -1,7 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { fieldVars, fillText } from '@deck/shared';
 import type { ProviderRegistry } from '../../domain/provider.js';
 import { ProfileService } from '../../application/ProfileService.js';
 import { TemplateService } from '../../application/TemplateService.js';
@@ -10,13 +9,13 @@ import { FileTemplateStore } from '../store/FileTemplateStore.js';
 import { BUILTIN_TEMPLATES } from './builtinTemplates.js';
 import type { ProviderStatusResolver } from './status.js';
 import { createTemplateProvider } from './templateProvider.js';
+import { writeSecret } from './profileSecret.js';
 import { profileBundles, type ProfileBundles } from './profileBundle.js';
 
 interface Deps {
   configDir: string;
   providers: ProviderRegistry;
   status: ProviderStatusResolver;
-  defaultShell: string;
 }
 
 /** Some CLIs (Codex) refuse to start when their home folder does not exist yet. */
@@ -50,6 +49,10 @@ export async function createProfileService(deps: Deps): Promise<{
       if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) return;
       await rm(join(profilesDir, id), { recursive: true, force: true });
     },
+    saveSecret: async (id, secret) => {
+      ensureHome(join(profilesDir, id));
+      await writeSecret(join(profilesDir, id), secret);
+    },
     unregister: (id) => {
       deps.providers.remove(id);
       deps.status.unregister(id);
@@ -59,11 +62,7 @@ export async function createProfileService(deps: Deps): Promise<{
       if (!template) return; // its template was removed: the profile stays on disk but cannot start
       if (template.home) ensureHome(join(profilesDir, profile.id));
       deps.providers.add(createTemplateProvider(profile, template, profilesDir));
-      if (template.install) deps.status.alias(profile.id, template.install);
-      else {
-        const command = fillText(template.command, fieldVars(template, profile.values)).trim();
-        deps.status.register({ id: profile.id, command: command || deps.defaultShell });
-      }
+      deps.status.alias(profile.id, template.install ?? template.agent);
     },
   });
   await profiles.load();

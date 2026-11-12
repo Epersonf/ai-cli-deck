@@ -17,7 +17,7 @@ describe('downloadText', () => {
 
 describe('checkTemplateText', () => {
   it('accepts a commented template and explains what is wrong otherwise', () => {
-    const ok = '{ /* c */ "schema": 1, "id": "a", "label": "A", }';
+    const ok = '{ /* c */ "schema": 1, "id": "a", "label": "A", "agent": "claude" }';
     expect(checkTemplateText(ok)).toMatchObject({ id: 'a' });
     expect(checkTemplateText('{ nope')).toMatch(/Not valid JSON/);
     expect(checkTemplateText('{ "schema": 1 }')).toMatch(/Not a profile template/);

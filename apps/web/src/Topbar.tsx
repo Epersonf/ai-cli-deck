@@ -4,8 +4,7 @@ import { useProfiles } from './features/sessions/profilesStore';
 import { useActiveSession } from './features/sessions/sessionsStore';
 import { useT } from './shared/i18n/store';
 import { Gear } from './shared/ui/Gear';
-import { useTerminalTools } from './features/terminal/toolsStore';
-import { MenuIcon, ToolsIcon } from './shared/ui/Icons';
+import { MenuIcon } from './shared/ui/Icons';
 import { RemoteBadge } from './features/devices/RemoteBadge';
 
 interface Props {
@@ -52,17 +51,6 @@ export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSetti
           <span className="icon-split" aria-hidden />
         </button>
       )}
-      {active && (
-        <button
-          type="button"
-          className="tool"
-          onClick={() => useTerminalTools.getState().toggle(active.id)}
-          title={t('tools.open')}
-          aria-label={t('tools.open')}
-        >
-          <ToolsIcon />
-        </button>
-      )}
       <button
         type="button"
         className="tool"
@@ -70,7 +58,7 @@ export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSetti
         title={t('topbar.settings')}
         aria-label={t('topbar.settings')}
       >
-        ⚙
+        <Gear size={22} teeth={10} />
       </button>
       <ApprovalsBadge />
     </header>

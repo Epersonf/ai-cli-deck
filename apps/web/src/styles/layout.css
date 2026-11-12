@@ -99,12 +99,25 @@
   background: radial-gradient(circle at 35% 30%, #fff8, #a33 60%, #411);
   box-shadow: 0 0 0 2px var(--brass-lo);
 }
-.dot.running {
+.dot.idle {
   background: radial-gradient(circle at 35% 30%, #fff9, var(--verdigris) 55%, #1d4a40);
   box-shadow:
     0 0 0 2px var(--brass-lo),
     0 0 8px var(--verdigris);
 }
-.dot.starting {
+.dot.working {
   background: radial-gradient(circle at 35% 30%, #fff9, var(--amber) 55%, #6a4300);
+}
+.dot.offline {
+  opacity: 0.4;
+}
+.link-button {
+  justify-self: start;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--amber);
+  text-decoration: underline;
 }

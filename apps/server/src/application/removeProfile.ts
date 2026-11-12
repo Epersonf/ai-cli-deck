@@ -1,4 +1,6 @@
 import { conflict } from '../domain/errors.js';
+import type { MemoryService } from './MemoryService.js';
+import type { ModelBook } from './ModelBook.js';
 import type { ProfileService } from './ProfileService.js';
 import type { SessionManager } from './SessionManager.js';
 
@@ -7,7 +9,12 @@ import type { SessionManager } from './SessionManager.js';
  * are ended first (a recursive delete), so no chat is lost without the caller asking for it.
  */
 export async function removeProfile(
-  deps: { profiles: ProfileService; sessions: SessionManager },
+  deps: {
+    profiles: ProfileService;
+    sessions: SessionManager;
+    models?: ModelBook;
+    memory?: MemoryService;
+  },
   id: string,
   force: boolean = false,
 ): Promise<{ ended: number }> {
@@ -15,6 +22,8 @@ export async function removeProfile(
   if (owned.length > 0 && !force)
     throw conflict(`Close its ${owned.length} terminal(s) first, or delete with force to end them`);
   await deps.profiles.remove(id);
+  deps.models?.forget(id);
+  await deps.memory?.dropProfile(id).catch(() => undefined);
   let ended = 0;
   for (const session of owned) {
     try {

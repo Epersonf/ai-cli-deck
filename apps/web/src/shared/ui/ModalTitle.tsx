@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useT } from '../i18n/store';
+import { CloseIcon } from './ToolIcons';
 
 interface Props {
   title: string;
@@ -20,7 +21,7 @@ export function ModalTitle({ title, onClose }: Props) {
     <div className="modal-title">
       <h2>{title}</h2>
       <button type="button" className="modal-x" aria-label={t('common.close')} onClick={onClose}>
-        ×
+        <CloseIcon size={16} />
       </button>
     </div>
   );

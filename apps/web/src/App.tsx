@@ -10,6 +10,9 @@ import { SendProfileHost } from './features/devices/SendProfileHost';
 import { useNetwork } from './features/devices/networkStore';
 import { PEER_ID } from './shared/api/base';
 import { ForkHost } from './features/sessions/ForkDialog';
+import { MemoryHost } from './features/memory/MemoryDialog';
+import { ToastHost } from './shared/ui/toast';
+import { SignInHost } from './features/signin/SignInDialog';
 import { ProfileDialog } from './features/sessions/ProfileDialog';
 import { LoginScreen } from './features/auth/LoginScreen';
 import { useLayout } from './features/layout/layoutStore';
@@ -17,11 +20,9 @@ import { useShortcuts } from './features/layout/useShortcuts';
 import { sessionLabel } from './features/sessions/sessionLabel';
 import { NewSessionDialog } from './features/sessions/NewSessionDialog';
 import { SessionSwitcher } from './features/sessions/SessionSwitcher';
-import { SubTabs } from './features/sessions/SubTabs';
 import { useProfiles } from './features/sessions/profilesStore';
 import { useSessions } from './features/sessions/sessionsStore';
 import { SettingsDialog } from './features/settings/SettingsDialog';
-import { keysVisible, loadMode, saveMode, type KeysMode } from './features/terminal/keysPreference';
 import { api } from './shared/api/endpoints';
 import { onUnauthorized } from './shared/api/unauthorized';
 import { useMediaQuery } from './shared/ui/useMediaQuery';
@@ -38,9 +39,7 @@ export function App() {
   const [newFor, setNewFor] = useState<string | null>(null);
   const openNew = (profileId: string | null): void => (setNewFor(profileId), setDialog('new'));
   const [locked, setLocked] = useState(false);
-  const [keysMode, setKeysMode] = useState(loadMode);
   const wide = useMediaQuery('(min-width: 1000px)');
-  const touch = useMediaQuery('(pointer: coarse)');
 
   const reload = useCallback(() => {
     api
@@ -68,18 +67,13 @@ export function App() {
   );
   useEffect(reload, [reload]);
   useShortcuts(
-    sessions.map((s) => s.id),
+    sessions.filter((s) => s.parentId === null).map((s) => s.id),
     activeId,
     select,
   );
-  useBackgroundPolling(locked, sessions);
+  useBackgroundPolling(locked);
 
   if (locked) return <LoginScreen onDone={reload} />;
-
-  const changeKeys = (mode: KeysMode): void => {
-    saveMode(mode);
-    setKeysMode(mode);
-  };
 
   return (
     <div className={`app${wide ? ' wide' : ''}`}>
@@ -91,20 +85,17 @@ export function App() {
         onSplit={() => patch({ showRight: !layout.showRight })}
         onSettings={() => setDialog('settings')}
       />
-      <SubTabs />
       <Workspace
         sessions={sessions}
         activeId={activeId}
         wide={wide}
-        extraKeys={config?.extraKeys ?? null}
-        showKeys={keysVisible(keysMode, touch)}
-        hasProfile={profiles.some((p) => p.profile)}
+        hasProfile={profiles.length > 0}
         onNew={() => openNew(null)}
         onProfile={() => setDialog('profile')}
       />
       {!wide && sessions.length > 0 && (
         <PaneTabs
-          views={['terminal', 'files', 'changes', 'preview']}
+          views={['chat', 'files', 'changes', 'preview']}
           active={view}
           className="bottom-nav"
           onSelect={setView}
@@ -128,16 +119,12 @@ export function App() {
       {dialog === 'profile' && (
         <ProfileDialog onDone={() => setDialog('switcher')} onClose={() => setDialog(null)} />
       )}
-      {dialog === 'settings' && (
-        <SettingsDialog
-          keysMode={keysMode}
-          touchScreen={touch}
-          onKeysChange={changeKeys}
-          onClose={() => setDialog(null)}
-        />
-      )}
+      {dialog === 'settings' && <SettingsDialog onClose={() => setDialog(null)} />}
       <ApprovalsPanel />
       <ForkHost />
+      <SignInHost />
+      <ToastHost />
+      <MemoryHost onSettings={() => setDialog('settings')} />
       <PairingRequestHost />
       <SendProfileHost />
       <ConfirmHost />

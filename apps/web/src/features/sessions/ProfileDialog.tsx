@@ -1,7 +1,8 @@
-import { fieldProblem } from '@deck/shared';
+import { fieldProblem, fieldVars, fillText } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { useSignIn } from '../signin/signInStore';
 import { useProfiles } from './profilesStore';
 import { fieldTexts, templateName } from './templateName';
 
@@ -18,6 +19,7 @@ export function ProfileDialog({ onDone, onClose }: Props) {
   const [label, setLabel] = useState('');
   const [baseId, setBaseId] = useState('claude');
   const [values, setValues] = useState<Record<string, string>>({});
+  const [secret, setSecret] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(
@@ -30,7 +32,14 @@ export function ProfileDialog({ onDone, onClose }: Props) {
   );
 
   const template = templates.find((x) => x.id === baseId) ?? templates[0];
-  const invalid = template ? fieldProblem(template, values) !== null : true;
+  /** Claude Code and Codex sign in with their own dialog (once the profile exists), not with a key typed here. */
+  const accountBase =
+    template?.builtin === true && (template.id === 'claude' || template.id === 'codex');
+  const keyRule = accountBase ? null : (template?.apiKey ?? null);
+  const invalid =
+    !template ||
+    fieldProblem(template, values) !== null ||
+    (keyRule?.required === true && secret.trim() === '');
 
   const submit = (event: FormEvent): void => {
     event.preventDefault();
@@ -38,9 +47,17 @@ export function ProfileDialog({ onDone, onClose }: Props) {
     setBusy(true);
     setError(null);
     api
-      .createProfile({ label: label.trim(), base: template.id, values })
-      .then(() => useProfiles.getState().refresh())
-      .then(onDone)
+      .createProfile({
+        label: label.trim(),
+        base: template.id,
+        values,
+        ...(secret.trim() === '' ? {} : { secret: secret.trim() }),
+      })
+      .then(async (profile) => {
+        await useProfiles.getState().refresh();
+        onDone();
+        if (accountBase) useSignIn.getState().open(profile.id);
+      })
       .catch((e: unknown) => (setError(e instanceof Error ? e.message : 'failed'), setBusy(false)));
   };
 
@@ -63,7 +80,7 @@ export function ProfileDialog({ onDone, onClose }: Props) {
             {t('profile.base')}
             <select
               value={template?.id ?? baseId}
-              onChange={(e) => (setBaseId(e.target.value), setValues({}))}
+              onChange={(e) => (setBaseId(e.target.value), setValues({}), setSecret(''))}
             >
               {templates.map((x) => (
                 <option key={x.id} value={x.id}>
@@ -94,8 +111,24 @@ export function ProfileDialog({ onDone, onClose }: Props) {
               </label>
             );
           })}
+          {template && keyRule && (
+            <label>
+              {fillText(keyRule.label, fieldVars(template, values))}
+              <input
+                type="password"
+                required={keyRule.required}
+                value={secret}
+                autoComplete="off"
+                spellCheck={false}
+                onChange={(e) => setSecret(e.target.value)}
+              />
+              <span className="hint">
+                {keyRule.required ? t('profile.keyHint') : t('profile.keyOptional')}
+              </span>
+            </label>
+          )}
           {error !== null && <p className="notice error">{error}</p>}
-          <div className="row">
+          <div className="dialog-actions">
             <button
               type="submit"
               className="primary"

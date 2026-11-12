@@ -5,18 +5,21 @@ import { ApprovalService } from '../../application/ApprovalService.js';
 import { BrowserService } from '../../application/BrowserService.js';
 import { PreviewService } from '../../application/PreviewService.js';
 import { FakeBrowserEngine } from '../../testing/fakeBrowser.js';
-import { createHarness, customBody } from '../../testing/harness.js';
+import { applyMemoryRequest } from '../../application/memoryApply.js';
+import { memoryAccess } from '../../testing/memoryKit.js';
+import { createHarness, agentBody } from '../../testing/harness.js';
 import { createAgentTools } from '../agent/agentTools.js';
 import { buildMcpServer } from './mcpServer.js';
 
 async function connect() {
   const h = createHarness();
-  const session = await h.sessions.create(customBody('/work', true));
+  const session = await h.sessions.create(agentBody('/work', true));
   const approvals = new ApprovalService({
     sessions: h.sessions,
     worktrees: { add: () => Promise.reject(new Error('git must not run')) },
     system: h.system,
     bus: h.bus,
+    memory: { apply: (r) => applyMemoryRequest(h.memory, r) },
   });
   const tools = createAgentTools(
     {
@@ -24,6 +27,11 @@ async function connect() {
       phone: null,
       tasks: h.tasks,
       approvals,
+      memoryAccess: memoryAccess(h.memory, {
+        approvals,
+        providers: h.providers,
+        sessions: h.sessions,
+      }),
       preview: new PreviewService(h.sessions, h.bus),
       browser: new BrowserService(new FakeBrowserEngine()),
     },
@@ -54,6 +62,7 @@ describe('MCP server', () => {
       'browser_type',
       'get_request_status',
       'list_sessions',
+      'memory',
       'open_preview',
       'propose_folder',
       'propose_worktree',

@@ -5,12 +5,10 @@ import type { ExecBody, ExecResult } from '@deck/shared';
 import { invalid } from '../../domain/errors.js';
 import { defaultShell } from '../config/platform.js';
 import { runShell } from './runShell.js';
-import { screenText } from './screenText.js';
 
-/** This machine, for a paired deck's agent: run a command and wait, and read a terminal like a person. */
+/** This machine, for a paired deck's agent: run a command and wait for it. */
 export interface MachinePort {
   exec(body: ExecBody): Promise<ExecResult>;
-  screenText: typeof screenText;
 }
 
 export function createMachine(options: { defaultCwd: string }): MachinePort {
@@ -28,6 +26,5 @@ export function createMachine(options: { defaultCwd: string }): MachinePort {
       if (!isDir) throw invalid(`Not a directory: ${cwd}`);
       return runShell(body.command, { cwd, timeoutSec: body.timeoutSec, env: process.env, shell });
     },
-    screenText,
   };
 }

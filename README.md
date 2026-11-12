@@ -1,36 +1,43 @@
 # ai-cli-deck
 
-A local web app that puts **any AI coding CLI** (claude, codex, gemini, aider, a plain shell...)
-in a real terminal in your browser, with a file explorer, a per-session preview and a small
-bridge back to the machine. It does not implement an agent: every session is the real CLI in a
-pty, streamed with xterm.js and kept alive by tmux.
+A local web app that gives **AI coding agents** a real chat in your browser, with a file explorer,
+changes review, a per-session preview and a small bridge back to the machine. There is no terminal:
+every session is a conversation (history, tool cards, permission prompts) driven by a headless
+agent, so typing is instant even over a slow link.
+
+Agents: **Claude Code** (Claude Agent SDK), **Codex** (`codex exec --json`), and Claude Code against
+a **custom Anthropic-compatible endpoint** or **DeepSeek**, as profiles with their own key.
 
 Built for an Android phone (Termux > Ubuntu via proot-distro) and a phone browser, but it works
-on any Linux box and desktop browser.
+on any Linux box, Windows and desktop browser.
 
-> **Security:** the deck gives its users a real shell on your machine. Keep it on localhost or a
+> **Security:** the agents can run commands on your machine. Keep the deck on localhost or a
 > trusted LAN with a password, and never expose it to the internet as is. See [SECURITY.md](SECURITY.md).
 
 ## Features
 
-- Terminal per session (tabs), survives closing the browser and restarting the server (tmux)
-- If the whole machine or Termux dies, the sessions come back as ended but still show their last
-  screen (saved to disk every few seconds); deleting a session deletes that file
-- Termux-style extra keys: ESC, TAB, sticky CTRL/ALT, HOME/END, PGUP/PGDN, arrows (hidden on desktop)
+- Real chats per session: markdown, streaming, thinking, tool cards (commands, edits, reads), permission
+  prompts (allow / always / deny), permission mode, model and effort pickers, images and PDFs, stop
+- Conversations are saved on disk and survive closing the browser and restarting the server; resume,
+  fork, **edit a sent message** (optionally reverting the files) and open a **side chat**
+- Background tasks panel (dev servers, builds the agent left running) with Stop
+- Usage gauges: context window, cost, and the account limit with its reset time
+- Voice: dictate with the microphone (local whisper) and have answers read aloud
 - File explorer: text, images, audio, video, PDF; upload (button, drag and drop, pasted images);
   download a file or a whole folder as `.zip`; an options dialog toggles hidden files,
   git-ignored files and file extensions
-- Per-session preview iframe (localhost only); click a `localhost:PORT` link in the terminal
+- Changes review (git diff, commit, push), per-session preview with a server-side browser
 - `clideck` command and MCP tools so agents can talk back (preview, worktree request...)
 - Password login, changeable in the app; open without password while localhost-only
-- Desktop split view (terminal | files or preview, draggable divider, optional) and a terminal list
-  (`☰`, or Alt+1…9 / Alt+[ ]) to switch terminals on phone and desktop
+- Desktop split view (chat | files, changes or preview, draggable divider) and a session list
+  (`☰`, or Alt+1…9 / Alt+[ ]) to switch sessions on phone and desktop
+- Pair your devices and use a PC's deck from the phone (see below)
 - Interface in 8 languages: English, Português (Brasil), Español, Italiano, Français, 中文, 日本語, Русский
 
 ## Setup (Termux > Ubuntu proot)
 
 ```bash
-apt update && apt install -y git tmux build-essential python3 nodejs npm
+apt update && apt install -y git build-essential python3 nodejs npm
 node -v        # 20+ needed (22 recommended)
 git clone https://github.com/Epersonf/ai-cli-deck.git && cd ai-cli-deck
 npm install
@@ -65,7 +72,7 @@ The startup log prints the LAN URLs. Without `DECK_PASSWORD` the built-in defaul
 
 ## Keeping it fast with the screen off (Android)
 
-With the screen off, Android sleeps the CPU and Wi-Fi radio and every keystroke feels laggy. On
+With the screen off, Android sleeps the CPU and Wi-Fi radio and replies feel laggy. On
 Termux the server asks for the Termux wake lock (CPU + Wi-Fi) at startup, which fixes it. It costs
 battery while held: release it with `termux-wake-unlock`, or start the server with
 `DECK_WAKE_LOCK=0` to skip it. Also set Termux to "Unrestricted" in Android's battery settings.
@@ -80,102 +87,78 @@ battery while held: release it with `termux-wake-unlock`, or start the server wi
   "port": 7842,
   "password": null,
   "defaultCwd": null,
-  "portRange": { "min": 4100, "max": 4199 },
-  "providers": [
-    {
-      "id": "gemini",
-      "label": "Gemini CLI",
-      "command": "gemini",
-      "args": [],
-      "env": {},
-      "mcpArgs": []
-    },
-    { "id": "aider", "label": "Aider", "command": "aider", "args": ["--no-auto-commits"] }
-  ]
+  "portRange": { "min": 4100, "max": 4199 }
 }
 ```
 
-`defaultCwd` defaults to your home directory (`~` is accepted in the folder field). The deck never
-stores or asks for API keys or logins: every CLI signs in by itself, inside its terminal.
+`defaultCwd` defaults to your home directory (`~` is accepted in the folder field).
 
 Environment overrides: `DECK_HOST`, `DECK_PORT`, `DECK_PASSWORD`, `DECK_CONFIG_DIR`, `DECK_STATE_DIR`,
-`DECK_STATIC_DIR`, `DECK_TMUX_SOCKET` (tmux server name, default `deck`), `DECK_WAKE_LOCK=0`. `mcpArgs` may contain `{mcpUrl}` to point a CLI at the deck MCP server.
+`DECK_STATIC_DIR`, `DECK_WAKE_LOCK=0`.
 
-## Installing and signing in to CLIs
+## Installing and signing in
 
-The deck never handles logins. If a CLI is missing, the new-session dialog offers **Install in
-terminal**, which runs `clideck setup <cli>` (an `npm install -g` after you confirm). From then on
-the CLI shows its own sign-in the first time it starts, in the session terminal, whatever flow it
-uses today or tomorrow. If `npm` is missing (Debian/Ubuntu ship it separately), the setup tells you
-how to get it.
+The agent needs its CLI: Claude Code ships inside the Claude Agent SDK; Codex needs `codex` in PATH
+(`npm install -g @openai/codex`, the new-session dialog offers it). There is no terminal to log in,
+so a profile takes an **API key or token** (kept in its own folder, never sent back to the browser):
 
-## Profiles (clean terminals)
+- Claude Code: a token from `claude setup-token` (`sk-ant-oat…`) or an Anthropic API key. Leave it empty to
+  use the Claude Code login already on this machine.
+- Custom endpoint and DeepSeek: the key of that API.
+- Codex: an OpenAI API key, or empty to use `codex login` done on this machine.
 
-A profile is a **named, clean terminal** built on a base: Claude Code, Claude Code (custom endpoint),
-Claude Code (DeepSeek), Codex or Custom (any program, or just a shell). It starts with its own empty config folder
-(`CLAUDE_CONFIG_DIR` / `CODEX_HOME` under `~/.config/ai-cli-deck/profiles/<id>`), so **no login and no
-key is linked**. You sign in inside that terminal, exactly as the CLI documents. The deck holds no
-credentials, so it keeps working if a CLI changes how it logs in.
+Codex cannot ask for permission one action at a time when run headless, so the chat's permission mode
+selects its sandbox instead: ask first / accept edits = workspace write, plan = read only, bypass = full access.
+
+## Profiles
+
+A profile is a **named, clean agent** built on a base: Claude Code, Claude Code (custom endpoint),
+Claude Code (DeepSeek) or Codex. It has its own config folder (`CLAUDE_CONFIG_DIR` / `CODEX_HOME`
+under `~/.config/ai-cli-deck/profiles/<id>`), its own key and endpoint, and its own chats.
 
 **Custom endpoint and DeepSeek.** _Claude Code (custom endpoint)_ talks to an Anthropic-compatible API at
-a base URL you choose (for example a company gateway with its own keys); _Claude Code (DeepSeek)_ is the
-same thing with the URL and models fixed. The first time such a terminal starts it asks for the API key
-(typed hidden, via `clideck ensure-key`) and remembers it in that profile's own Claude settings
-(`settings.json`, `env`), so later starts need nothing. The key only ever goes to that profile's Claude.
+a base URL you choose (for example a company gateway) with its key; _Claude Code (DeepSeek)_ is the
+same thing with the URL and models fixed, so only the key is yours.
 
-**Profile templates.** A profile is made from a template: a small JSON file (comments allowed) that says
-how to start one kind of AI CLI as a clean terminal: the program, arguments, environment, the variable that
-holds its config folder, the fields to ask for (an API address...), whether to ask for an API key, and how to
-hand it the deck's MCP server. Claude Code, Codex, Claude Code (DeepSeek), the custom endpoint and the custom
-command are templates that ship with the deck and use the same format. Add another CLI in Settings > Manage
-templates: download the commented example, edit it, paste or choose the file and import it. A template makes
-the deck run the program it names, so only import ones you trust. Imported templates live in
-`~/.config/ai-cli-deck/templates/`.
+**Profile templates.** A profile is made from a template: a small JSON file (comments allowed) with the
+`agent` (`claude` or `codex`), environment, a model, the fields to ask for (an API address...) and an
+optional API key. The built-in ones use the same format. Add another endpoint in Settings > Manage
+templates: download the commented example, edit it, paste or choose the file and import it. Imported
+templates live in `~/.config/ai-cli-deck/templates/`.
 
-A plain terminal opened from a profile's session (the "open a terminal here" button, for git commit, push and
-the like) is a simple shell in that folder that inherits the profile's environment variables (its config
-folder, endpoint and whatever the template sets in `env`), so tools run there use the same accounts as the
-profile's agent. It does not run the CLI or ask for the key.
+**Profiles are separate worlds.** Each has its own config folder, key and endpoint, and an agent in one
+does not see the sessions of another in `clideck sessions`. They all run as the same operating-system user,
+so this is separation of configuration, not a security sandbox.
 
-**Profiles are separate worlds.** Each has its own config folder, login, key and endpoint, and an agent
-in one does not see the terminals of another in `clideck sessions`. (`clideck device here ...` manages any
-terminal of the deck, on purpose: it acts for the user.)
-They all run as the same operating-system user, so this is separation of configuration and of what the
-deck exposes, not a security sandbox: use separate OS users or containers if you need that.
-
-Create profiles from the terminals menu (☰ > New profile) or with
-`clideck profile add "Work" claude`. Profiles can be renamed; the base and the id never change, and
-each session stays bound to the profile it was started with. They are stored in
-`~/.config/ai-cli-deck/profiles.json`.
+Create profiles from the session list (☰ > New profile) or with `clideck profile add "Work" claude`.
+They are stored in `~/.config/ai-cli-deck/profiles.json`.
 
 ## Talking back to the deck
 
 Inside any session, `clideck help` lists the commands (`title`, `preview`, `sessions`, `worktree`, `status`...).
-Agents can also name their terminal (`clideck title`); `clideck meta` keeps small notes.
+Agents can also name their session (`clideck title`); `clideck meta` keeps small notes.
 
-## Conversations: continue, fork, move to another AI
+## Conversations: continue, fork, edit, side chat
 
-The deck knows each terminal's conversation without asking the agent (no tokens spent): Claude Code reports
-its chat id through a start hook the deck passes it, and for Codex the deck finds the chat in Codex's own
-files (the one this terminal touched). A profile template says how its CLI continues chats (`chat` block:
-`format`, `resume`, `fork`, `last`, `prompt`), so any CLI can be added the same way.
+Every session keeps its conversation on disk (`<state>/chats/<id>.jsonl`) and the agent's own chat id,
+so a restart, a reload or another device shows the same chat, and the next message resumes it.
 
-- **An ended terminal** offers **Continue conversation** (the CLI's own resume, e.g. `claude --resume <id>`,
-  `codex resume <id>`), **New conversation**, and **Continue with another AI**.
-- **Another AI** gets the conversation so far as a transcript (requests, answers, one line per action) written
-  to `.deck/chats/` in the project folder (listed in the repository's local git exclude, never committed); its
-  first message asks it to read that file. For a CLI whose chat files the deck cannot read, the transcript is
-  what the terminal showed.
-- **⋮ > Fork or move** does the same for a running terminal: in the same profile the CLI forks the chat itself.
-- **New session** has **Load chat history** for the chosen profile and folder: a searchable list where any
-  conversation continues in a new terminal.
+- **New session > Load chat history** lists the chats Claude Code or Codex saved for the chosen profile and
+  folder; any of them continues in a new session (its earlier turns are shown).
+- **Header menu > Fork or move** starts a new session from this conversation: Claude Code forks the chat
+  natively in the same profile; any other case (another profile, Codex) hands the conversation over as a
+  transcript, written to `.deck/chats/` in the project folder (kept out of git) and read by the new agent.
+- **Edit a sent message** (pencil on your message): the chat goes back to just before it and your new text is
+  sent; optionally the files the dropped turns changed are restored (Claude Code checkpoints).
+- **Side chat**: a fork of the conversation in a drawer beside it, for a quick question that must not touch the
+  main thread. Discard it when you are done.
 
 ## Your other devices: use the PC from the phone
 
 Settings > Devices pairs decks on the same network: on the PC turn on **Share this deck with my devices**
 (it asks twice), and on the phone the PC shows up under **On this network**; tap **Pair**, type the code the
-PC shows, and from then on the PC is in the terminals drawer (☰). Opening it shows the PC's whole deck
-(terminals, files, changes, preview) inside the phone's app, running on the PC.
+PC shows, and from then on the PC is in the sessions drawer (☰). Opening it shows the PC's whole deck
+(chats, files, changes, preview) inside the phone's app, running on the PC.
 
 - Pairing uses the code with a PAKE, and every link is end-to-end encrypted and tied to the keys pinned
   when pairing: nothing on the network can read it or pretend to be one of the devices.
@@ -193,17 +176,17 @@ PC shows, and from then on the PC is in the terminals drawer (☰). Opening it s
 - `clideck device PC task run "python render.py" --cwd ~/proj`: a long job there, shown in that deck's drawer;
   `task list|log <id>|stop <id>` follows it.
 - `clideck copy PC:~/proj/out ./results`: copies a file or a whole folder between any two devices, streamed.
-- `clideck device PC terminals|open|send|read|restart|close`: uses its terminals, e.g. start an agent on the PC,
-  send it a message and read its answer. `here` does the same for this deck's own terminals.
+- `clideck device PC terminals|open|send|read|restart|close`: uses its chat sessions (still called "terminals" in the CLI), e.g. start an agent on the PC,
+  send it a message and read its answer. `here` does the same for this deck's own sessions.
 - `clideck profile send Work PC`: copies a profile with its sign-in, API key and settings (not its chats,
   unless `--chats`), so it works there without signing in again.
 
 **Background tasks.** `clideck task run "<command>"` keeps a command running (its output is kept and shown in the drawer,
-under the profile's terminals); `clideck task battery --below 10` watches the phone's battery and notifies it (needs
-Phone access, see android/README.md); `clideck task list|stop|log`. The terminal menu has "Notify me when it goes
-quiet": when the terminal prints something and then stays silent for 30 seconds (typing echoes do not count), the
+under the profile's sessions); `clideck task battery --below 10` watches the phone's battery and notifies it (needs
+Phone access, see android/README.md); `clideck task list|stop|log`. The chat menu has "Notify me when it's
+done": when an answer finishes, the
 phone gets a notification, with no tokens spent and no agent involved. Tasks live in memory (they end when the deck
-stops), belong to the profile of the terminal that started them, and end with that terminal.
+stops), belong to the profile of the session that started them.
 Run `clideck install` once to get `/clideck help` as a slash command in Claude Code and Codex.
 Claude sessions also get the MCP server automatically. See [docs/protocol.md](docs/protocol.md).
 
@@ -211,7 +194,7 @@ Claude sessions also get the MCP server automatically. See [docs/protocol.md](do
 
 ```bash
 npm run ci      # typecheck + lint + tests
-./dev.sh        # a second, isolated instance on :7843 (own config, state and tmux server)
+./dev.sh        # a second, isolated instance on :7843 (own config and state)
 ```
 
 Use `dev.sh` from a git worktree to hack on the deck while you keep working inside the stable one.

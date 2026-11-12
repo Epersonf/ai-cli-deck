@@ -2,7 +2,7 @@ import type { Session } from '@deck/shared';
 import { create } from 'zustand';
 import { api } from '../../shared/api/endpoints';
 
-export type View = 'terminal' | 'files' | 'changes' | 'preview';
+export type View = 'chat' | 'files' | 'changes' | 'preview';
 
 interface SessionsState {
   sessions: Session[];
@@ -24,12 +24,14 @@ const newestFirst = (list: Session[]): Session[] =>
 export const useSessions = create<SessionsState>()((set, get) => ({
   sessions: [],
   activeId: null,
-  view: 'terminal',
+  view: 'chat',
   async refresh() {
     const sessions = newestFirst(await api.sessions());
     const { activeId } = get();
     const stillThere = sessions.some((s) => s.id === activeId);
-    set({ sessions, activeId: stillThere ? activeId : (sessions[0]?.id ?? null) });
+    // Side chats (children) are never the active session: they open beside their parent.
+    const first = sessions.find((s) => s.parentId === null)?.id ?? null;
+    set({ sessions, activeId: stillThere ? activeId : first });
   },
   upsert(session) {
     const rest = get().sessions.filter((s) => s.id !== session.id);
@@ -45,7 +47,7 @@ export const useSessions = create<SessionsState>()((set, get) => ({
   async rename(id, name) {
     get().upsert(await api.renameSession(id, name));
   },
-  select: (id) => set({ activeId: id, view: 'terminal' }),
+  select: (id) => set({ activeId: id, view: 'chat' }),
   setView: (view) => set({ view }),
 }));
 

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { PortAllocator } from './PortAllocator.js';
-import { RingBuffer } from './RingBuffer.js';
 import { filterEntries } from './WorkspaceService.js';
 
 describe('PortAllocator', () => {
@@ -12,14 +11,6 @@ describe('PortAllocator', () => {
     await expect(ports.allocate()).rejects.toThrow('No free preview port');
     ports.release(4101);
     expect(await ports.allocate()).toBe(4101);
-  });
-});
-
-describe('RingBuffer', () => {
-  it('drops the oldest chunks beyond the limit but keeps the latest', () => {
-    const ring = new RingBuffer(6);
-    ['aaa', 'bbb', 'ccc'].forEach((s) => ring.push(Buffer.from(s)));
-    expect(Buffer.from(ring.snapshot()).toString()).toBe('bbbccc');
   });
 });
 

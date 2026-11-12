@@ -1,73 +1,91 @@
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Profile } from '@deck/shared';
 import { describe, expect, it } from 'vitest';
 import { providerCtx as ctx } from '../../testing/providerContext.js';
 import { BUILTIN_TEMPLATES } from './builtinTemplates.js';
+import { writeSecret } from './profileSecret.js';
 import { createTemplateProvider } from './templateProvider.js';
 
-const home = join('/cfg/profiles', 'p1'); // the platform's own separator
-const make = (base: string, values: Record<string, string> = {}) => {
+async function make(base: string, values: Record<string, string> = {}, secret?: string) {
+  const dir = await mkdtemp(join(tmpdir(), 'deck-prov-'));
+  await mkdir(join(dir, 'p1'), { recursive: true });
+  if (secret) await writeSecret(join(dir, 'p1'), secret);
   const template = BUILTIN_TEMPLATES.find((t) => t.id === base);
   if (!template) throw new Error(base);
   const profile: Profile = { id: 'p1', label: 'P', base, values };
-  return createTemplateProvider(profile, template, '/cfg/profiles');
-};
+  return { provider: createTemplateProvider(profile, template, dir), home: join(dir, 'p1'), dir };
+}
 
-describe('template providers (clean terminals)', () => {
-  it('starts Claude Code with its own empty config folder and nothing else linked', () => {
-    expect(make('claude').buildCommand({ ...ctx, args: ['-x'] })).toEqual({
-      command: 'claude',
-      args: ['-x'],
-      env: { CLAUDE_CONFIG_DIR: home },
+describe('agent profiles from templates', () => {
+  it('Claude with no key uses the machine login: no config folder of its own', async () => {
+    const { provider } = await make('claude');
+    expect(provider.agent).toBe('claude');
+    expect(provider.buildAgent(ctx)).toEqual({ kind: 'claude', env: {}, model: null });
+    expect(provider.keyState?.()).toBe('none');
+  });
+
+  it('Claude with a key gets its own folder, and a Claude Code token has its own variable', async () => {
+    const own = await make('claude', {}, 'sk-ant-api03-x');
+    expect(own.provider.buildAgent(ctx).env).toEqual({
+      CLAUDE_CONFIG_DIR: own.home,
+      ANTHROPIC_API_KEY: 'sk-ant-api03-x',
     });
+    const token = await make('claude', {}, 'sk-ant-oat01-y');
+    expect(token.provider.buildAgent(ctx).env).toEqual({
+      CLAUDE_CONFIG_DIR: token.home,
+      CLAUDE_CODE_OAUTH_TOKEN: 'sk-ant-oat01-y',
+    });
+    expect(token.provider.keyState?.()).toBe('set');
   });
 
-  it('points the deepseek template at DeepSeek, never injects a key, and asks for it on start', () => {
-    const parts = make('claude-deepseek').buildCommand({ ...ctx, args: ['-x'] });
-    expect(parts.env['ANTHROPIC_BASE_URL']).toContain('deepseek');
-    expect(parts.env['CLAUDE_CONFIG_DIR']).toBe(home);
-    expect(Object.keys(parts.env).some((k) => /KEY|AUTH_TOKEN/.test(k))).toBe(false);
-    expect(parts.command).toBe('clideck');
-    expect(parts.args).toEqual([
-      'ensure-key',
-      'ANTHROPIC_AUTH_TOKEN',
-      'DeepSeek API key',
-      '--save',
-      home,
-      '--',
-      'claude',
-      '-x',
-    ]);
-  });
-
-  it('a custom endpoint profile talks to its own URL and asks for its own key', () => {
+  it('the custom provider talks to its own URL and needs its key; an empty model is left out', async () => {
     const url = 'https://llm.example.com/anthropic';
-    const parts = make('claude-endpoint', { baseUrl: url }).buildCommand({ ...ctx, args: ['-x'] });
-    expect(parts.command).toBe('clideck');
-    expect(parts.args).toEqual([
-      'ensure-key',
-      'ANTHROPIC_AUTH_TOKEN',
-      'API key for llm.example.com',
-      '--save',
-      home,
-      '--',
-      'claude',
-      '-x',
-    ]);
-    expect(parts.env).toEqual({ ANTHROPIC_BASE_URL: url, CLAUDE_CONFIG_DIR: home });
+    const missing = await make('claude-endpoint', { baseUrl: url });
+    expect(missing.provider.keyState?.()).toBe('missing');
+    expect(missing.provider.buildAgent(ctx).env).toEqual({
+      ANTHROPIC_BASE_URL: url,
+      CLAUDE_CONFIG_DIR: missing.home,
+    });
+    const ready = await make('claude-endpoint', { baseUrl: url, model: 'm1' }, 'k-123');
+    expect(ready.provider.buildAgent(ctx).env).toEqual({
+      ANTHROPIC_BASE_URL: url,
+      ANTHROPIC_MODEL: 'm1',
+      CLAUDE_CONFIG_DIR: ready.home,
+      ANTHROPIC_AUTH_TOKEN: 'k-123',
+    });
+    expect(ready.provider.keyState?.()).toBe('set');
   });
 
-  it('uses CODEX_HOME for codex and hands every AI template the deck briefing', () => {
-    expect(make('codex').buildCommand(ctx).env).toEqual({ CODEX_HOME: home });
-    expect(make('claude').buildMcpConfig(ctx).args).toContain('--append-system-prompt');
-    const codexArgs = make('codex').buildMcpConfig(ctx).args;
-    expect(codexArgs[1]).toBe(`mcp_servers.deck.url=${JSON.stringify(ctx.mcpUrl)}`);
-    expect(codexArgs[3]).toContain('developer_instructions="');
+  it('DeepSeek is fixed to its API and asks it for its models', async () => {
+    const { provider, home } = await make('claude-deepseek', {}, 'ds-key');
+    const env = provider.buildAgent(ctx).env;
+    expect(env['ANTHROPIC_BASE_URL']).toBe('https://api.deepseek.com/anthropic');
+    expect(env['ANTHROPIC_AUTH_TOKEN']).toBe('ds-key');
+    expect(env['CLAUDE_CONFIG_DIR']).toBe(home);
+    expect(provider.discoverModels).toBeDefined();
   });
 
-  it('custom runs the given program, or the default shell when empty, with no deck wiring', () => {
-    expect(make('custom', { command: 'aider' }).buildCommand(ctx).command).toBe('aider');
-    expect(make('custom').buildCommand(ctx).command).toBe('bash');
-    expect(make('custom').buildMcpConfig(ctx).args).toEqual([]);
+  it('still reads a key an older version saved in Claude settings', async () => {
+    const { provider, home } = await make('claude-deepseek');
+    expect(provider.keyState?.()).toBe('missing');
+    await writeFile(
+      join(home, 'settings.json'),
+      JSON.stringify({ env: { ANTHROPIC_AUTH_TOKEN: 'old-key' } }),
+    );
+    expect(provider.keyState?.()).toBe('set');
+  });
+
+  it('Codex keeps its own CODEX_HOME once it has a key and chats are read from there', async () => {
+    const none = await make('codex');
+    expect(none.provider.agent).toBe('codex');
+    expect(none.provider.buildAgent(ctx).env).toEqual({});
+    const keyed = await make('codex', {}, 'sk-openai');
+    expect(keyed.provider.buildAgent(ctx).env).toEqual({
+      CODEX_HOME: keyed.home,
+      OPENAI_API_KEY: 'sk-openai',
+    });
+    expect(keyed.provider.chat).toEqual({ format: 'codex', home: keyed.home });
   });
 });

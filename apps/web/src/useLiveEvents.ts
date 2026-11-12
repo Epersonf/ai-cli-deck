@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
+import { useMemory } from './features/memory/memoryStore';
+import { onActivity } from './features/notify/browserNotify';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { usePreview } from './features/preview/previewStore';
 import { useActivity } from './features/sessions/activityStore';
@@ -21,16 +23,21 @@ export function useLiveEvents(locked: boolean): void {
           void useApprovals.getState().refresh();
         }
       },
+      onMemory: (scope, profileId) => {
+        if (scope === 'global' || scope === 'profile')
+          useMemory.getState().changed(scope, profileId);
+      },
       onMessage: (message) => {
         if (message.type === 'session') useSessions.getState().upsert(message.session);
         else if (message.type === 'approval') useApprovals.getState().receive(message.request);
         else if (message.type === 'browser-tabs')
           usePreview.getState().applyServerTabs(message.sessionId, message.tabs);
-        else if (message.type === 'activity')
+        else if (message.type === 'activity') {
           useActivity
             .getState()
             .set(message.sessionId, { busy: message.busy, summary: message.summary });
-        else void useSessions.getState().refresh();
+          onActivity(message.sessionId, message.busy, message.summary);
+        } else void useSessions.getState().refresh();
       },
     });
     return () => {

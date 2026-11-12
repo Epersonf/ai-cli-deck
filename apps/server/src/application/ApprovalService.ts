@@ -1,4 +1,4 @@
-import type { ApprovalDecision, ApprovalRequest, Session } from '@deck/shared';
+import type { ApprovalDecision, ApprovalRequest, MemoryRequest, Session } from '@deck/shared';
 import { existingDir } from './cwd.js';
 import { conflict, forbidden, notFound } from '../domain/errors.js';
 import type { EventBus } from '../domain/events.js';
@@ -16,6 +16,8 @@ export interface ApprovalDeps {
   worktrees: WorktreePort;
   system: SystemPort;
   bus: EventBus;
+  /** Does what an approved memory request asks (copy notes, write a global note). */
+  memory?: { apply(request: MemoryRequest): Promise<void> };
 }
 
 /** Siblings of the repo folder, so the worktree never nests inside the repo it came from. */
@@ -77,6 +79,21 @@ export class ApprovalService {
     });
   }
 
+  /** An agent asks to change the deck's memory; nothing changes until the person approves. */
+  proposeMemory(sessionId: string, memory: MemoryRequest, reason: string): ApprovalRequest {
+    if (!this.deps.sessions.get(sessionId)) throw notFound(`Session ${sessionId}`);
+    return this.save({
+      id: this.deps.system.newId(),
+      sessionId,
+      kind: 'memory',
+      reason,
+      status: 'pending',
+      createdAt: this.deps.system.now().toISOString(),
+      resultPath: null,
+      memory,
+    });
+  }
+
   get(id: string): ApprovalRequest {
     const request = this.requests.get(id);
     if (!request) throw notFound(`Request ${id}`);
@@ -92,6 +109,10 @@ export class ApprovalService {
     const request = this.get(id);
     if (request.status !== 'pending') throw conflict(`Request already ${request.status}`);
     if (decision === 'reject') return this.save({ ...request, status: 'rejected' });
+    if (request.kind === 'memory' && request.memory && this.deps.memory) {
+      await this.deps.memory.apply(request.memory);
+      return this.save({ ...request, status: 'approved' });
+    }
     const session = this.deps.sessions.get(request.sessionId);
     if (!session) throw notFound(`Session ${request.sessionId}`);
     if (request.kind === 'folder' && request.path) {

@@ -39,7 +39,7 @@ export function NearbyList({ onPair }: { onPair(address: string): void }) {
           </li>
         ))}
       </ul>
-      <form className="row" onSubmit={byAddress}>
+      <form className="field-inline" onSubmit={byAddress}>
         <input
           value={address}
           placeholder={t('devices.byAddress')}

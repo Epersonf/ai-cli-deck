@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { setupAgents as setup } from '../../testing/agentKit.js';
-import { customBody } from '../../testing/harness.js';
+import { agentBody } from '../../testing/harness.js';
 import { createAgentTools } from './agentTools.js';
 
 describe('agent tools', () => {
@@ -14,7 +14,7 @@ describe('agent tools', () => {
 
   it('never lists terminals of another profile', async () => {
     const { tools, h } = await setup();
-    const other = await h.sessions.create({ ...customBody('/work'), provider: 'shell' });
+    const other = await h.sessions.create({ ...agentBody('/work'), provider: 'codex' });
     expect(tools.listSessions().map((s) => s.id)).not.toContain(other.id);
   });
 
@@ -49,7 +49,7 @@ describe('agent tools', () => {
   it('does not leak other sessions requests', async () => {
     const { deps, tools, a } = await setup();
     const { requestId } = tools.proposeWorktree('x');
-    const other = await deps.sessions.create(customBody('/other', true));
+    const other = await deps.sessions.create(agentBody('/other', true));
     expect(() => createAgentTools(deps, other.id).requestStatus(requestId)).toThrow('not found');
     expect(a.id).not.toBe(other.id);
   });

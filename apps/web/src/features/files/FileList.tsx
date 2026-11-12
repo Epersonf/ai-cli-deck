@@ -4,8 +4,9 @@ import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { displayName, type ExplorerPrefs } from './explorerPrefs';
 import { FileActionDialog } from './FileActionDialog';
-import { iconFor } from './fileIcon';
+import { EntryIcon } from './fileIcon';
 import { changedFolders, labelOf, toneOf } from './gitMarks';
+import { DotIcon } from '../../shared/ui/ShapeIcons';
 
 interface Props {
   sessionId: string;
@@ -63,14 +64,14 @@ export function FileList(props: Props) {
               }
               title={entry.ignored ? t('files.ignoredTip', { path: entry.path }) : entry.path}
             >
-              <span aria-hidden>{entry.kind === 'dir' ? '📁' : iconFor(entry.name, 'file')}</span>
+              <EntryIcon name={entry.name} kind={entry.kind} />
               <span className="tree-name">
                 {displayName(entry.name, entry.kind, prefs.extensions)}
               </span>
               {code !== undefined && <span className="git-code">{labelOf(code)}</span>}
               {code === undefined && tone !== null && (
                 <span className="git-code" aria-label="changes inside">
-                  ●
+                  <DotIcon size={10} />
                 </span>
               )}
             </button>

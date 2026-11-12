@@ -1,15 +1,13 @@
-import type { ReactNode } from 'react';
 import { api, type BrowserStatus } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 
 interface Props {
   status: BrowserStatus | null;
   onStatus(status: BrowserStatus): void;
-  toggle: ReactNode;
 }
 
 /** Browser mode before Chromium is downloaded: what is missing, and the button that fetches it. */
-export function BrowserInstall({ status, onStatus, toggle }: Props) {
+export function BrowserInstall({ status, onStatus }: Props) {
   const t = useT();
   const install = (): void =>
     void api
@@ -22,7 +20,6 @@ export function BrowserInstall({ status, onStatus, toggle }: Props) {
       );
   return (
     <>
-      <div className="preview-bar">{toggle}</div>
       {status !== null && (
         <p className="notice">
           {status.installing ? t('preview.installing') : t('preview.noBrowser')}{' '}

@@ -15,7 +15,7 @@ export function useSmokeApp(): void {
     const { useSessions } = await import('../features/sessions/sessionsStore');
     const { useLayout } = await import('../features/layout/layoutStore');
     const { useLocale } = await import('../shared/i18n/store');
-    useSessions.setState({ sessions: [], activeId: null, view: 'terminal' });
+    useSessions.setState({ sessions: [], activeId: null, view: 'chat' });
     useLayout.getState().patch({ showRight: true, rightView: 'files', ratio: 0.58 });
     useLocale.getState().setLocale('en');
     host = document.body.appendChild(document.createElement('div'));

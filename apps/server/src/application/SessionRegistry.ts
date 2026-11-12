@@ -1,26 +1,22 @@
 import type { Session } from '@deck/shared';
 import { notFound } from '../domain/errors.js';
 import type { EventBus } from '../domain/events.js';
-import type { PtyHandle, SessionStorePort } from '../domain/ports.js';
-import { RingBuffer } from './RingBuffer.js';
+import type { SessionStorePort } from '../domain/ports.js';
+import type { ChatRuntime } from './ChatRuntime.js';
 import { withSharedCwd } from './sharedCwd.js';
 
 export interface Runtime {
   session: Session;
-  pty: PtyHandle | null;
-  ring: RingBuffer;
-  /** The size the program was last given (null until a device sets one). */
-  size: { cols: number; rows: number } | null;
+  chat: ChatRuntime;
 }
 
-/** Every known session with its pty and replay buffer; changes are persisted and published. */
+/** Every known session with its conversation; changes are persisted and published. */
 export class SessionRegistry {
   readonly runtimes = new Map<string, Runtime>();
 
   constructor(
     private readonly store: SessionStorePort,
     private readonly bus: EventBus,
-    private readonly replayBytes: number,
   ) {}
 
   list(): Session[] {
@@ -37,31 +33,13 @@ export class SessionRegistry {
     return runtime;
   }
 
-  /** The main session a sub-terminal opened from `id` belongs to (`id` itself for a main session). */
+  /** The main session a side chat opened from `id` belongs to (`id` itself for a main session). */
   rootOf(id: string): string {
     return this.require(id).session.parentId ?? id;
   }
 
-  /** The profile a plain terminal opened from `parentId` takes its environment from. */
-  inheritFrom(parentId: string | null): string | undefined {
-    return parentId ? this.get(parentId)?.provider : undefined;
-  }
-
   childrenOf(id: string): Session[] {
     return this.list().filter((s) => s.parentId === id);
-  }
-
-  runtimeOf(session: Session): Runtime {
-    return { session, pty: null, ring: new RingBuffer(this.replayBytes), size: null };
-  }
-
-  /** Records a new terminal size and tells every device; false when it is the size already in use. */
-  setSize(id: string, cols: number, rows: number): boolean {
-    const runtime = this.require(id);
-    if (runtime.size?.cols === cols && runtime.size.rows === rows) return false;
-    runtime.size = { cols, rows };
-    this.bus.publish({ kind: 'size', sessionId: id, cols, rows });
-    return true;
   }
 
   update(id: string, patch: Partial<Session>): void {
@@ -69,13 +47,6 @@ export class SessionRegistry {
     runtime.session = { ...runtime.session, ...patch };
     const fresh = this.get(id);
     if (fresh) this.bus.publish({ kind: 'session', session: fresh });
-  }
-
-  /** The program of `runtime` ended; a session removed or restarted meanwhile is left alone. */
-  ended(runtime: Runtime): void {
-    runtime.pty = null;
-    const { id } = runtime.session;
-    if (this.runtimes.get(id) === runtime) this.update(id, { status: 'exited' });
   }
 
   persist(): Promise<void> {

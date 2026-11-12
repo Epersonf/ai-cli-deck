@@ -5,48 +5,65 @@ import { ActivityTracker } from './ActivityTracker.js';
 import { ApprovalNotifier } from './ApprovalNotifier.js';
 import { BrowserTabs } from './BrowserTabs.js';
 import { ApprovalService } from './ApprovalService.js';
+import type { AgentMemoryDeps } from './AgentMemory.js';
+import { applyMemoryRequest } from './memoryApply.js';
+import type { MemoryService } from './MemoryService.js';
+import type { ProviderRegistry } from '../domain/provider.js';
+import { TurnNotifier } from './TurnNotifier.js';
 import type { SessionManager } from './SessionManager.js';
-import type { TaskService } from './TaskService.js';
 
-/** What reaches the person without asking: activity of the terminals, approvals, and Approve / Reject on the phone notification for the terminals the person asked to be notified about. */
+/** What reaches the person without asking: activity of the chats, approvals, finished answers and approvals on every device, and Approve / Reject on the phone notification. */
 export function liveServices(deps: {
   worktrees: WorktreePort;
   system: SystemPort;
   sessions: SessionManager;
-  tasks: TaskService;
   bus: EventBus;
   phone: PhonePort | null;
   port: number;
+  memory: MemoryService;
+  providers: ProviderRegistry;
 }): {
   approvals: ApprovalService;
   approvalNotifier: ApprovalNotifier;
   activity: ActivityTracker;
   browserTabs: BrowserTabs;
+  memoryAccess: AgentMemoryDeps;
 } {
   const approvals = new ApprovalService({
     sessions: deps.sessions,
     worktrees: deps.worktrees,
     system: deps.system,
     bus: deps.bus,
+    memory: { apply: (request) => applyMemoryRequest(deps.memory, request) },
   });
+  const label = (id: string): string => {
+    const session = deps.sessions.get(id);
+    return session?.name ?? basename(session?.cwd ?? id);
+  };
+  new TurnNotifier({ bus: deps.bus, phone: deps.phone, label }).start();
   const notifier = new ApprovalNotifier({
     approvals,
     bus: deps.bus,
     phone: deps.phone,
-    watched: (id) => deps.tasks.idleFor(id) !== undefined,
-    label: (id) => {
-      const session = deps.sessions.get(id);
-      return session?.name ?? basename(session?.cwd ?? id);
-    },
+    label,
     baseUrl: `http://127.0.0.1:${deps.port}`,
     now: () => Date.now(),
   });
   notifier.start();
-  const activity = new ActivityTracker(
-    deps.bus,
-    (id) => deps.sessions.replay(id),
-    () => Date.now(),
-  );
+  const activity = new ActivityTracker(deps.bus);
   activity.start();
-  return { approvals, approvalNotifier: notifier, activity, browserTabs: new BrowserTabs() };
+  const memoryAccess: AgentMemoryDeps = {
+    memory: deps.memory,
+    approvals,
+    providers: deps.providers,
+    profileOf: (id) => deps.sessions.get(id)?.provider ?? '',
+    notice: (id, text) => deps.sessions.notice(id, text),
+  };
+  return {
+    approvals,
+    approvalNotifier: notifier,
+    activity,
+    browserTabs: new BrowserTabs(),
+    memoryAccess,
+  };
 }

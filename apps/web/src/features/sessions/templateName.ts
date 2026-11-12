@@ -9,7 +9,6 @@ const KNOWN: Readonly<Record<string, MessageKey>> = {
   codex: 'profile.base.codex',
   'claude-endpoint': 'profile.base.claude-endpoint',
   'claude-deepseek': 'profile.base.claude-deepseek',
-  custom: 'profile.base.custom',
 };
 
 export function templateName(
@@ -23,7 +22,6 @@ export function templateName(
 /** Translated texts of the built-in templates' fields; imported ones show what their file says. */
 const FIELD_KEYS: Readonly<Record<string, { label: MessageKey; hint?: MessageKey }>> = {
   baseUrl: { label: 'profile.url', hint: 'profile.urlHint' },
-  command: { label: 'profile.command' },
 };
 
 export function fieldTexts(

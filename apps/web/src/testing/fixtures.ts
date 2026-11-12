@@ -1,15 +1,14 @@
 import type { Session } from '@deck/shared';
 
-export const makeSession = (id: string, cwd: string, provider = 'shell'): Session => ({
+export const makeSession = (id: string, cwd: string, provider = 'claude'): Session => ({
   id,
   provider,
   cwd,
-  status: 'running',
+  status: 'idle',
   createdAt: `2026-01-0${id.slice(1)}T00:00:00Z`,
   previewUrl: null,
   port: 4100,
   worktree: { enabled: false, path: null, branch: null },
-  persistent: true,
   sharedCwdWith: [],
   name: null,
   parentId: null,
@@ -19,31 +18,32 @@ export const makeSession = (id: string, cwd: string, provider = 'shell'): Sessio
 export const SESSIONS = [makeSession('s1', '/work/alpha'), makeSession('s2', '/work/beta')];
 
 const ROUTES: Record<string, unknown> = {
-  '/api/config': { defaultCwd: '/root', extraKeys: null, persistent: true },
+  '/api/config': { defaultCwd: '/root' },
   '/api/sessions': SESSIONS,
   '/api/approvals?status=pending': [],
   '/api/providers': [
-    { id: 'shell', label: 'Shell', status: 'ready', hint: null, canInstall: false },
+    { id: 'claude', label: 'Claude Code', status: 'ready', hint: null, canInstall: false },
     { id: 'work', label: 'Work', status: 'ready', hint: null, canInstall: false, profile: true },
   ],
   '/api/templates': [
-    { schema: 1, id: 'claude', label: 'Claude Code', builtin: true },
+    { schema: 1, id: 'claude', label: 'Claude Code', agent: 'claude', builtin: true },
     {
       schema: 1,
       id: 'claude-endpoint',
       label: 'Claude Code (custom endpoint)',
+      agent: 'claude',
       builtin: true,
       fields: [{ key: 'baseUrl', label: 'API base URL', type: 'url', required: true }],
+      apiKey: { env: 'ANTHROPIC_AUTH_TOKEN', label: 'API key', required: true },
     },
-    { schema: 1, id: 'claude-deepseek', label: 'Claude Code (DeepSeek)', builtin: true },
-    { schema: 1, id: 'codex', label: 'Codex', builtin: true },
     {
       schema: 1,
-      id: 'custom',
-      label: 'Custom command',
+      id: 'claude-deepseek',
+      label: 'Claude Code (DeepSeek)',
+      agent: 'claude',
       builtin: true,
-      fields: [{ key: 'command', label: 'Program', required: false }],
     },
+    { schema: 1, id: 'codex', label: 'Codex', agent: 'codex', builtin: true },
   ],
   '/api/tasks': [],
   '/api/chats/titles': {},

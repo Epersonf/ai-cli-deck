@@ -18,6 +18,8 @@ Commands:
                            Copy a file or folder between devices (e.g. clideck copy PC:~/out ./)
   profile send <profile> <device>
                            Send a profile with its sign-in/API key to another device
+  memory list|read <id>|write --title T --body B [--folder F] [--scope global]|delete <id>|profiles|import --from <profile> ...
+                           The deck's notes for every chat and for this profile (global writes and imports need approval)
   meta [get|set|del ...]   Notes kept with this terminal (no argument: list them)
   port                     Print this session's PORT (use it for dev servers)
   preview <url|port>       Open a localhost page in this session's preview panel
@@ -26,12 +28,10 @@ Commands:
   folder <path> ["<reason>"]
                            Ask the user to base this session in another folder (needs approval)
   status <requestId>       Check an approval request: pending, approved or rejected
-  profile add "<name>" <template> [--url <api-base-url>] [--command <program>]
-                           Clean terminal profile from a template (claude, codex, claude-deepseek, ...)
+  profile add "<name>" <template> [--url <api-base-url>]
+                           Clean agent profile from a template (claude, codex, claude-deepseek, ...)
   setup <provider>         Download a CLI (claude, codex...); it signs you in itself on first run
   install [--force]        Add /clideck slash commands for Claude Code and Codex
-  ensure-key <ENV> "<label>" [--save <dir>] -- <cmd...>
-                           Ask for an API key (hidden) if <ENV> is unset, then run <cmd>
 
 Examples:
   clideck preview 3000

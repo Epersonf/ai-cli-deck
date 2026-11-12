@@ -19,7 +19,7 @@ function setup(inUse: (id: string) => boolean = () => false) {
 }
 
 const minimal = (extra = '') =>
-  `{ "schema": 1, "id": "gemini", "label": "Gemini", "command": "gemini" ${extra} }`;
+  `{ "schema": 1, "id": "gemini", "label": "Gemini", "agent": "claude" ${extra} }`;
 
 describe('TemplateService', () => {
   it('lists the built-in templates first, flagged as such', () => {
@@ -29,7 +29,6 @@ describe('TemplateService', () => {
       'claude-endpoint',
       'claude-deepseek',
       'codex',
-      'custom',
     ]);
     expect(list.every((t) => t.builtin)).toBe(true);
   });
@@ -37,7 +36,7 @@ describe('TemplateService', () => {
   it('the downloadable example is itself a valid template (comments and all)', async () => {
     const { service } = setup();
     const info = await service.install(TEMPLATE_SKELETON);
-    expect(info).toMatchObject({ id: 'my-ai-cli', builtin: false });
+    expect(info).toMatchObject({ id: 'my-gateway', builtin: false });
   });
 
   it('imports a template, keeps it across restarts, and replaces one with the same id', async () => {
@@ -53,7 +52,7 @@ describe('TemplateService', () => {
   it('refuses to shadow a built-in template', async () => {
     const { service } = setup();
     await expect(
-      service.install('{ "schema": 1, "id": "claude", "label": "Mine" }'),
+      service.install('{ "schema": 1, "id": "claude", "label": "Mine", "agent": "claude" }'),
     ).rejects.toThrow(/built-in/);
   });
 

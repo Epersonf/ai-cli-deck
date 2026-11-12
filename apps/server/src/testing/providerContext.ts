@@ -6,8 +6,5 @@ export const providerCtx: ProviderContext = {
   cwd: '/work',
   port: 4100,
   mcpUrl: 'http://127.0.0.1:7842/mcp/s1',
-  command: null,
-  args: [],
-  defaultShell: 'bash',
   guide: AGENT_GUIDE,
 };

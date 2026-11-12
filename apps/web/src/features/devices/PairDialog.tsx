@@ -77,7 +77,7 @@ export function PairDialog({ address, onPaired, onClose }: Props) {
           </label>
         )}
         {message !== null && <p className="notice error">{message}</p>}
-        <div className="row">
+        <div className="dialog-actions">
           {started && (
             <button
               type="submit"

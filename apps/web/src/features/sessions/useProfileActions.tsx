@@ -3,6 +3,7 @@ import { api } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
 import { PencilIcon, PlusIcon, TrashIcon } from '../../shared/ui/Icons';
 import type { MenuItem } from '../../shared/ui/KebabMenu';
+import { useMemory } from '../memory/memoryStore';
 import { useConfirm } from '../confirm/confirmStore';
 import { useNetwork } from '../devices/networkStore';
 import { useSendProfile } from '../devices/sendProfileStore';
@@ -48,6 +49,10 @@ export function useProfileActions(group: SessionGroup, onNewSession: () => void)
   const items: MenuItem[] = [
     { label: t('profile.newTerminal'), icon: <PlusIcon size={16} />, onSelect: onNewSession },
   ];
+  items.push({
+    label: t('memory.title'),
+    onSelect: () => useMemory.getState().show(group.id),
+  });
   if (group.profile)
     items.push(
       {

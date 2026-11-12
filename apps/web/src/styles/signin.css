@@ -1,0 +1,371 @@
+/* Sign-in dialog and folder picker: brass buttons and leather panels like the rest of the deck. */
+.btn.primary {
+  background: var(--brass-grad);
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--brass-hi);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
+}
+.modal.signin,
+.modal.folder-picker {
+  width: min(520px, 100%);
+}
+.signin-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 28%);
+}
+.signin-status-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lamp {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 50%);
+}
+.lamp.on {
+  background: #7bd88f;
+  box-shadow: 0 0 8px #7bd88f;
+}
+.lamp.off {
+  background: #c0553b;
+}
+.lamp.unknown {
+  background: var(--amber);
+}
+.signin-key {
+  display: grid;
+  gap: 10px;
+}
+.signin-link {
+  color: var(--amber);
+  overflow-wrap: anywhere;
+}
+.signin-quiet {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.stepper {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.step-mark {
+  display: grid;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid var(--brass);
+  border-radius: 50%;
+  font-size: 12px;
+}
+.step.done .step-mark {
+  background: var(--brass-grad);
+  color: var(--ink);
+}
+.step.todo {
+  opacity: 0.5;
+}
+.step-main {
+  display: grid;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+}
+.step-title {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+.step.done .step-title {
+  font-weight: 400;
+  color: var(--muted);
+}
+.step-body {
+  display: grid;
+  gap: 8px;
+  justify-items: stretch;
+}
+.step-body .hint {
+  margin: 0;
+}
+.step-body .ghost {
+  justify-self: start;
+}
+.signin-code {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 2px double var(--brass-lo);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 30%);
+}
+.signin-code strong {
+  flex: 1 1 100%;
+  font:
+    700 28px/1.2 ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+  letter-spacing: 0.12em;
+  color: var(--brass-hi);
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+.signin-ok {
+  color: var(--amber);
+}
+.signin-output {
+  max-height: 30dvh;
+  margin: 6px 0 0;
+  overflow: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.folder-field {
+  display: flex;
+  gap: 6px;
+}
+.folder-field input {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.folder-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.folder-path {
+  margin: 0;
+  padding: 6px 8px;
+  overflow: hidden;
+  border: 1px solid var(--brass-lo);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 30%);
+  font:
+    13px/1.3 ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.folder-list {
+  display: grid;
+  gap: 4px;
+  max-height: 34dvh;
+  min-height: 90px;
+  margin: 0;
+  padding: 0 4px 0 0;
+  overflow: hidden auto;
+  list-style: none;
+  align-content: start;
+}
+.folder-list li {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+.folder-enter {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folder-select {
+  flex: none;
+}
+.folder-recent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.folder-recent button {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folder-picker .row input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The memory screen: a tree of folders and notes. */
+/* The memory screen takes the whole window: folders left, the note right (one at a time on a phone). */
+.memory-page {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #2a1c14, var(--leather));
+}
+.memory-page > .hint {
+  margin: 0;
+}
+.memory-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.memory-head h2 {
+  margin: 0;
+}
+.memory-explorer {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(260px, 2fr) 3fr;
+  gap: 14px;
+  min-height: 0;
+}
+.memory-left,
+.memory-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+.memory-left .memory-tree {
+  flex: 1;
+  max-height: none;
+}
+.memory-editor {
+  display: grid;
+  gap: 10px;
+}
+.memory-editor textarea {
+  min-height: 40dvh;
+}
+.memory-entry {
+  border: 2px double var(--brass);
+  border-radius: 10px;
+  padding: 10px;
+}
+@media (max-width: 760px) {
+  .memory-explorer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .memory-explorer.editing .memory-left,
+  .memory-explorer:not(.editing) .memory-right {
+    display: none;
+  }
+}
+.memory-tabs,
+.memory-tools,
+.memory-profile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.memory-profile select {
+  flex: 1;
+  min-width: 0;
+}
+.memory-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.memory-crumbs button {
+  min-height: 0;
+  padding: 2px 8px;
+}
+.memory-tree {
+  display: grid;
+  gap: 2px;
+  max-height: 42dvh;
+  min-height: 120px;
+  align-content: start;
+  overflow: hidden auto;
+  padding: 6px;
+  border: 1px solid var(--brass-lo);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 25%);
+}
+.memory-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  border-radius: 6px;
+}
+.memory-row.over,
+.memory-row.selected {
+  background: rgb(255 200 120 / 14%);
+  outline: 1px dashed var(--brass);
+}
+.memory-row.off .memory-name {
+  opacity: 0.55;
+}
+.memory-name {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 6px;
+  align-items: center;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: left;
+}
+.memory-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.memory-count,
+.memory-budget {
+  text-align: right;
+}
+.memory-budget.over {
+  color: var(--amber);
+}
+.memory-editor textarea {
+  width: 100%;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.memory-import-tree {
+  display: grid;
+  gap: 4px;
+  max-height: 40dvh;
+  overflow: auto;
+}
+.memory-ask-body {
+  max-height: 30dvh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

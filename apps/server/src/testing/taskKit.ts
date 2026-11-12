@@ -17,7 +17,7 @@ export function setupTasks() {
     sessions: h.sessions,
     bus: h.bus,
     phone,
-    pty: h.ptyPort,
+    processes: h.processes,
     envFor: () => ({ FROM: 'profile' }),
     shell: (line) => ({ command: 'sh', args: ['-c', line] }),
     now: () => clock,

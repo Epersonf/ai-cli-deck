@@ -150,3 +150,127 @@ kbd {
   width: var(--ctl);
   padding: 0;
 }
+
+/* A short message ("Copied") that shows by itself and leaves nothing behind. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: min(90vw, 360px);
+  padding: 8px 16px;
+  border: 2px double var(--brass);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #33231a, var(--leather));
+  color: var(--brass-hi);
+  box-shadow: 0 6px 24px #000;
+  pointer-events: none;
+  animation: toast-in 0.15s ease-out;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+button svg,
+a.btn svg {
+  vertical-align: -3px;
+}
+button.pinned {
+  background: var(--brass-grad);
+  color: var(--ink);
+  border-color: var(--brass-hi);
+}
+
+/* One layout for every dialog footer and form row. */
+.dialog-actions {
+  display: flex;
+  flex-direction: row-reverse; /* the first button (the main one) sits at the right */
+  gap: 8px;
+  justify-content: flex-start;
+}
+.dialog-actions > * {
+  flex: 0 1 auto;
+  min-width: 96px;
+  justify-content: center;
+  text-align: center;
+}
+.field-inline {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.field-inline > input,
+.field-inline > select {
+  flex: 1;
+  min-width: 0;
+}
+.field-inline > button {
+  flex: none;
+}
+.field-row {
+  display: grid;
+  gap: 4px;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+button.ghost {
+  min-height: 32px;
+  padding: 0 8px;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--amber);
+  text-decoration: underline;
+}
+button.icon-btn {
+  width: var(--ctl);
+  padding: 0;
+}
+.disclosure summary {
+  cursor: pointer;
+  color: var(--amber);
+}
+.disclosure[open] summary {
+  margin-bottom: 4px;
+}
+.choice-btn {
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 6px 12px;
+}
+.choice-text,
+.choice-option {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+.choice-text small,
+.choice-option small {
+  font-weight: 400;
+  color: var(--muted);
+  white-space: normal;
+}
+.choice-sheet {
+  gap: 8px;
+}
+.choice-option {
+  justify-content: start;
+  width: 100%;
+  padding: 8px 12px;
+}
+.choice-option.on {
+  border-color: var(--brass-hi);
+  background: linear-gradient(180deg, #4a3322, var(--leather));
+}
+@media (max-width: 480px) {
+  .dialog-actions > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
