@@ -15,6 +15,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.URLUtil
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
@@ -47,6 +48,9 @@ class DeckActivity : Activity() {
             webViewClient = client(url)
             webChromeClient = chrome()
             addJavascriptInterface(bridge, "DeckAndroid")
+            setDownloadListener { dl, _, disposition, mime, _ ->
+                bridge.saveUrl(dl, URLUtil.guessFileName(dl, disposition, mime))
+            }
         }
         splash = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
