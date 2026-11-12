@@ -31,8 +31,11 @@ export class PlaywrightEngine implements BrowserEngine {
     // The folder inside is named per platform (chrome-headless-shell-linux64, -linux-arm64, ...).
     const root = join(this.browsersDir, dir);
     for (const sub of readdirSync(root).filter((n) => n.startsWith('chrome-headless-shell'))) {
-      const file = join(root, sub, 'chrome-headless-shell');
-      if (existsSync(file)) return file;
+      // The binary is `chrome-headless-shell.exe` on Windows.
+      for (const name of ['chrome-headless-shell', 'chrome-headless-shell.exe']) {
+        const file = join(root, sub, name);
+        if (existsSync(file)) return file;
+      }
     }
     return null;
   }
