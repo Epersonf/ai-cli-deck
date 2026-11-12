@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useT } from '../../shared/i18n/store';
+import { ModalTitle } from '../../shared/ui/ModalTitle';
 import type { Block } from './blocks';
 import { sendChat } from './connection';
 
@@ -37,6 +38,7 @@ export function QuestionCard({ block, sessionId }: { block: Permission; sessionI
   const [picked, setPicked] = useState<Record<string, string[]>>({});
   const [other, setOther] = useState<Record<string, string>>({});
   const pending = block.state === 'pending';
+  const [open, setOpen] = useState(true);
 
   const toggle = (q: Question, label: string): void =>
     setPicked((old) => {
@@ -61,11 +63,10 @@ export function QuestionCard({ block, sessionId }: { block: Permission; sessionI
       allow: true,
       answers: Object.fromEntries(questions.map((q) => [q.question, answerOf(q)])),
     });
-  const skip = (): void =>
-    sendChat(sessionId, { type: 'permission', id: block.id, allow: false });
+  const skip = (): void => sendChat(sessionId, { type: 'permission', id: block.id, allow: false });
 
-  return (
-    <div className={`permission-card ${block.state}`} role="group">
+  const body = (
+    <>
       {questions.map((q) => (
         <div key={q.question}>
           {q.header && <p className="hint">{q.header}</p>}
@@ -108,6 +109,24 @@ export function QuestionCard({ block, sessionId }: { block: Permission; sessionI
           {block.state === 'allowed' ? t('chat.permission.allowed') : t('chat.permission.denied')}
         </p>
       )}
+    </>
+  );
+
+  if (pending && open)
+    return (
+      <div className="modal-backdrop" onClick={() => setOpen(false)}>
+        <div className="modal" onClick={(event) => event.stopPropagation()}>
+          <ModalTitle
+            title={questions[0]?.header ?? t('chat.permission')}
+            onClose={() => setOpen(false)}
+          />
+          {body}
+        </div>
+      </div>
+    );
+  return (
+    <div className={`permission-card ${block.state}`} role="group">
+      {body}
     </div>
   );
 }
