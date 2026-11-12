@@ -274,3 +274,17 @@ button.icon-btn {
     min-width: 0;
   }
 }
+
+/* Folder / "move to" lists and choice sheets are bottom sheets on a phone. */
+@media (max-width: 640px) {
+  .modal-backdrop.sheet {
+    place-items: end center;
+    padding: 0;
+  }
+  .modal.move-picker,
+  .modal.choice-sheet {
+    width: 100%;
+    max-height: 85dvh;
+    border-radius: 14px 14px 0 0;
+  }
+}

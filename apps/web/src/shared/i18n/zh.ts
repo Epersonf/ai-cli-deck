@@ -361,8 +361,6 @@ export const zh: Messages = {
   'chat.model.other': '其他模型 ID',
   'chat.model.use': '使用',
   'chat.model.isDefault': '默认',
-  'chat.model.default': '默认：{model}',
-  'chat.model.agentOwn': '代理自己的',
   'chat.model.setDefault': '设为 {profile} 的默认',
   'chat.model.useAgentDefault': '使用代理自己的默认',
   'chat.mode.auto': '自动',

@@ -373,8 +373,6 @@ export const ja: Messages = {
   'chat.model.other': '別のモデル ID',
   'chat.model.use': '使う',
   'chat.model.isDefault': '既定',
-  'chat.model.default': '既定：{model}',
-  'chat.model.agentOwn': 'エージェント自身の',
   'chat.model.setDefault': '{profile} の既定にする',
   'chat.model.useAgentDefault': 'エージェント自身の既定を使う',
   'chat.mode.auto': '自動',
