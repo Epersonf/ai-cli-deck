@@ -2,10 +2,11 @@ import type { ProviderInfo } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { FolderPicker } from '../folders/FolderPicker';
 import { api } from '../../shared/api/endpoints';
+import { signinApi } from '../../shared/api/signinApi';
 import { useT } from '../../shared/i18n/store';
 import { choices, pickDefault } from './profileChoices';
 import { ProviderPicker } from './ProviderPicker';
-import { loadRecent, rememberFolder } from './recentFolders';
+import { forgetFolder, loadRecent, rememberFolder } from './recentFolders';
 import { useSessions } from './sessionsStore';
 
 interface Props {
@@ -25,6 +26,17 @@ export function NewSessionDialog({ defaultCwd, profileId, onProfile, onClose }: 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [picking, setPicking] = useState(false);
+
+  // A remembered folder that does not exist on this machine is dropped for the default (the home folder).
+  useEffect(() => {
+    const first = cwd;
+    if (first === '' || first === defaultCwd) return;
+    signinApi.dirs(first).catch(() => {
+      forgetFolder(first);
+      setCwd((now) => (now === first ? (defaultCwd ?? '') : now));
+    });
+    // only the folder the dialog opened with
+  }, []);
 
   useEffect(() => {
     api
