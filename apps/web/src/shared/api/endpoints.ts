@@ -33,7 +33,6 @@ const enc = encodeURIComponent;
 const session = (id: string): string => `/api/sessions/${enc(id)}`;
 export const api = {
   authStatus: () => request(AuthStatusSchema, 'GET', '/api/auth'),
-  login: (password: string) => request(LoginResponseSchema, 'POST', '/api/login', { password }),
   changePassword: (current: string | null, next: string | null) =>
     request(LoginResponseSchema, 'PUT', '/api/password', { current, next }),
   config: () => request(PublicConfigSchema, 'GET', '/api/config'),

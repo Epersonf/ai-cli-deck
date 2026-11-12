@@ -11,6 +11,10 @@ const StoredAuthSchema = z.object({
     ])
     .nullable(),
   token: z.string().min(16),
+  // Files written before OTP existed have none of these: they mean a static password.
+  mode: z.enum(['static', 'otp']).default('static'),
+  otp: z.object({ secret: z.string() }).nullable().default(null),
+  pendingOtp: z.object({ secret: z.string() }).nullable().default(null),
 });
 
 /** Credentials live outside the repo, mode 0600, and are never sent to the browser. */

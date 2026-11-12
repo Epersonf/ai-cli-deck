@@ -5,6 +5,7 @@ import type { SecurityOptions } from '../container.js';
 import {
   isAllowedHost,
   isAllowedOrigin,
+  isLocalClient,
   isLoopbackAddress,
   isLoopbackHostname,
   hostnameOf,
@@ -54,7 +55,7 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
       return reply.code(403).send({ error: 'Origin or host not allowed' });
     }
     if (PUBLIC_PATHS.has(path.split('?')[0] ?? path)) return;
-    if (!options.isValidToken(readToken(request))) {
+    if (!options.isValidToken(readToken(request), isLocalClient(request))) {
       return reply.code(401).send({ error: 'Missing or invalid access token' });
     }
   });

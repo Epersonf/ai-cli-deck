@@ -32,6 +32,24 @@ export function isAllowedHost(hostHeader: string | undefined, bindIsLoopback: bo
   return !bindIsLoopback || isLoopbackHostname(hostnameOf(hostHeader));
 }
 
+const FORWARDED = ['x-forwarded-for', 'forwarded', 'x-real-ip', 'cf-connecting-ip'];
+
+/**
+ * True for a request that comes from this machine itself: the real socket address is loopback (never a header the
+ * client could write), and nothing says a proxy or tunnel passed it on, since that proxy sits on this machine too.
+ */
+export function isLocalClient(request: {
+  socket: { remoteAddress?: string | undefined };
+  headers: Record<string, unknown>;
+}): boolean {
+  const address = request.socket.remoteAddress ?? '';
+  return isLoopbackAddress(address) && !FORWARDED.some((h) => request.headers[h] !== undefined);
+}
+
+/** The address of the client as the socket saw it (one key per machine, for bans). */
+export const clientKey = (request: { socket: { remoteAddress?: string | undefined } }): string =>
+  (request.socket.remoteAddress ?? 'unknown').replace(/^::ffff:/, '');
+
 export function tokensMatch(expected: string, provided: string | undefined): boolean {
   return provided !== undefined && safeEqual(expected, provided);
 }

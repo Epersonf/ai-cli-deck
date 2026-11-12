@@ -8,19 +8,26 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** The parsed JSON body of the error response (e.g. `triesLeft`, `wait`), or null. */
+    readonly data: unknown = null,
   ) {
     super(message);
   }
 }
 
-async function errorMessage(response: Response): Promise<string> {
+async function errorBody(response: Response): Promise<{ message: string; data: unknown }> {
   try {
-    const body: unknown = await response.json();
-    const message = (body as { error?: unknown }).error;
-    return typeof message === 'string' ? message : response.statusText;
+    const data: unknown = await response.json();
+    const message = (data as { error?: unknown }).error;
+    return { message: typeof message === 'string' ? message : response.statusText, data };
   } catch {
-    return response.statusText;
+    return { message: response.statusText, data: null };
   }
+}
+
+async function failure(response: Response): Promise<ApiError> {
+  const { message, data } = await errorBody(response);
+  return new ApiError(response.status, message, data);
 }
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -50,8 +57,13 @@ async function send<T>(
   const init: RequestInit = { method, headers };
   if (body !== undefined) init.body = JSON.stringify(body);
   const response = await fetch(path, init);
-  if (response.status === 401 && !path.endsWith('/api/login')) notifyUnauthorized();
-  if (!response.ok) throw new ApiError(response.status, await errorMessage(response));
+  if (!response.ok) {
+    const error = await failure(response);
+    // A wrong one-time code also answers 401 (with `triesLeft`), but that is not a lost session.
+    const wrongCode = typeof (error.data as { triesLeft?: unknown } | null)?.triesLeft === 'number';
+    if (response.status === 401 && !path.endsWith('/api/login') && !wrongCode) notifyUnauthorized();
+    throw error;
+  }
   if (response.status === 204) return schema.parse(undefined);
   return schema.parse(await response.json());
 }
@@ -79,6 +91,6 @@ export async function sendRaw(path: string, body: Blob): Promise<{ path: string 
   if (token !== null) headers[TOKEN_HEADER] = token;
   const response = await fetch(API_BASE + path, { method: 'POST', headers, body });
   if (response.status === 401) notifyUnauthorized();
-  if (!response.ok) throw new ApiError(response.status, await errorMessage(response));
+  if (!response.ok) throw await failure(response);
   return UploadedSchema.parse(await response.json());
 }

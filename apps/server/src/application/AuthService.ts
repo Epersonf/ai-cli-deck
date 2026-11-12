@@ -1,6 +1,7 @@
 import {
   DEFAULT_PASSWORD,
   MIN_PASSWORD_LENGTH,
+  type AuthMode,
   type AuthStorePort,
   type PasswordHash,
   type PasswordHasherPort,
@@ -8,23 +9,10 @@ import {
 } from '../domain/auth.js';
 import { WrongPasswordError, forbidden, invalid } from '../domain/errors.js';
 import { safeEqual } from '../domain/safeEqual.js';
+import { applyModes, type AuthChange, type SavedModes } from './authChange.js';
+import { chooseAuthSource, type AuthSource } from './authSource.js';
 
-export type AuthSource = 'stored' | 'env' | 'default' | 'none';
-
-/**
- * Where the active password comes from. A password changed in the app wins; "no password" is only
- * honoured on loopback; otherwise env/config, then the default fallback beyond loopback.
- */
-export function chooseAuthSource(input: {
-  loopback: boolean;
-  stored: StoredPassword | null;
-  envPassword: string | null;
-}): AuthSource {
-  if (input.stored?.kind === 'password') return 'stored';
-  if (input.stored?.kind === 'none' && input.loopback) return 'none';
-  if (input.envPassword !== null) return 'env';
-  return input.loopback ? 'none' : 'default';
-}
+export { chooseAuthSource, type AuthSource };
 
 export interface AuthDeps {
   store: AuthStorePort;
@@ -41,6 +29,7 @@ export class AuthService {
     private token: string,
     private source: AuthSource,
     private stored: StoredPassword | null,
+    private saved: SavedModes,
   ) {}
 
   static async create(deps: AuthDeps): Promise<AuthService> {
@@ -57,41 +46,66 @@ export class AuthService {
       stored?.kind === 'password' && source === 'stored'
         ? stored
         : plain && deps.hasher.hash(plain);
+    const kept = {
+      mode: file?.mode ?? 'static',
+      otp: file?.otp ?? null,
+      pendingOtp: file?.pendingOtp ?? null,
+    } as const;
     const service = new AuthService(
       deps,
       hash || null,
       file?.token ?? deps.newToken(),
       source,
       stored,
+      kept,
     );
     if (!file) await service.persist();
     return service;
   }
 
+  get mode(): AuthMode {
+    return this.saved.mode;
+  }
+  /** Whether a login is needed at all (OTP mode: from every client except this machine, see `requiredFor`). */
   get required(): boolean {
-    return this.hash !== null;
+    return this.mode === 'otp' || this.hash !== null;
+  }
+  /** Whether this client must sign in: in OTP mode the machine itself is exempt. */
+  requiredFor(loopbackClient: boolean): boolean {
+    return this.mode === 'otp' ? !loopbackClient : this.required;
   }
   get isDefault(): boolean {
-    return this.source === 'default';
+    return this.mode === 'static' && this.source === 'default';
   }
   get canDisable(): boolean {
     return this.deps.loopback;
   }
-  /** Token handed out after a correct password; null while authentication is off. */
+  /** Token handed out after a correct login; null while authentication is off. */
   get accessToken(): string | null {
     return this.required ? this.token : null;
   }
-
-  verifyPassword(password: string): boolean {
-    return this.hash !== null && this.deps.hasher.verify(password, this.hash);
+  /** The secrets: the one in use (OTP mode) and the one waiting for its first proven code. */
+  get otpSecrets(): { active: string | null; pending: string | null } {
+    return {
+      active: this.saved.otp?.secret ?? null,
+      pending: this.saved.pendingOtp?.secret ?? null,
+    };
   }
 
-  isValidToken(provided: string | undefined): boolean {
-    return !this.required || (provided !== undefined && safeEqual(this.token, provided));
+  verifyPassword(password: string): boolean {
+    return (
+      this.mode === 'static' && this.hash !== null && this.deps.hasher.verify(password, this.hash)
+    );
+  }
+
+  isValidToken(provided: string | undefined, loopbackClient = false): boolean {
+    if (!this.requiredFor(loopbackClient)) return true;
+    return provided !== undefined && safeEqual(this.token, provided);
   }
 
   /** Sets, changes (`next` set) or removes (`next` null) the password. Returns the new token. */
   async change(current: string | null, next: string | null): Promise<string | null> {
+    if (this.mode === 'otp') throw forbidden('Switch to password mode first');
     if (this.required && (current === null || !this.verifyPassword(current))) {
       throw new WrongPasswordError();
     }
@@ -109,7 +123,20 @@ export class AuthService {
     return this.accessToken;
   }
 
+  /** Applies a change of mode or secrets and saves it; returns the access token to use from now on. */
+  async update(change: AuthChange): Promise<string | null> {
+    this.saved = applyModes(this.saved, change);
+    if (change.password !== undefined) {
+      this.hash = this.deps.hasher.hash(change.password);
+      this.stored = { kind: 'password', ...this.hash };
+      this.source = 'stored';
+    }
+    if (change.newToken) this.token = this.deps.newToken();
+    await this.persist();
+    return this.accessToken;
+  }
+
   private persist(): Promise<void> {
-    return this.deps.store.save({ password: this.stored, token: this.token });
+    return this.deps.store.save({ password: this.stored, token: this.token, ...this.saved });
   }
 }

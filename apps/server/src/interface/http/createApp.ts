@@ -16,6 +16,7 @@ import { agentRoutes } from './routes/agent.js';
 import { agentDeviceRoutes } from './routes/agentDevices.js';
 import { approvalRoutes } from './routes/approvals.js';
 import { authRoutes } from './routes/auth.js';
+import { authOtpRoutes } from './routes/authOtp.js';
 import { chatRoutes } from './routes/chats.js';
 import { gitRoutes } from './routes/git.js';
 import { installRoutes } from './routes/install.js';
@@ -62,6 +63,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   registerSecurity(app, c.security);
   await app.register(fastifyWebsocket);
   authRoutes(app, c);
+  authOtpRoutes(app, c);
   sessionRoutes(app, c);
   chatRoutes(app, c);
   installRoutes(app, c);

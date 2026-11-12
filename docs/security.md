@@ -16,6 +16,34 @@
   Changing or removing the password rotates the token, which logs everyone else out.
 - Comparisons are constant time. Login and password changes are limited to 5 failures per minute
   per client (HTTP 429 afterwards).
+
+## One-time codes (OTP mode)
+
+Instead of a fixed password the deck can ask for a 6-digit code from an authenticator app (TOTP, RFC 6238:
+SHA-1, 30 s steps; the previous, current and next step are accepted, compared in constant time).
+
+- **Turning it on.** `GET /api/auth/otp` (signed-in device) shows a pending secret and its `otpauth://` address.
+  `PUT /api/auth/mode {mode:'otp', code}` proves a code of that secret and activates it, so nobody locks
+  themselves out. Turning it on gives a new access token (the response carries it as `token`): devices that were
+  signed in with the static password are signed out. Going back, `PUT /api/auth/mode {mode:'static', code, password}`
+  needs a current code and sets a new static password; the access token stays, so signed-in devices stay signed in.
+- **Signing in.** `POST /api/login {code}`. A password sent in OTP mode is refused like a wrong code.
+- **The machine itself is exempt.** A request whose real socket address is loopback (`127.0.0.1`, `::1`) is
+  not asked to sign in while OTP is on, like the deck's own machine. `X-Forwarded-For` is never trusted, and a
+  request carrying forwarding headers (`X-Forwarded-For`, `Forwarded`, `X-Real-IP`, `CF-Connecting-IP`), such as one
+  from a reverse proxy or tunnel on the same machine, is treated as remote. `GET /api/auth` answers per client.
+- **Ban policy, per client address.** 3 wrong codes end a round and lock the client for 1, then 5, then 15, then
+  60 minutes (the last stays at 60). While locked even a right code is refused (HTTP 429 with `wait`). A client with
+  no failure for 60 minutes (counted from the end of a lock) starts over, and a right code clears it. Wrong codes
+  in the setup and mode routes count separately under `mode:<address>`. The bans live in memory: a restart clears them.
+- **Rotating.** `POST /api/auth/otp/rotate` with `{code}` of the current secret makes a new one. The access token
+  stays valid, so rotating only changes future sign-ins.
+- **Secrets** are stored in `auth.json` (0600), never logged, and returned only by `GET /api/auth/otp` and
+  `rotate` to a signed-in client. The static password hash stays stored, unused, while OTP is on.
+- **Recovery.** Edit `auth.json` on the machine: set `"mode": "static"` (or delete the `mode`, `otp` and
+  `pendingOtp` fields) and restart. The stored static password (else `DECK_PASSWORD`, else the default on a network
+  bind) applies again. `DECK_PASSWORD` itself is the static path and does not turn OTP off.
+
 - The deck stores no provider credentials at all (no API keys, no logins). Profiles start as
   clean terminals and the user signs in inside them.
 

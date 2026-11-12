@@ -20,6 +20,7 @@ import './styles/chatBlocks.css';
 import './styles/chatTools.css';
 import './styles/signin.css';
 import './styles/dropdown.css';
+import './styles/otp.css';
 import './styles/approvals.css';
 import './styles/devices.css';
 

@@ -28,7 +28,8 @@ on any Linux box, Windows and desktop browser.
   git-ignored files and file extensions
 - Changes review (git diff, commit, push), per-session preview with a server-side browser
 - `clideck` command and MCP tools so agents can talk back (preview, worktree request...)
-- Password login, changeable in the app; open without password while localhost-only
+- Password login, or 6-digit codes from an authenticator app (OTP mode, with a progressive ban after wrong
+  codes); open without password while localhost-only
 - Desktop split view (chat | files, changes or preview, draggable divider) and a session list
   (`☰`, or Alt+1…9 / Alt+[ ]) to switch sessions on phone and desktop
 - Pair your devices and use a PC's deck from the phone (see below)

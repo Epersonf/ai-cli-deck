@@ -8,6 +8,9 @@ Treat it like SSH, not like a web page.
 - Keep the default bind (`127.0.0.1`). It is only reachable from the same device.
 - If you listen on a LAN (`DECK_HOST=0.0.0.0`), set a strong `DECK_PASSWORD` first and only use a
   network you trust.
+- Prefer one-time codes (an authenticator app) over a fixed password on a LAN: in the app. Three wrong
+  codes lock a client for 1, 5, 15, then 60 minutes; the machine itself needs no code. If you lose the
+  authenticator, set `"mode": "static"` in `~/.config/ai-cli-deck/auth.json` and restart.
 - **Do not expose it to the internet** (port forwarding, public tunnels) without a TLS reverse
   proxy and extra authentication in front of it. The deck serves plain HTTP.
 - Terminal screens saved for recovery (`<state dir>/scrollback`) can contain secrets that were

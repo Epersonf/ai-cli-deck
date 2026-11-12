@@ -9,7 +9,7 @@ import { SessionManager } from './application/SessionManager.js';
 import { EventBus } from './domain/events.js';
 import { LoginThrottle } from './application/LoginThrottle.js';
 import { assertSecureBind } from './infrastructure/config/bind.js';
-import { createAuth } from './infrastructure/auth/authWiring.js';
+import { createAuth, createOtp } from './infrastructure/auth/authWiring.js';
 import { loadConfig } from './infrastructure/config/loadConfig.js';
 import { defaultShell } from './infrastructure/config/platform.js';
 import { workspaceServices } from './infrastructure/workspaceWiring.js';
@@ -124,10 +124,11 @@ async function main(): Promise<void> {
     publicConfig: { defaultCwd: config.defaultCwd ?? homedir() },
     auth,
     throttle: new LoginThrottle(() => Date.now()),
+    otp: createOtp(auth),
     security: {
       bindHost: config.host,
       allowedOrigins: config.allowedOrigins,
-      isValidToken: (token) => auth.isValidToken(token) || isPeerToken(token),
+      isValidToken: (token, local) => auth.isValidToken(token, local) || isPeerToken(token),
     },
     staticDir: paths.staticDir ?? join(here, '..', '..', 'web', 'dist'),
   });

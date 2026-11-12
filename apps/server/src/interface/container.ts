@@ -13,6 +13,7 @@ import type { ActivityTracker } from '../application/ActivityTracker.js';
 import type { ApprovalNotifier } from '../application/ApprovalNotifier.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
 import type { AuthService } from '../application/AuthService.js';
+import type { OtpAccess } from '../application/OtpAccess.js';
 import type { LoginThrottle } from '../application/LoginThrottle.js';
 import type { ChatActions } from '../application/ChatActions.js';
 import type { ChatService } from '../application/ChatService.js';
@@ -34,7 +35,8 @@ import type { ProfileBundles } from '../infrastructure/providers/profileBundle.j
 
 export interface SecurityOptions {
   bindHost: string;
-  isValidToken(provided: string | undefined): boolean;
+  /** `loopbackClient`: the request comes from this machine itself (exempt from login in OTP mode). */
+  isValidToken(provided: string | undefined, loopbackClient: boolean): boolean;
   allowedOrigins: readonly string[];
 }
 
@@ -90,5 +92,7 @@ export interface Container {
   device(peer: string | null): DeviceRequest;
   auth: AuthService;
   throttle: LoginThrottle;
+  /** One-time-code sign-in and the switch between modes. */
+  otp: OtpAccess;
   staticDir: string | null;
 }

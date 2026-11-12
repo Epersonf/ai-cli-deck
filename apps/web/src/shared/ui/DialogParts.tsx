@@ -30,9 +30,18 @@ export function InlineField({ children }: { children: ReactNode }) {
 }
 
 /** A collapsed "where do I find it?" block. */
-export function Disclosure({ summary, children }: { summary: string; children: ReactNode }) {
+export function Disclosure({
+  summary,
+  open,
+  children,
+}: {
+  summary: string;
+  /** Starts open (change the `key` to open it again). */
+  open?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <details className="disclosure">
+    <details className="disclosure" open={open}>
       <summary>{summary}</summary>
       <div>{children}</div>
     </details>
