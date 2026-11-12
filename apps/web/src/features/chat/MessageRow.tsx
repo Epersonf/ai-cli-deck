@@ -4,6 +4,7 @@ import { useT } from '../../shared/i18n/store';
 import type { Block } from './blocks';
 import { Markdown } from './Markdown';
 import { PermissionCard } from './PermissionCard';
+import { QuestionCard } from './QuestionCard';
 import { ToolCard } from './ToolCard';
 import { UserMessage } from './UserMessage';
 
@@ -46,7 +47,11 @@ export const MessageRow = memo(function MessageRow({ block, sessionId, busy }: P
     case 'tool':
       return <ToolCard block={block} />;
     case 'permission':
-      return <PermissionCard block={block} sessionId={sessionId} />;
+      return block.tool === 'AskUserQuestion' ? (
+        <QuestionCard block={block} sessionId={sessionId} />
+      ) : (
+        <PermissionCard block={block} sessionId={sessionId} />
+      );
     case 'notice':
       return <p className={`notice-row ${block.level}`}>{block.text}</p>;
     case 'turn': {

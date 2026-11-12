@@ -31,6 +31,8 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     /** Also allow this kind of action for the rest of the chat. */
     always: z.boolean().optional(),
     message: z.string().max(2000).optional(),
+    /** For an agent's question with options: the chosen answer per question text. */
+    answers: z.record(z.string(), z.string().max(2000)).optional(),
   }),
   /** Change the model, permission mode or effort from the next message on (any may be left out). */
   z.object({
@@ -53,6 +55,8 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   /** Stop a background task (`task` event id). */
   z.object({ type: z.literal('stop-task'), id: z.string() }),
   z.object({ type: z.literal('ping') }),
+  /** This device has the chat open and in view (or not): finished answers are then not announced. */
+  z.object({ type: z.literal('viewing'), viewing: z.boolean() }),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 

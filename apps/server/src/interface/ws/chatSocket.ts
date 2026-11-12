@@ -55,6 +55,7 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
           ...(message.message !== undefined && { message: message.message }),
         });
       } else if (message.type === 'config') {
+          ...(message.answers !== undefined && { answers: message.answers }),
         c.sessions.configure(id, {
           ...(message.model !== undefined && { model: message.model }),
           ...(message.mode !== undefined && { mode: message.mode }),

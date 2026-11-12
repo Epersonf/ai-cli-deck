@@ -62,6 +62,8 @@ export interface PermissionAnswer {
   allow: boolean;
   always?: boolean;
   message?: string;
+  /** Answers to an agent's question with options, by question text. */
+  answers?: Record<string, string>;
 }
 
 /** One running conversation with an agent. Starting a turn is `send`; the turn ends with a `turn-end` event. */

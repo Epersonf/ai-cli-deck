@@ -52,7 +52,7 @@ export class ClaudePermissions {
       answer.allow
         ? {
             behavior: 'allow',
-            updatedInput: item.input,
+            updatedInput: answer.answers ? { ...item.input, answers: answer.answers } : item.input,
             ...(answer.always && item.suggestions ? { updatedPermissions: item.suggestions } : {}),
           }
         : { behavior: 'deny', message: answer.message || 'The user denied this action.' },
