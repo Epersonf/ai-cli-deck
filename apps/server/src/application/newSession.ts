@@ -18,6 +18,7 @@ export function newSession(
     cwd,
     status: 'idle',
     createdAt: from.now.toISOString(),
+    lastMessageAt: null,
     previewUrl: null,
     port,
     worktree: { enabled: body.useWorktree, path: null, branch: null },

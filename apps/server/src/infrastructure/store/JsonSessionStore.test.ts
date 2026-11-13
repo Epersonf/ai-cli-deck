@@ -11,6 +11,7 @@ const session = (id: string): Session => ({
   cwd: '/w',
   status: 'idle',
   createdAt: '2026-01-01T00:00:00.000Z',
+  lastMessageAt: null,
   previewUrl: null,
   port: 4100,
   worktree: { enabled: false, path: null, branch: null },

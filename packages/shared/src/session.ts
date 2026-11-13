@@ -17,6 +17,8 @@ export const SessionSchema = z.object({
   cwd: z.string(),
   status: SessionStatusSchema,
   createdAt: z.string(),
+  /** When the user last sent a message in this chat (ISO); null until the first one. The session list is ordered by it. */
+  lastMessageAt: z.string().nullable().default(null),
   previewUrl: z.string().nullable(),
   port: z.number().int(),
   worktree: WorktreeInfoSchema,

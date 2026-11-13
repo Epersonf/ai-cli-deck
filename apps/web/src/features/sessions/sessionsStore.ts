@@ -18,8 +18,10 @@ interface SessionsState {
   setView(view: View): void;
 }
 
-const newestFirst = (list: Session[]): Session[] =>
-  [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+/** Most recent message first; a chat nobody wrote in yet counts from when it was created. */
+const activityOf = (s: Session): string => s.lastMessageAt ?? s.createdAt;
+export const newestFirst = (list: Session[]): Session[] =>
+  [...list].sort((a, b) => activityOf(b).localeCompare(activityOf(a)));
 
 export const useSessions = create<SessionsState>()((set, get) => ({
   sessions: [],

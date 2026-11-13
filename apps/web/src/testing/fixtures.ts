@@ -6,6 +6,7 @@ export const makeSession = (id: string, cwd: string, provider = 'claude'): Sessi
   cwd,
   status: 'idle',
   createdAt: `2026-01-0${id.slice(1)}T00:00:00Z`,
+  lastMessageAt: null,
   previewUrl: null,
   port: 4100,
   worktree: { enabled: false, path: null, branch: null },

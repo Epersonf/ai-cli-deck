@@ -12,10 +12,18 @@ export class SessionChats {
     return this.reg.require(id).chat;
   }
 
+  /** Notes that the user just wrote in this chat: its main session moves to the top of the list. */
+  private touch(id: string): void {
+    this.reg.update(this.reg.rootOf(id), { lastMessageAt: new Date().toISOString() });
+    void this.reg.persist();
+  }
+
   async send(id: string, text: string, images: readonly ImageInput[] = []): Promise<void> {
+    this.touch(id);
     await this.chatOf(id).send(text, images);
   }
   async sendOrQueue(id: string, text: string, images: readonly ImageInput[] = []): Promise<void> {
+    this.touch(id);
     await this.chatOf(id).queue.sendOrQueue(text, images);
   }
   readonly queued = (id: string) => this.chatOf(id).queue.view();
