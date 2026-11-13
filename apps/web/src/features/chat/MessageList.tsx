@@ -3,6 +3,7 @@ import { useT } from '../../shared/i18n/store';
 import { Gear } from '../../shared/ui/Gear';
 import type { Block } from './blocks';
 import { MessageRow } from './MessageRow';
+import { TodoPanel } from './TodoPanel';
 import { useStickToBottom } from './useStickToBottom';
 
 interface Props {
@@ -21,6 +22,7 @@ export function MessageList({ sessionId, blocks, busy, empty }: Props) {
     <div className="chat-scroll-wrap">
       <div className="chat-scroll" ref={box} onScroll={onScroll}>
         <div className="chat-column">
+          <TodoPanel blocks={blocks} />
           {blocks.length === 0 && empty}
           {blocks.map((block) => (
             <MessageRow

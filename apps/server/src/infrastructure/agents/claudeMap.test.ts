@@ -63,7 +63,10 @@ describe('Claude Agent SDK messages as chat steps', () => {
     const { events, feed } = collect();
     feed(
       { type: 'stream_event', event: { type: 'message_start', message: { id: 'm9' } } },
-      { type: 'assistant', message: { id: 'm9', content: [{ type: 'thinking', thinking: 'hmm' }] } },
+      {
+        type: 'assistant',
+        message: { id: 'm9', content: [{ type: 'thinking', thinking: 'hmm' }] },
+      },
       { type: 'assistant', message: { id: 'm9', content: [{ type: 'text', text: 'Hi' }] } },
     );
     expect(events).toEqual([

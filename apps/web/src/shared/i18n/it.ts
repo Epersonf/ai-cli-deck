@@ -264,6 +264,8 @@ export const it: Messages = {
   'chat.queue': 'In coda',
   'chat.queue.now': 'Invia ora',
   'chat.queue.remove': 'Rimuovi dalla coda',
+  'chat.todos': 'Elenco attività',
+  'chat.todos.progress': '{done} di {total}',
   'cmd.stop': 'Ferma la risposta',
   'cmd.model': 'Mostra o cambia il modello',
   'cmd.mode': 'Mostra o cambia la modalità dei permessi',

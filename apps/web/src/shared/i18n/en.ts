@@ -260,6 +260,8 @@ export const en = {
   'chat.queue': 'Queued',
   'chat.queue.now': 'Send now',
   'chat.queue.remove': 'Remove from queue',
+  'chat.todos': 'Checklist',
+  'chat.todos.progress': '{done} of {total}',
   'cmd.stop': 'Stop the answer',
   'cmd.model': 'Show or change the model',
   'cmd.mode': 'Show or change the permission mode',

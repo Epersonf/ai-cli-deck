@@ -27,6 +27,29 @@ function run(lines: string[]) {
 }
 
 describe('Codex exec events as chat steps', () => {
+  it("shows Codex's checklist as a TodoWrite step updated in place", () => {
+    const { events } = run([
+      '{"type":"item.started","item":{"id":"t1","type":"todo_list","items":[{"text":"read","completed":false},{"text":"fix","completed":false}]}}',
+      '{"type":"item.updated","item":{"id":"t1","type":"todo_list","items":[{"text":"read","completed":true},{"text":"fix","completed":false}]}}',
+      '{"type":"item.completed","item":{"id":"t1","type":"todo_list","items":[{"text":"read","completed":true},{"text":"fix","completed":true}]}}',
+    ]);
+    expect(events.map((e) => e.t)).toEqual(['tool', 'tool', 'tool', 'tool-result']);
+    expect(events[0]).toEqual({
+      t: 'tool',
+      id: 't1',
+      name: 'TodoWrite',
+      input: {
+        todos: [
+          { content: 'read', status: 'pending' },
+          { content: 'fix', status: 'pending' },
+        ],
+      },
+    });
+    expect(events[2]).toMatchObject({
+      input: { todos: [{ status: 'completed' }, { status: 'completed' }] },
+    });
+  });
+
   it('maps a whole turn: thread, reasoning, a command, a patch, the answer', () => {
     const { events, chats } = run([
       '{"type":"thread.started","thread_id":"th-1"}',
@@ -101,7 +124,7 @@ describe('Codex exec events as chat steps', () => {
   it('ignores lines it does not know', () => {
     const { events } = run([
       '{"type":"future.event","x":1}',
-      '{"type":"item.completed","item":{"id":"z","type":"todo_list","items":[]}}',
+      '{"type":"item.completed","item":{"id":"z","type":"something_new","items":[]}}',
     ]);
     expect(events).toEqual([]);
   });

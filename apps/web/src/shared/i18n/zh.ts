@@ -255,6 +255,8 @@ export const zh: Messages = {
   'chat.queue': '排队中',
   'chat.queue.now': '立即发送',
   'chat.queue.remove': '移出队列',
+  'chat.todos': '任务清单',
+  'chat.todos.progress': '{done}/{total}',
   'cmd.stop': '停止回答',
   'cmd.model': '查看或更换模型',
   'cmd.mode': '查看或更换权限模式',

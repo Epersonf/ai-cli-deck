@@ -262,6 +262,8 @@ export const ru: Messages = {
   'chat.queue': 'В очереди',
   'chat.queue.now': 'Отправить сейчас',
   'chat.queue.remove': 'Убрать из очереди',
+  'chat.todos': 'Список задач',
+  'chat.todos.progress': '{done} из {total}',
   'cmd.stop': 'Остановить ответ',
   'cmd.model': 'Показать или сменить модель',
   'cmd.mode': 'Показать или сменить режим разрешений',

@@ -14,6 +14,7 @@ import { ChatEdits } from './ChatEdits.js';
 import { chatSink } from './chatSink.js';
 import { ChatSettings, type ModelSource, type RunState } from './ChatSettings.js';
 import { ChatTuning } from './ChatTuning.js';
+import { MessageQueue } from './MessageQueue.js';
 import { TurnNotice } from './TurnNotice.js';
 import { TurnRunner } from './TurnRunner.js';
 import type { UsageMeter } from './UsageMeter.js';
@@ -43,12 +44,12 @@ export class ChatRuntime {
   private readonly runner: TurnRunner;
   private readonly sink: AgentSink;
   private busyNow = false;
-  /** Messages typed while an answer was being written: sent, in order, when it ends (or one by one on request). */
-  private queue: { id: string; text: string; images: readonly ImageInput[] }[] = [];
-  private closing = false;
+  /** Messages typed while an answer is being written. */
+  readonly queue: MessageQueue;
 
   constructor(private readonly deps: RuntimeDeps) {
     this.book = new ChatBook(deps.id, deps.log, deps.bus);
+    this.queue = new MessageQueue(deps.id, deps.bus, deps.uuid, this);
     this.settings = new ChatSettings(deps.initial, deps.info);
     this.edits = new ChatEdits(deps, this.book, this.settings);
     const notice = new TurnNotice(deps.id, deps.bus, this.book);
@@ -109,44 +110,6 @@ export class ChatRuntime {
     this.runner.enqueue(id, prompt, images);
   }
 
-  readonly queued = (): { id: string; text: string; images: number }[] =>
-    this.queue.map((q) => ({ id: q.id, text: q.text, images: q.images.length }));
-
-  /** Sends the message, or holds it in the queue while an answer is being written. */
-  async sendOrQueue(text: string, images: readonly ImageInput[] = []): Promise<void> {
-    if (!this.busyNow) return this.send(text, images);
-    this.queue.push({ id: this.deps.uuid(), text, images });
-    this.publishQueue();
-  }
-
-  /** Sends one queued message at once: it goes first, and the answer being written is stopped to make room. */
-  async queueNow(id: string): Promise<void> {
-    const at = this.queue.findIndex((q) => q.id === id);
-    const [item] = at < 0 ? [] : this.queue.splice(at, 1);
-    if (!item) return;
-    this.queue.unshift(item);
-    this.publishQueue();
-    if (this.busyNow) this.interrupt();
-    else await this.flushQueue();
-  }
-
-  queueDrop(id: string): void {
-    const before = this.queue.length;
-    this.queue = this.queue.filter((q) => q.id !== id);
-    if (this.queue.length !== before) this.publishQueue();
-  }
-
-  private publishQueue(): void {
-    this.deps.bus.publish({ kind: 'queue', sessionId: this.deps.id, items: this.queued() });
-  }
-
-  private async flushQueue(): Promise<void> {
-    const items = this.queue.splice(0);
-    if (items.length === 0) return;
-    this.publishQueue();
-    for (const item of items) await this.send(item.text, item.images);
-  }
-
   async rewind(userId: string, text: string, images: readonly ImageInput[], files: boolean) {
     await this.ready();
     if (this.busyNow) throw invalid('Stop the answer before editing a message');
@@ -171,15 +134,10 @@ export class ChatRuntime {
   }
 
   close(): void {
-    this.closing = true;
+    this.queue.drain(); // closing: nothing waiting goes out when the answer ends
     this.runner.close();
     this.book.dropPartials();
     this.setBusy(false);
-    this.closing = false;
-    if (this.queue.length > 0) {
-      this.queue = [];
-      this.publishQueue();
-    }
   }
 
   private setBusy(busy: boolean): void {
@@ -187,6 +145,6 @@ export class ChatRuntime {
     this.busyNow = busy;
     this.deps.busy(busy);
     this.deps.bus.publish({ kind: 'busy', sessionId: this.deps.id, busy });
-    if (!busy && !this.closing) void this.flushQueue().catch(() => undefined);
+    if (!busy) void this.queue.flush().catch(() => undefined);
   }
 }

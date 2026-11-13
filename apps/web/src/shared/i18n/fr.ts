@@ -268,6 +268,8 @@ export const fr: Messages = {
   'chat.queue': 'En attente',
   'chat.queue.now': 'Envoyer maintenant',
   'chat.queue.remove': 'Retirer de la file',
+  'chat.todos': 'Liste de tâches',
+  'chat.todos.progress': '{done} sur {total}',
   'cmd.stop': 'Arrêter la réponse',
   'cmd.model': 'Voir ou changer le modèle',
   'cmd.mode': 'Voir ou changer le mode d’autorisation',

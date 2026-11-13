@@ -263,6 +263,8 @@ export const es: Messages = {
   'chat.queue': 'En cola',
   'chat.queue.now': 'Enviar ahora',
   'chat.queue.remove': 'Quitar de la cola',
+  'chat.todos': 'Lista de tareas',
+  'chat.todos.progress': '{done} de {total}',
   'cmd.stop': 'Detener la respuesta',
   'cmd.model': 'Ver o cambiar el modelo',
   'cmd.mode': 'Ver o cambiar el modo de permisos',

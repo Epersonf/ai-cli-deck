@@ -2,11 +2,8 @@ import type { ChatEvent } from '@deck/shared';
 import { AUTH_MARKER } from '../../domain/authError.js';
 import type { AgentSink } from '../../domain/agent.js';
 
-type Json = Record<string, unknown>;
-
-const obj = (value: unknown): Json | null =>
-  typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Json) : null;
-const str = (value: unknown): string => (typeof value === 'string' ? value : '');
+import { obj, str, type Json } from './codexJson.js';
+import { todoEvents } from './codexTodos.js';
 
 const MAX_OUTPUT = 20_000;
 const clip = (text: string): string =>
@@ -89,6 +86,7 @@ function resultOf(item: Json): { output: string; isError: boolean } {
 function itemEvents(type: string, item: Json, state: CodexState): ChatEvent[] {
   const id = str(item['id']) || `item-${state.started.size}`;
   const kind = str(item['type']);
+  if (kind === 'todo_list') return todoEvents(type, item, id);
   if (kind === 'agent_message' && type === 'item.completed' && str(item['text']).trim())
     return [{ t: 'text', id, text: str(item['text']) }];
   if (kind === 'reasoning' && type === 'item.completed' && str(item['text']).trim())

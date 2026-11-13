@@ -265,6 +265,8 @@ export const ja: Messages = {
   'chat.queue': '待機中',
   'chat.queue.now': '今すぐ送信',
   'chat.queue.remove': 'キューから外す',
+  'chat.todos': 'チェックリスト',
+  'chat.todos.progress': '{done}/{total}',
   'cmd.stop': '回答を止める',
   'cmd.model': 'モデルを表示または変更',
   'cmd.mode': '権限モードを表示または変更',
