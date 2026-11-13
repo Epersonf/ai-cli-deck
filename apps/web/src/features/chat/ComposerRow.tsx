@@ -1,9 +1,9 @@
 import { useRef, type ClipboardEvent, type KeyboardEvent, type RefObject } from 'react';
 import { useT } from '../../shared/i18n/store';
-import { StopIcon } from '../../shared/ui/ToolIcons';
 import { ACCEPT } from './attachFiles';
 import { MicButton } from './MicButton';
 import { OptionsToggle } from './OptionsToggle';
+import { SendButton } from './SendButton';
 
 interface Props {
   sessionId: string;
@@ -58,20 +58,7 @@ export function ComposerRow(p: Props) {
         onPaste={p.onPaste}
       />
       <MicButton onText={p.onHeard} />
-      {p.busy && (
-        <button
-          type="button"
-          className="tool stop"
-          aria-label={t('chat.stop')}
-          title={t('chat.stop')}
-          onClick={p.onStop}
-        >
-          <StopIcon size={22} />
-        </button>
-      )}
-      <button type="button" className="primary send" disabled={p.empty} onClick={p.onSend}>
-        {t('chat.send')}
-      </button>
+      <SendButton busy={p.busy} empty={p.empty} onSend={p.onSend} onStop={p.onStop} />
     </div>
   );
 }

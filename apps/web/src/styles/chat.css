@@ -161,6 +161,11 @@
 .composer .stop {
   color: var(--danger);
 }
+.composer .send.stop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .composer-files {
   display: flex;
   flex-wrap: wrap;
