@@ -85,14 +85,18 @@ describe('FileReader.remove', () => {
       () => false,
     );
 
-  it('deletes a file and refuses the root and escapes', async () => {
+  it('deletes a file, also above the session folder, and refuses the session folder and its parents', async () => {
     await writeFile(join(root, 'sub', 'del.txt'), 'x');
     await reader.remove(root, 'sub/del.txt');
     expect(await exists(join(root, 'sub', 'del.txt'))).toBe(false);
     await expect(reader.remove(root, '')).rejects.toThrow('Invalid path');
-    await expect(reader.remove(root, '../outside/secret.txt')).rejects.toThrow('escapes');
-    await expect(reader.remove(root, 'escape/secret.txt')).rejects.toThrow('escapes');
     await expect(reader.remove(root, 'missing.txt')).rejects.toThrow('not found');
+    await expect(reader.remove(root, '..')).rejects.toThrow('above it');
+    await expect(reader.remove(root, '../..')).rejects.toThrow('above it');
+    await expect(reader.remove(root, '../../../../../../../../..')).rejects.toThrow('above it');
+    await writeFile(join(outside, 'gone.txt'), 'x');
+    await reader.remove(root, '../outside/gone.txt');
+    expect(await exists(join(outside, 'gone.txt'))).toBe(false);
     expect(await exists(join(outside, 'secret.txt'))).toBe(true);
   });
 

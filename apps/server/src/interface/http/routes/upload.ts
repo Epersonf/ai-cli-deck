@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { invalid, notFound } from '../../../domain/errors.js';
-import { resolveInside } from '../../../infrastructure/fs/pathGuard.js';
+import { resolveBrowse } from '../../../infrastructure/fs/pathGuard.js';
 import type { Container } from '../../container.js';
 import { parseWith } from '../errors.js';
 
@@ -74,7 +74,7 @@ export function uploadRoutes(app: FastifyInstance, c: Container): void {
   app.post('/api/sessions/:id/upload', async (request) => {
     const { id } = parseWith(IdParams, request.params);
     const { dir, name } = parseWith(UploadQuery, request.query);
-    const folder = await resolveInside(sessionOf(id).cwd, dir);
+    const folder = await resolveBrowse(sessionOf(id).cwd, dir);
     const final = await freeName(folder, safeFileName(name));
     await save(request.body as NodeJS.ReadableStream, join(folder, final));
     return { path: dir === '' ? final : `${dir.replace(/\/+$/, '')}/${final}` };

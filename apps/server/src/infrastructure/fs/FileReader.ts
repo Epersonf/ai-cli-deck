@@ -1,7 +1,8 @@
 import { lstat, open, readdir, rm, stat } from 'node:fs/promises';
-import { basename, dirname, join, posix } from 'node:path';
+import { realpath } from 'node:fs/promises';
+import { basename, dirname, join, posix, sep } from 'node:path';
 import type { FileContent } from '@deck/shared';
-import { invalid, notFound } from '../../domain/errors.js';
+import { forbidden, invalid, notFound } from '../../domain/errors.js';
 import type { FilesPort, RawFileEntry } from '../../domain/ports.js';
 import { resolveBrowse, resolveInside } from './pathGuard.js';
 
@@ -41,8 +42,12 @@ export class FileReader implements FilesPort {
     if (relative.replace(/[\\/]+/g, '') === '' || relative.includes('\0'))
       throw invalid('Invalid path');
     // Resolve the parent only: a symlink is deleted itself, its target is left alone.
-    const parent = await resolveInside(root, dirname(relative));
+    const parent = await resolveBrowse(root, dirname(relative));
     const target = join(parent, basename(relative));
+    // The explorer can leave the session folder, but never takes the folder itself (or one above it) with it.
+    const realRoot = await realpath(root);
+    if (target === dirname(target) || realRoot === target || realRoot.startsWith(target + sep))
+      throw forbidden('Cannot delete the session folder or a folder above it');
     const info = await lstat(target).catch(() => null);
     if (info === null) throw notFound(`Path ${relative}`);
     // A real folder goes recursively; a symlink (even to a folder) is only unlinked.
