@@ -16,6 +16,10 @@
     <string name="section_settings">设置</string>
     <string name="section_log">日志</string>
     <string name="notif_stop">停止</string>
+    <string name="notif_reply">回复</string>
+    <string name="notif_reply_hint">回复…</string>
+    <string name="notif_reply_sent">已发送。</string>
+    <string name="notif_reply_failed">无法发送回复。</string>
     <string name="waiting_deck">正在等待 Deck 启动…</string>
     <string name="log_installing">正在 Ubuntu 中安装/更新 Deck（首次可能需要几分钟）…</string>
     <string name="log_bootstrap_failed">引导失败 (rc=%1$d)，将重试。</string>

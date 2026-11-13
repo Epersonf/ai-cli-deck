@@ -8,6 +8,7 @@ import { mcpRoutes } from '../mcp/mcpRoute.js';
 import { browserSocket } from '../ws/browserSocket.js';
 import { browserTabsRoutes } from './routes/browserTabs.js';
 import { notifyActionRoutes } from './routes/notifyAction.js';
+import { notifyReplyRoutes } from './routes/notifyReply.js';
 import { eventsSocket } from '../ws/eventsSocket.js';
 import { chatSocket } from '../ws/chatSocket.js';
 import { browserRoutes } from './routes/browser.js';
@@ -80,6 +81,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   voiceRoutes(app, c);
   approvalRoutes(app, c);
   notifyActionRoutes(app, c);
+  notifyReplyRoutes(app, c);
   mcpRoutes(app, c);
   agentRoutes(app, c);
   agentMemoryRoutes(app, c);

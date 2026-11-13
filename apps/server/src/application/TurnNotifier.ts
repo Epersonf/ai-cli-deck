@@ -10,6 +10,8 @@ export interface TurnNotifierDeps {
   phone: PhonePort | null;
   /** What to call a chat in the notification. */
   label(sessionId: string): string;
+  /** The secret address behind the Reply box of a chat's notification; absent without phone access. */
+  replyUrl?(sessionId: string): string;
 }
 
 const firstLine = (text: string): string =>
@@ -40,6 +42,10 @@ export class TurnNotifier {
   private tell(sessionId: string, reason: 'done' | 'error' | 'permission', text: string): void {
     const title = this.deps.label(sessionId);
     this.deps.bus.publish({ kind: 'notify', sessionId, title, text, reason });
-    void this.deps.phone?.request('POST', '/notify', { title, text, sessionId }).catch(() => undefined);
+    // A finished answer can be replied to from the notification itself; a request for approval cannot.
+    const replyUrl = reason === 'permission' ? undefined : this.deps.replyUrl?.(sessionId);
+    void this.deps.phone
+      ?.request('POST', '/notify', { title, text, sessionId, ...(replyUrl && { replyUrl }) })
+      .catch(() => undefined);
   }
 }

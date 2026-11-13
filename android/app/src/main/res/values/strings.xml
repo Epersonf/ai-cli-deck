@@ -17,6 +17,10 @@
     <string name="section_settings">Settings</string>
     <string name="section_log">Log</string>
     <string name="notif_stop">Stop</string>
+    <string name="notif_reply">Reply</string>
+    <string name="notif_reply_hint">Reply…</string>
+    <string name="notif_reply_sent">Sent.</string>
+    <string name="notif_reply_failed">Could not send the reply.</string>
     <string name="waiting_deck">Waiting for the deck to start…</string>
     <string name="log_installing">Installing/updating the deck inside Ubuntu (the first run can take several minutes)…</string>
     <string name="log_bootstrap_failed">Bootstrap failed (rc=%1$d). Will retry.</string>

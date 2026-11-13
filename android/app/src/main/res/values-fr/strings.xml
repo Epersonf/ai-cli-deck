@@ -16,6 +16,10 @@
     <string name="section_settings">Réglages</string>
     <string name="section_log">Journal</string>
     <string name="notif_stop">Arrêter</string>
+    <string name="notif_reply">Répondre</string>
+    <string name="notif_reply_hint">Répondre…</string>
+    <string name="notif_reply_sent">Envoyé.</string>
+    <string name="notif_reply_failed">Impossible d’envoyer la réponse.</string>
     <string name="waiting_deck">En attente du démarrage du deck…</string>
     <string name="log_installing">Installation/mise à jour du deck dans Ubuntu (la première fois peut prendre plusieurs minutes)…</string>
     <string name="log_bootstrap_failed">Échec du bootstrap (rc=%1$d). Nouvel essai.</string>

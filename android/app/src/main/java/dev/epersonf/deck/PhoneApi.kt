@@ -42,7 +42,7 @@ class PhoneApi(private val ctx: Context) {
         .put("sdk", Build.VERSION.SDK_INT)
 
     /** Returns null when shown, or the reason it could not be. */
-    fun notify(title: String, text: String, actions: List<NotifyAction> = emptyList(), chat: String? = null): String? {
+    fun notify(title: String, text: String, actions: List<NotifyAction> = emptyList(), chat: String? = null, replyUrl: String? = null): String? {
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (!nm.areNotificationsEnabled()) return "Notifications are off for this app in Android settings"
         if (Build.VERSION.SDK_INT >= 26) {
@@ -67,6 +67,16 @@ class PhoneApi(private val ctx: Context) {
             val press = android.app.PendingIntent.getBroadcast(ctx, id * 4 + index, intent,
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             b.addAction(Notification.Action.Builder(null, action.label, press).build())
+        }
+        // A Reply box like a messenger's: the typed text goes to the chat through the one-time address.
+        if (replyUrl != null && chat != null && Build.VERSION.SDK_INT >= 24) {
+            val input = android.app.RemoteInput.Builder(NotifyReplyReceiver.KEY).setLabel(ctx.getString(R.string.notif_reply_hint)).build()
+            val send = Intent(ctx, NotifyReplyReceiver::class.java).putExtra("url", replyUrl).putExtra("chat", chat)
+            // RemoteInput needs a mutable intent to carry the typed text back.
+            val flags = android.app.PendingIntent.FLAG_UPDATE_CURRENT or
+                (if (Build.VERSION.SDK_INT >= 31) android.app.PendingIntent.FLAG_MUTABLE else 0)
+            val press = android.app.PendingIntent.getBroadcast(ctx, chat.hashCode() xor 0x5E91, send, flags)
+            b.addAction(Notification.Action.Builder(null, ctx.getString(R.string.notif_reply), press).addRemoteInput(input).build())
         }
         nm.notify(tag, id, b.build())
         return null

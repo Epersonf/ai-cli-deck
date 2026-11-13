@@ -16,6 +16,10 @@
     <string name="section_settings">Настройки</string>
     <string name="section_log">Журнал</string>
     <string name="notif_stop">Остановить</string>
+    <string name="notif_reply">Ответить</string>
+    <string name="notif_reply_hint">Ответить…</string>
+    <string name="notif_reply_sent">Отправлено.</string>
+    <string name="notif_reply_failed">Не удалось отправить ответ.</string>
     <string name="waiting_deck">Ожидание запуска deck…</string>
     <string name="log_installing">Установка/обновление deck внутри Ubuntu (первый раз может занять несколько минут)…</string>
     <string name="log_bootstrap_failed">Сбой bootstrap (rc=%1$d). Повторная попытка.</string>

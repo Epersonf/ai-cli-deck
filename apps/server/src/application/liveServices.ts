@@ -9,6 +9,7 @@ import type { AgentMemoryDeps } from './AgentMemory.js';
 import { applyMemoryRequest } from './memoryApply.js';
 import type { MemoryService } from './MemoryService.js';
 import type { ProviderRegistry } from '../domain/provider.js';
+import { ReplyLinks } from './ReplyLinks.js';
 import { TurnNotifier } from './TurnNotifier.js';
 import type { SessionManager } from './SessionManager.js';
 
@@ -25,6 +26,7 @@ export function liveServices(deps: {
 }): {
   approvals: ApprovalService;
   approvalNotifier: ApprovalNotifier;
+  replyLinks: ReplyLinks;
   activity: ActivityTracker;
   browserTabs: BrowserTabs;
   memoryAccess: AgentMemoryDeps;
@@ -40,7 +42,13 @@ export function liveServices(deps: {
     const session = deps.sessions.get(id);
     return session?.name ?? basename(session?.cwd ?? id);
   };
-  new TurnNotifier({ bus: deps.bus, phone: deps.phone, label }).start();
+  const replyLinks = new ReplyLinks();
+  new TurnNotifier({
+    bus: deps.bus,
+    phone: deps.phone,
+    label,
+    replyUrl: (id) => `http://127.0.0.1:${deps.port}/agent/reply/${replyLinks.issue(id)}`,
+  }).start();
   const notifier = new ApprovalNotifier({
     approvals,
     bus: deps.bus,
@@ -62,6 +70,7 @@ export function liveServices(deps: {
   return {
     approvals,
     approvalNotifier: notifier,
+    replyLinks,
     activity,
     browserTabs: new BrowserTabs(),
     memoryAccess,

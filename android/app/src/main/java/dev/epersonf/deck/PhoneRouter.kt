@@ -127,7 +127,7 @@ class PhoneRouter(ctx: Context, private val env: Env) {
             val url = a.optString("url")
             if (url.isBlank()) null else NotifyAction(label(a), url)
         }
-        val problem = api.notify(json.optString("title"), text, actions, json.optString("sessionId").takeIf { it.isNotBlank() && it.length <= 64 })
+        val problem = api.notify(json.optString("title"), text, actions, json.optString("sessionId").takeIf { it.isNotBlank() && it.length <= 64 }, json.optString("replyUrl").takeIf { it.isNotBlank() })
         return if (problem == null) ok(JSONObject().put("shown", true)) else fail("409 Conflict", problem)
     }
 }

@@ -16,6 +16,10 @@
     <string name="section_settings">設定</string>
     <string name="section_log">ログ</string>
     <string name="notif_stop">停止</string>
+    <string name="notif_reply">返信</string>
+    <string name="notif_reply_hint">返信…</string>
+    <string name="notif_reply_sent">送信しました。</string>
+    <string name="notif_reply_failed">返信を送信できませんでした。</string>
     <string name="waiting_deck">Deck の起動を待っています…</string>
     <string name="log_installing">Ubuntu 内に Deck をインストール/更新中（初回は数分かかることがあります）…</string>
     <string name="log_bootstrap_failed">ブートストラップに失敗しました (rc=%1$d)。再試行します。</string>

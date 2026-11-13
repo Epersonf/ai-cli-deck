@@ -16,6 +16,10 @@
     <string name="section_settings">Impostazioni</string>
     <string name="section_log">Registro</string>
     <string name="notif_stop">Ferma</string>
+    <string name="notif_reply">Rispondi</string>
+    <string name="notif_reply_hint">Rispondi…</string>
+    <string name="notif_reply_sent">Inviato.</string>
+    <string name="notif_reply_failed">Impossibile inviare la risposta.</string>
     <string name="waiting_deck">In attesa dell’avvio del deck…</string>
     <string name="log_installing">Installazione/aggiornamento del deck in Ubuntu (la prima volta può richiedere vari minuti)…</string>
     <string name="log_bootstrap_failed">Bootstrap non riuscito (rc=%1$d). Nuovo tentativo.</string>

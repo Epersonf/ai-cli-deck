@@ -87,6 +87,9 @@
             android:name=".NotifyActionReceiver"
             android:exported="false" />
         <receiver
+            android:name=".NotifyReplyReceiver"
+            android:exported="false" />
+        <receiver
             android:name=".BootReceiver"
             android:exported="true">
             <intent-filter>

@@ -10,6 +10,7 @@ import type { TemplateService } from '../application/TemplateService.js';
 import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
 import type { BrowserTabs } from '../application/BrowserTabs.js';
 import type { ActivityTracker } from '../application/ActivityTracker.js';
+import type { ReplyLinks } from '../application/ReplyLinks.js';
 import type { ApprovalNotifier } from '../application/ApprovalNotifier.js';
 import type { ApprovalService } from '../application/ApprovalService.js';
 import type { AuthService } from '../application/AuthService.js';
@@ -52,6 +53,8 @@ export interface Container {
   approvals: ApprovalService;
   /** Approve / Reject buttons on the phone notification; absent without phone access. */
   approvalNotifier?: ApprovalNotifier;
+  /** The secret addresses behind the Reply box of a phone notification; absent without phone access. */
+  replyLinks?: ReplyLinks;
   /** What every terminal is doing, pushed to devices as it changes. */
   activity?: ActivityTracker;
   /** The browser tabs of each session, one list for every device. */
