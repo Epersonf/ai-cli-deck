@@ -19,6 +19,8 @@ import { useSessions } from '../sessions/sessionsStore';
 import { askNotifyPermission } from '../notify/browserNotify';
 import { sendChat } from './connection';
 import { useAttachments } from './useAttachments';
+import { queuedOf, useQueue } from './queueStore';
+import { QueueList } from './QueueList';
 
 const MAX_HEIGHT = 220;
 const coarse = (): boolean => window.matchMedia?.('(pointer: coarse)').matches ?? false;
@@ -41,6 +43,16 @@ export function Composer({ sessionId, busy, visible }: Props) {
     if (visible && !coarse()) area.current?.focus();
   }, [visible]);
   const empty = text.trim() === '' && files.items.length === 0;
+  const queued = useQueue(queuedOf(sessionId));
+  // When the answer ends, what was queued goes out in the order it was typed.
+  const wasBusy = useRef(busy);
+  useEffect(() => {
+    if (wasBusy.current && !busy) {
+      for (const q of useQueue.getState().drain(sessionId))
+        sendChat(sessionId, { type: 'send', text: q.text, images: q.images });
+    }
+    wasBusy.current = busy;
+  }, [busy, sessionId]);
 
   const fit = (): void => {
     const el = area.current;
@@ -57,7 +69,8 @@ export function Composer({ sessionId, busy, visible }: Props) {
       return;
     }
     askNotifyPermission();
-    sendChat(sessionId, { type: 'send', text: text.trim(), images: files.items });
+    if (busy) useQueue.getState().add(sessionId, text.trim(), files.items);
+    else sendChat(sessionId, { type: 'send', text: text.trim(), images: files.items });
     setText('');
     files.clear();
     requestAnimationFrame(fit);
@@ -95,6 +108,7 @@ export function Composer({ sessionId, busy, visible }: Props) {
       onDragLeave={() => setOver(false)}
       onDrop={onDrop}
     >
+      <QueueList sessionId={sessionId} items={queued} />
       <Attachments items={files.items} tooBig={files.tooBig} onRemove={files.remove} />
       <div className="composer-row">
         <button
