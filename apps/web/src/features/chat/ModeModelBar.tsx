@@ -1,4 +1,10 @@
-import { AGENT_EFFORTS, AGENT_MODES, EffortSchema, PermissionModeSchema, type ChatConfig } from '@deck/shared';
+import {
+  AGENT_EFFORTS,
+  AGENT_MODES,
+  EffortSchema,
+  PermissionModeSchema,
+  type ChatConfig,
+} from '@deck/shared';
 import { useT } from '../../shared/i18n/store';
 import { Dropdown } from '../../shared/ui/Dropdown';
 import { WarnIcon } from '../../shared/ui/GlyphIcons';

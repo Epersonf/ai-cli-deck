@@ -11,6 +11,7 @@ import {
   TaskLogSchema,
   TaskSchema,
   TemplateInfoSchema,
+  FindResponseSchema,
   TreeResponseSchema,
   type ApprovalDecision,
   type CreateProfileBody,
@@ -91,6 +92,9 @@ export const api = {
       'GET',
       `${session(id)}/tree?path=${enc(path)}&hidden=${show.hidden}&ignored=${show.ignored}`,
     ),
+  /** Files of the session folder that match what was typed after `@`. */
+  findFiles: (id: string, query: string) =>
+    request(FindResponseSchema, 'GET', `${session(id)}/find?q=${enc(query)}`),
   file: (id: string, path: string) =>
     request(FileContentSchema, 'GET', `${session(id)}/file?path=${enc(path)}`),
   deleteEntry: (id: string, path: string) =>

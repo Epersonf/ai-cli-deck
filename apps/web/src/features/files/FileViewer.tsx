@@ -2,6 +2,7 @@ import { mediaKindOf, type FileContent } from '@deck/shared';
 import { useEffect, useState } from 'react';
 import { api, downloadUrl, rawUrl } from '../../shared/api/endpoints';
 import { useT } from '../../shared/i18n/store';
+import { mentionInChat } from './mention';
 import { DownloadIcon, ExternalIcon } from '../../shared/ui/GlyphIcons';
 
 interface Props {
@@ -58,6 +59,9 @@ export function FileViewer({ sessionId, path, onClose }: Props) {
         <a className="btn" href={raw} target="_blank" rel="noopener noreferrer">
           {t('common.open')} <ExternalIcon size={14} />
         </a>
+        <button type="button" onClick={() => mentionInChat(sessionId, path, t('files.mentioned'))}>
+          {t('files.mention')}
+        </button>
         <a className="btn" href={downloadUrl(sessionId, path)} download>
           <DownloadIcon size={16} /> {t('files.download')}
         </a>

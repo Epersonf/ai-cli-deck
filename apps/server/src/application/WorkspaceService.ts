@@ -52,6 +52,11 @@ export class WorkspaceService {
     return this.deps.files.read(this.root(sessionId), relative, MAX_FILE_BYTES);
   }
 
+  /** Project files matching what the person typed after `@`. */
+  find(sessionId: string, query: string, limit = 20): Promise<string[]> {
+    return this.deps.files.find(this.root(sessionId), query, limit);
+  }
+
   /** Absolute path of a folder inside the session folder, for zipping. */
   async resolveDir(sessionId: string, relative: string): Promise<string> {
     return resolveBrowse(this.root(sessionId), relative);

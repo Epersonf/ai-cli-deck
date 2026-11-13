@@ -4,7 +4,8 @@ import { basename, dirname, join, posix, sep } from 'node:path';
 import type { FileContent } from '@deck/shared';
 import { forbidden, invalid, notFound } from '../../domain/errors.js';
 import type { FilesPort, RawFileEntry } from '../../domain/ports.js';
-import { resolveBrowse, resolveInside } from './pathGuard.js';
+import { FileFinder } from './fileSearch.js';
+import { resolveBrowse } from './pathGuard.js';
 
 const BINARY_SNIFF_BYTES = 8000;
 
@@ -19,6 +20,12 @@ async function kindOf(root: string, relative: string, isDir: boolean, isLink: bo
 }
 
 export class FileReader implements FilesPort {
+  private readonly finder = new FileFinder();
+
+  find(root: string, query: string, limit: number): Promise<string[]> {
+    return this.finder.find(root, query, limit);
+  }
+
   async list(root: string, relative: string): Promise<RawFileEntry[]> {
     const dir = await resolveBrowse(root, relative);
     const dirents = await readdir(dir, { withFileTypes: true });

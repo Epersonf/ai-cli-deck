@@ -25,7 +25,9 @@ export function useChatNotifications(
   useEffect(() => {
     (window as DeckWindow).deckOpenChat = (id) => {
       wanted.current = id;
-      if (known.current.has(id)) (select(id), (wanted.current = null));
+      if (!known.current.has(id)) return;
+      select(id);
+      wanted.current = null;
     };
     return () => {
       delete (window as DeckWindow).deckOpenChat;

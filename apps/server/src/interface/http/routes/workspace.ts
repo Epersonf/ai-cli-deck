@@ -39,6 +39,13 @@ export function workspaceRoutes(app: FastifyInstance, c: Container): void {
       .send(zipStream(entries));
   });
 
+  // Autocomplete for `@file` in the message box.
+  app.get('/api/sessions/:id/find', async (request) => {
+    const { id } = parseWith(IdParams, request.params);
+    const { q } = parseWith(z.object({ q: z.string().max(200).default('') }), request.query);
+    return { files: await c.workspace.find(id, q) };
+  });
+
   app.get('/api/sessions/:id/file', (request) => {
     const { id } = parseWith(IdParams, request.params);
     const { path } = parseWith(FileQuery, request.query);

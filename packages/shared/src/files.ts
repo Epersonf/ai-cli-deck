@@ -10,6 +10,8 @@ export const FileEntrySchema = z.object({
 export type FileEntry = z.infer<typeof FileEntrySchema>;
 
 export const TreeResponseSchema = z.object({ entries: z.array(FileEntrySchema) });
+/** Files matching what was typed after `@`, best first. */
+export const FindResponseSchema = z.object({ files: z.array(z.string()) });
 export type TreeResponse = z.infer<typeof TreeResponseSchema>;
 
 export const FileContentSchema = z.object({

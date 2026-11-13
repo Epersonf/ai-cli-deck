@@ -5,6 +5,7 @@ import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { ConfirmDelete } from './ConfirmDelete';
 import { DownloadIcon } from '../../shared/ui/GlyphIcons';
 import { TrashIcon } from '../../shared/ui/Icons';
+import { mentionInChat } from './mention';
 
 interface Props {
   sessionId: string;
@@ -41,6 +42,15 @@ export function FileActionDialog({ sessionId, path, onOpen, onDeleted, onClose }
           }}
         >
           {t('common.open')}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            mentionInChat(sessionId, path, t('files.mentioned'));
+            onClose();
+          }}
+        >
+          {t('files.mention')}
         </button>
         <a className="btn" href={downloadUrl(sessionId, path)} download onClick={onClose}>
           <DownloadIcon size={16} /> {t('files.download')}

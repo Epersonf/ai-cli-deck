@@ -76,6 +76,8 @@ export interface FilesPort {
   list(root: string, relative: string): Promise<RawFileEntry[]>;
   read(root: string, relative: string, maxBytes: number): Promise<FileContent>;
   resolveFile(root: string, relative: string): Promise<{ path: string; size: number }>;
+  /** Files of the folder (and below) that match what was typed, best first; for `@` mentions. */
+  find(root: string, query: string, limit: number): Promise<string[]>;
   /** Deletes a file or a folder (recursively); a symlink is removed, never its target. The root is refused. */
   remove(root: string, relative: string): Promise<void>;
 }

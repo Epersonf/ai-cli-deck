@@ -15,6 +15,7 @@ function setup(ignoredByGit: string[]) {
       ]),
     read: () => Promise.reject(new Error('unused')),
     resolveFile: () => Promise.reject(new Error('unused')),
+    find: () => Promise.resolve(['a.ts']),
     remove: () => Promise.reject(new Error('unused')),
   };
   const git: GitPort = {
@@ -44,5 +45,11 @@ describe('WorkspaceService.tree', () => {
   it('marks .git as ignored when internals are shown', async () => {
     const tree = await setup([]).tree('s1', '', { hidden: true, ignored: true });
     expect(tree.find((e) => e.name === '.git')?.ignored).toBe(true);
+  });
+});
+
+describe('WorkspaceService.find', () => {
+  it('asks the files port inside the session folder', async () => {
+    expect(await setup([]).find('s1', 'a')).toEqual(['a.ts']);
   });
 });

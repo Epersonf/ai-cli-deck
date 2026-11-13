@@ -240,3 +240,40 @@
   min-height: 26px;
   font-size: 12px;
 }
+.suggest-list {
+  display: grid;
+  max-height: 220px;
+  margin: 0 0 6px;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--brass);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #33231a, var(--leather));
+  box-shadow: 0 -6px 18px #000;
+  list-style: none;
+}
+.suggest-list li {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.suggest-list li.active {
+  background: rgb(255 255 255 / 10%);
+}
+.suggest-label {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.suggest-detail {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  opacity: 0.6;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
