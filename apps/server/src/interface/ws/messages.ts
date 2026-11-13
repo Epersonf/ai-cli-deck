@@ -14,6 +14,8 @@ export function eventToMessage(event: DeckEvent, sessionId: string): ServerMessa
         : null;
     case 'busy':
       return event.sessionId === sessionId ? { type: 'busy', busy: event.busy } : null;
+    case 'queue':
+      return event.sessionId === sessionId ? { type: 'queue', items: event.items } : null;
     case 'usage':
       return event.sessionId === sessionId ? { type: 'usage', usage: event.usage } : null;
     case 'reset':

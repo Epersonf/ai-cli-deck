@@ -15,6 +15,12 @@ export class SessionChats {
   async send(id: string, text: string, images: readonly ImageInput[] = []): Promise<void> {
     await this.chatOf(id).send(text, images);
   }
+  async sendOrQueue(id: string, text: string, images: readonly ImageInput[] = []): Promise<void> {
+    await this.chatOf(id).sendOrQueue(text, images);
+  }
+  readonly queued = (id: string) => this.chatOf(id).queued();
+  readonly queueNow = (id: string, item: string): Promise<void> => this.chatOf(id).queueNow(item);
+  readonly queueDrop = (id: string, item: string): void => this.chatOf(id).queueDrop(item);
   readonly interrupt = (id: string): void => this.chatOf(id).interrupt();
   readonly stopTask = (id: string, task: string): void => this.chatOf(id).stopTask(task);
   readonly notice = (id: string, text: string): void => this.chatOf(id).notice(text);

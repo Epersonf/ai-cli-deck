@@ -44,15 +44,6 @@ export function Composer({ sessionId, busy, visible }: Props) {
   }, [visible]);
   const empty = text.trim() === '' && files.items.length === 0;
   const queued = useQueue(queuedOf(sessionId));
-  // When the answer ends, what was queued goes out in the order it was typed.
-  const wasBusy = useRef(busy);
-  useEffect(() => {
-    if (wasBusy.current && !busy) {
-      for (const q of useQueue.getState().drain(sessionId))
-        sendChat(sessionId, { type: 'send', text: q.text, images: q.images });
-    }
-    wasBusy.current = busy;
-  }, [busy, sessionId]);
 
   const fit = (): void => {
     const el = area.current;
@@ -69,8 +60,8 @@ export function Composer({ sessionId, busy, visible }: Props) {
       return;
     }
     askNotifyPermission();
-    if (busy) useQueue.getState().add(sessionId, text.trim(), files.items);
-    else sendChat(sessionId, { type: 'send', text: text.trim(), images: files.items });
+    // While an answer is being written the server holds the message in the chat's queue.
+    sendChat(sessionId, { type: 'send', text: text.trim(), images: files.items, queue: true });
     setText('');
     files.clear();
     requestAnimationFrame(fit);

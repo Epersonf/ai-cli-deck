@@ -5,6 +5,7 @@ import { showSidePane } from '../layout/layoutStore';
 import { usePreview } from '../preview/previewStore';
 import { useSessions } from '../sessions/sessionsStore';
 import { useChats } from './chatStore';
+import { useQueue } from './queueStore';
 
 const sockets = new Map<string, ChatSocket>();
 
@@ -29,6 +30,9 @@ export function dispatchMessage(sessionId: string, message: ServerMessage): void
       break;
     case 'busy':
       chats.setBusy(sessionId, message.busy);
+      break;
+    case 'queue':
+      useQueue.getState().set(sessionId, message.items);
       break;
     case 'config':
       chats.setConfig(sessionId, message.config);

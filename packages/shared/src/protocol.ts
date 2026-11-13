@@ -17,12 +17,17 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('send'),
     text: z.string().max(200_000),
     images: z.array(ImageInputSchema).max(10).default([]),
+    /** While an answer is being written, hold the message in the chat's queue (shown on every device) instead of sending it. */
+    queue: z.boolean().optional(),
     // Numbered per device so a resend after a reconnect is applied once; the server answers with `ack`.
     cid: z.string().max(64).optional(),
     seq: z.number().int().nonnegative().optional(),
   }),
   /** Stop the answer in progress. */
   z.object({ type: z.literal('interrupt') }),
+  /** Send a queued message now / drop it from the queue. */
+  z.object({ type: z.literal('queue-now'), id: z.string() }),
+  z.object({ type: z.literal('queue-drop'), id: z.string() }),
   /** Answer a `permission` event. */
   z.object({
     type: z.literal('permission'),
@@ -83,6 +88,11 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     text: z.string(),
   }),
   z.object({ type: z.literal('busy'), busy: z.boolean() }),
+  /** The messages waiting for the answer to end (the whole list, on connect and on every change). */
+  z.object({
+    type: z.literal('queue'),
+    items: z.array(z.object({ id: z.string(), text: z.string(), images: z.number().int() })),
+  }),
   /** Sent on connect and after each answer. */
   z.object({ type: z.literal('usage'), usage: ChatUsageSchema }),
   /** A `rewind` happened (here or on another device): drop the chat shown and show this one. */

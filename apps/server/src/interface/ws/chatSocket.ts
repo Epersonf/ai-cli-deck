@@ -45,9 +45,15 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
           message.cid === undefined ||
           message.seq === undefined ||
           acceptInput(`${id}:${message.cid}`, message.seq);
-        if (fresh) void c.sessions.send(id, message.text, message.images).catch(() => undefined);
+        if (fresh) {
+          const go = message.queue ? c.sessions.sendOrQueue : c.sessions.send;
+          void go.call(c.sessions, id, message.text, message.images).catch(() => undefined);
+        }
         if (message.seq !== undefined) json({ type: 'ack', seq: message.seq });
       } else if (message.type === 'interrupt') c.sessions.interrupt(id);
+      else if (message.type === 'queue-now')
+        void c.sessions.queueNow(id, message.id).catch(() => undefined);
+      else if (message.type === 'queue-drop') c.sessions.queueDrop(id, message.id);
       else if (message.type === 'permission') {
         c.sessions.answer(id, message.id, {
           allow: message.allow,
@@ -86,6 +92,7 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
         json({ type: 'status', session: c.sessions.get(id) ?? session });
         json({ type: 'replay', ...chat });
         json({ type: 'usage', usage: c.sessions.usage(id) });
+        json({ type: 'queue', items: c.sessions.queued(id) });
         for (const pending of c.approvals.list('pending')) {
           if (pending.sessionId === id) json({ type: 'approval-request', request: pending });
         }
