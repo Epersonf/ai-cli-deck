@@ -4,7 +4,6 @@ import { useMemory } from './features/memory/memoryStore';
 import { onActivity } from './features/notify/browserNotify';
 import { useApprovals } from './features/approvals/approvalsStore';
 import { usePreview } from './features/preview/previewStore';
-import { useActivity } from './features/sessions/activityStore';
 import { useSessions } from './features/sessions/sessionsStore';
 import { openEventsSocket } from './shared/ws/eventsSocket';
 
@@ -33,9 +32,6 @@ export function useLiveEvents(locked: boolean): void {
         else if (message.type === 'browser-tabs')
           usePreview.getState().applyServerTabs(message.sessionId, message.tabs);
         else if (message.type === 'activity') {
-          useActivity
-            .getState()
-            .set(message.sessionId, { busy: message.busy, summary: message.summary });
           onActivity(message.sessionId, message.busy, message.summary);
         } else void useSessions.getState().refresh();
       },
