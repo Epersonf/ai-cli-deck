@@ -21,6 +21,7 @@ import { sendChat } from './connection';
 import { useAttachments } from './useAttachments';
 import { queuedOf, useQueue } from './queueStore';
 import { QueueList } from './QueueList';
+import { StopQueueDialog } from './StopQueueDialog';
 
 const MAX_HEIGHT = 220;
 const coarse = (): boolean => window.matchMedia?.('(pointer: coarse)').matches ?? false;
@@ -44,6 +45,9 @@ export function Composer({ sessionId, busy, visible }: Props) {
   }, [visible]);
   const empty = text.trim() === '' && files.items.length === 0;
   const queued = useQueue(queuedOf(sessionId));
+  const [asking, setAsking] = useState(false);
+  const stop = (): void => (queued.length > 0 ? setAsking(true) : interrupt());
+  const interrupt = (): void => sendChat(sessionId, { type: 'interrupt' });
 
   const fit = (): void => {
     const el = area.current;
@@ -100,6 +104,9 @@ export function Composer({ sessionId, busy, visible }: Props) {
       onDrop={onDrop}
     >
       <QueueList sessionId={sessionId} items={queued} />
+      {asking && (
+        <StopQueueDialog sessionId={sessionId} items={queued} onDone={() => setAsking(false)} />
+      )}
       <Attachments items={files.items} tooBig={files.tooBig} onRemove={files.remove} />
       <div className="composer-row">
         <button
@@ -138,7 +145,7 @@ export function Composer({ sessionId, busy, visible }: Props) {
             className="tool stop"
             aria-label={t('chat.stop')}
             title={t('chat.stop')}
-            onClick={() => sendChat(sessionId, { type: 'interrupt' })}
+            onClick={stop}
           >
             <StopIcon size={22} />
           </button>
