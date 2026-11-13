@@ -1,3 +1,9 @@
+import type { Session } from '@deck/shared';
+
+/** When the chat last had activity: its latest message, or its creation if nobody wrote in it yet. */
+export const activityOf = (s: Pick<Session, 'lastMessageAt' | 'createdAt'>): string =>
+  s.lastMessageAt ?? s.createdAt;
+
 /** "14:32" for today, "07/11 14:32" for older sessions: a tiny stamp for the list rows. */
 export function sessionTime(iso: string, now: Date = new Date()): string {
   const at = new Date(iso);

@@ -1,6 +1,7 @@
 import type { Session } from '@deck/shared';
 import { create } from 'zustand';
 import { api } from '../../shared/api/endpoints';
+import { activityOf } from './sessionTime';
 
 export type View = 'chat' | 'files' | 'changes' | 'preview';
 
@@ -19,7 +20,6 @@ interface SessionsState {
 }
 
 /** Most recent message first; a chat nobody wrote in yet counts from when it was created. */
-const activityOf = (s: Session): string => s.lastMessageAt ?? s.createdAt;
 export const newestFirst = (list: Session[]): Session[] =>
   [...list].sort((a, b) => activityOf(b).localeCompare(activityOf(a)));
 

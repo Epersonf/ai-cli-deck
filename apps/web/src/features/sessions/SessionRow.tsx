@@ -8,7 +8,7 @@ import { useActivity } from './activityStore';
 import { useChatTitles } from './chatTitlesStore';
 import { useProfiles } from './profilesStore';
 import { sessionLabel } from './sessionLabel';
-import { sessionTime } from './sessionTime';
+import { activityOf, sessionTime } from './sessionTime';
 import { useCloseSession } from './useCloseSession';
 import { useSessions } from './sessionsStore';
 import { ForkIcon, WarnIcon } from '../../shared/ui/GlyphIcons';
@@ -68,8 +68,8 @@ export function SessionRow({ session, index, active, onPick }: Props) {
           {activity?.summary && <small className="session-activity">{activity.summary}</small>}
           <small>{session.cwd}</small>
         </span>
-        <time className="session-time" dateTime={session.createdAt}>
-          {sessionTime(session.createdAt)}
+        <time className="session-time" dateTime={activityOf(session)}>
+          {sessionTime(activityOf(session))}
         </time>
         {sideCount > 0 && (
           <span className="badge" title={t('side.title')}>

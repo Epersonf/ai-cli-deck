@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sessionTime } from './sessionTime';
+import { activityOf, sessionTime } from './sessionTime';
 
 describe('sessionTime', () => {
   const now = new Date(2026, 10, 7, 18, 0);
@@ -17,5 +17,18 @@ describe('sessionTime', () => {
 
   it('is empty for an invalid date', () => {
     expect(sessionTime('nope', now)).toBe('');
+  });
+});
+
+describe('activityOf', () => {
+  it('uses the latest message, not the creation time', () => {
+    expect(
+      activityOf({ createdAt: '2026-01-01T10:00:00Z', lastMessageAt: '2026-01-02T09:00:00Z' }),
+    ).toBe('2026-01-02T09:00:00Z');
+  });
+  it('falls back to creation while nobody has written yet', () => {
+    expect(activityOf({ createdAt: '2026-01-01T10:00:00Z', lastMessageAt: null })).toBe(
+      '2026-01-01T10:00:00Z',
+    );
   });
 });
