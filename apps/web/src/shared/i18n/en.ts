@@ -300,6 +300,7 @@ export const en = {
   'chat.edit.save': 'Save and send',
   'chat.tasks': 'Background tasks',
   'chat.task.stop': 'Stop',
+  'chat.task.dismiss': 'Dismiss',
   'chat.usage': 'Usage',
   'chat.usage.context': 'Context',
   'chat.usage.limit': 'Account limit',

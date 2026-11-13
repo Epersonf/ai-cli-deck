@@ -308,6 +308,7 @@ export const fr: Messages = {
   'chat.edit.save': 'Enregistrer et envoyer',
   'chat.tasks': 'Tâches en arrière-plan',
   'chat.task.stop': 'Arrêter',
+  'chat.task.dismiss': 'Ignorer',
   'chat.usage': 'Utilisation',
   'chat.usage.context': 'Contexte',
   'chat.usage.limit': 'Limite du compte',

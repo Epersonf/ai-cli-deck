@@ -302,6 +302,7 @@ export const ru: Messages = {
   'chat.edit.save': 'Сохранить и отправить',
   'chat.tasks': 'Фоновые задачи',
   'chat.task.stop': 'Стоп',
+  'chat.task.dismiss': 'Скрыть',
   'chat.usage': 'Использование',
   'chat.usage.context': 'Контекст',
   'chat.usage.limit': 'Лимит аккаунта',

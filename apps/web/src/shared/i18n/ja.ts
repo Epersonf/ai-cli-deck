@@ -305,6 +305,7 @@ export const ja: Messages = {
   'chat.edit.save': '保存して送信',
   'chat.tasks': 'バックグラウンドタスク',
   'chat.task.stop': '停止',
+  'chat.task.dismiss': '閉じる',
   'chat.usage': '使用量',
   'chat.usage.context': 'コンテキスト',
   'chat.usage.limit': 'アカウントの上限',

@@ -294,6 +294,7 @@ export const zh: Messages = {
   'chat.edit.save': '保存并发送',
   'chat.tasks': '后台任务',
   'chat.task.stop': '停止',
+  'chat.task.dismiss': '忽略',
   'chat.usage': '用量',
   'chat.usage.context': '上下文',
   'chat.usage.limit': '账户额度',

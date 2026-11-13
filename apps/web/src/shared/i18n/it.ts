@@ -304,6 +304,7 @@ export const it: Messages = {
   'chat.edit.save': 'Salva e invia',
   'chat.tasks': 'Attività in background',
   'chat.task.stop': 'Ferma',
+  'chat.task.dismiss': 'Ignora',
   'chat.usage': 'Utilizzo',
   'chat.usage.context': 'Contesto',
   'chat.usage.limit': 'Limite dell’account',
