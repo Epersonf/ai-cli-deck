@@ -25,7 +25,7 @@ describe('telling the person an answer is done', () => {
     expect(notes()).toEqual([
       { kind: 'notify', sessionId: id, title: id, text: 'All done.', reason: 'done' },
     ]);
-    expect(phone).toEqual([['POST', '/notify', { title: id, text: 'All done.' }]]);
+    expect(phone).toEqual([['POST', '/notify', { title: id, text: 'All done.', sessionId: id }]]);
   });
 
   it('says why an answer failed (without the sign-in marker) and when approval is needed', async () => {

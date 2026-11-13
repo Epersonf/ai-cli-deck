@@ -40,6 +40,6 @@ export class TurnNotifier {
   private tell(sessionId: string, reason: 'done' | 'error' | 'permission', text: string): void {
     const title = this.deps.label(sessionId);
     this.deps.bus.publish({ kind: 'notify', sessionId, title, text, reason });
-    void this.deps.phone?.request('POST', '/notify', { title, text }).catch(() => undefined);
+    void this.deps.phone?.request('POST', '/notify', { title, text, sessionId }).catch(() => undefined);
   }
 }

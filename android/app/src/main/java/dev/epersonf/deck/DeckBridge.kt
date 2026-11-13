@@ -18,6 +18,10 @@ class DeckBridge(private val activity: Activity) {
     private var pending: String? = null
     private var pendingUrl: String? = null
 
+    /** The page shows this chat: its notification goes away. */
+    @JavascriptInterface
+    fun chatSeen(sessionId: String) = PhoneApi.clearChat(activity, sessionId)
+
     /** A download started in the page (a file or a .zip): the user picks where, then the file is copied there. */
     fun saveUrl(url: String, name: String) {
         pendingUrl = url

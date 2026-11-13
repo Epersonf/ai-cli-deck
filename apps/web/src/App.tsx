@@ -28,6 +28,8 @@ import { onUnauthorized } from './shared/api/unauthorized';
 import { useMediaQuery } from './shared/ui/useMediaQuery';
 import { useBackgroundPolling } from './useBackgroundPolling';
 
+import { useChatNotifications } from './features/chat/useChatNotifications';
+
 type Dialog = 'new' | 'settings' | 'switcher' | 'profile' | null;
 
 export function App() {
@@ -54,6 +56,7 @@ export function App() {
     }
   }, []);
 
+  useChatNotifications(sessions, activeId, view, select);
   const active = sessions.find((s) => s.id === activeId);
   const activeLabel = active ? sessionLabel(active, profiles) : null;
   useEffect(() => {

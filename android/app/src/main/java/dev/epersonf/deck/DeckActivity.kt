@@ -67,7 +67,17 @@ class DeckActivity : Activity() {
             })
         }
         setContentView(FrameLayout(this).apply { addView(web); addView(splash) })
-        web.loadUrl(url)
+        web.loadUrl(chatUrl(url, intent))
+    }
+
+    /** A tap on a chat notification opens that chat (the page reads `?chat=`). */
+    private fun chatUrl(home: String, i: Intent?): String =
+        i?.getStringExtra("chat")?.let { "$home?chat=${Uri.encode(it)}" } ?: home
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra("chat")?.let { web.evaluateJavascript("window.deckOpenChat&&window.deckOpenChat(${org.json.JSONObject.quote(it)})", null) }
     }
 
     private fun client(home: String) = object : WebViewClient() {
@@ -84,7 +94,7 @@ class DeckActivity : Activity() {
             // Server not up yet (first install or restart): keep the splash and retry.
             failed = true
             splash.visibility = View.VISIBLE
-            handler.postDelayed({ web.loadUrl(home) }, 2000)
+            handler.postDelayed({ web.loadUrl(chatUrl(home, intent)) }, 2000)
         }
     }
 

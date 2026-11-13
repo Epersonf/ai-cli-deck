@@ -42,17 +42,25 @@ class PhoneApi(private val ctx: Context) {
         .put("sdk", Build.VERSION.SDK_INT)
 
     /** Returns null when shown, or the reason it could not be. */
-    fun notify(title: String, text: String, actions: List<NotifyAction> = emptyList()): String? {
+    fun notify(title: String, text: String, actions: List<NotifyAction> = emptyList(), chat: String? = null): String? {
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (!nm.areNotificationsEnabled()) return "Notifications are off for this app in Android settings"
         if (Build.VERSION.SDK_INT >= 26) {
             nm.createNotificationChannel(NotificationChannel("phone", ctx.getString(R.string.phone_channel), NotificationManager.IMPORTANCE_DEFAULT))
         }
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(ctx, "phone") else @Suppress("DEPRECATION") Notification.Builder(ctx)
-        val id = nextId++
+        // One notification per chat, like a messenger: a new one replaces the last and counts the unread ones.
+        val id = if (chat == null) nextId++ else 1
+        val tag = chat?.let { chatTag(it) }
+        val unread = if (chat == null) 0 else counts.merge(chat, 1, Int::plus) ?: 1
+        val open = Intent(ctx, DeckActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        chat?.let { open.putExtra("chat", it) }
+        val tap = android.app.PendingIntent.getActivity(ctx, (chat ?: "").hashCode(), open,
+            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
         b.setContentTitle(title.take(80).ifBlank { ctx.getString(R.string.app_name) })
             .setContentText(text.take(400)).setStyle(Notification.BigTextStyle().bigText(text.take(400)))
-            .setSmallIcon(R.drawable.ic_gear).setAutoCancel(true)
+            .setSmallIcon(R.drawable.ic_gear).setAutoCancel(true).setContentIntent(tap)
+        if (unread > 1) b.setNumber(unread)
         // Buttons that call a one-time address of the deck (see [NotifyActionReceiver]); at most three fit.
         actions.take(3).forEachIndexed { index, action ->
             val intent = Intent(ctx, NotifyActionReceiver::class.java).putExtra("url", action.url).putExtra("nid", id)
@@ -60,8 +68,19 @@ class PhoneApi(private val ctx: Context) {
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             b.addAction(Notification.Action.Builder(null, action.label, press).build())
         }
-        nm.notify(id, b.build())
+        nm.notify(tag, id, b.build())
         return null
+    }
+
+    companion object {
+        private val counts = java.util.concurrent.ConcurrentHashMap<String, Int>()
+        private fun chatTag(chat: String) = "chat:$chat"
+
+        /** The person is in this chat: its notification and unread count are gone. */
+        fun clearChat(ctx: Context, chat: String) {
+            counts.remove(chat)
+            (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(chatTag(chat), 1)
+        }
     }
 }
 
