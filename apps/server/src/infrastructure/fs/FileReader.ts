@@ -3,14 +3,14 @@ import { basename, dirname, join, posix } from 'node:path';
 import type { FileContent } from '@deck/shared';
 import { invalid, notFound } from '../../domain/errors.js';
 import type { FilesPort, RawFileEntry } from '../../domain/ports.js';
-import { resolveInside } from './pathGuard.js';
+import { resolveBrowse, resolveInside } from './pathGuard.js';
 
 const BINARY_SNIFF_BYTES = 8000;
 
 async function kindOf(root: string, relative: string, isDir: boolean, isLink: boolean) {
   if (!isLink) return isDir ? 'dir' : 'file';
   try {
-    const real = await resolveInside(root, relative);
+    const real = await resolveBrowse(root, relative);
     return (await stat(real)).isDirectory() ? 'dir' : 'file';
   } catch {
     return null;
@@ -19,7 +19,7 @@ async function kindOf(root: string, relative: string, isDir: boolean, isLink: bo
 
 export class FileReader implements FilesPort {
   async list(root: string, relative: string): Promise<RawFileEntry[]> {
-    const dir = await resolveInside(root, relative);
+    const dir = await resolveBrowse(root, relative);
     const dirents = await readdir(dir, { withFileTypes: true });
     const entries: RawFileEntry[] = [];
     for (const dirent of dirents) {
@@ -31,7 +31,7 @@ export class FileReader implements FilesPort {
   }
 
   async resolveFile(root: string, relative: string): Promise<{ path: string; size: number }> {
-    const real = await resolveInside(root, relative);
+    const real = await resolveBrowse(root, relative);
     const info = await stat(real);
     if (!info.isFile()) throw invalid('Path is not a file');
     return { path: real, size: info.size };
@@ -50,7 +50,7 @@ export class FileReader implements FilesPort {
   }
 
   async read(root: string, relative: string, maxBytes: number): Promise<FileContent> {
-    const real = await resolveInside(root, relative);
+    const real = await resolveBrowse(root, relative);
     const info = await stat(real);
     if (info.isDirectory()) throw invalid('Path is a directory');
     const handle = await open(real, 'r');

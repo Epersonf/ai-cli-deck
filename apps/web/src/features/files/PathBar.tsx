@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
-import { PinIcon } from '../../shared/ui/GlyphIcons';
+import { HomeIcon, PinIcon } from '../../shared/ui/GlyphIcons';
 import { CopyIcon } from '../../shared/ui/ToolIcons';
 import { copyText } from '../settings/templateFile';
 import { toast } from '../../shared/ui/toast';
-import { toAbsolute, toRelative } from './explorerPath';
+import { isTop, toAbsolute, toRelative } from './explorerPath';
 
 interface Props {
   cwd: string;
@@ -43,8 +43,22 @@ export function PathBar({ cwd, dir, onGo, onBack, pinnedFrom, onPin, onUnpin }: 
 
   return (
     <div className="path-bar">
-      <button type="button" disabled={dir === ''} onClick={onBack} aria-label={t('files.back')}>
+      <button
+        type="button"
+        disabled={isTop(cwd, dir)}
+        onClick={onBack}
+        aria-label={t('files.back')}
+      >
         ←
+      </button>
+      <button
+        type="button"
+        disabled={dir === ''}
+        onClick={() => onGo('')}
+        title={t('files.home')}
+        aria-label={t('files.home')}
+      >
+        <HomeIcon size={18} />
       </button>
       <input
         value={text}

@@ -1,6 +1,6 @@
 import type { FileContent, FileEntry, GitStatus, Session } from '@deck/shared';
 import { notFound } from '../domain/errors.js';
-import { resolveInside } from '../infrastructure/fs/pathGuard.js';
+import { resolveBrowse } from '../infrastructure/fs/pathGuard.js';
 import type { FilesPort, GitPort, RawFileEntry } from '../domain/ports.js';
 
 const IGNORED = new Set(['.git', 'node_modules']);
@@ -54,7 +54,7 @@ export class WorkspaceService {
 
   /** Absolute path of a folder inside the session folder, for zipping. */
   async resolveDir(sessionId: string, relative: string): Promise<string> {
-    return resolveInside(this.root(sessionId), relative);
+    return resolveBrowse(this.root(sessionId), relative);
   }
 
   resolveFile(sessionId: string, relative: string): Promise<{ path: string; size: number }> {

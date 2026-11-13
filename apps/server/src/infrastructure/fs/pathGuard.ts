@@ -23,3 +23,17 @@ export async function resolveInside(root: string, relative: string): Promise<str
   if (!isWithin(realRoot, real)) throw forbidden('Path escapes the session folder');
   return real;
 }
+
+/**
+ * For browsing and reading only: the path may go above `root` (`..`), so the explorer can climb out of the
+ * session folder. Writes (delete, upload) keep using `resolveInside`.
+ */
+export async function resolveBrowse(root: string, relative: string): Promise<string> {
+  if (relative.includes('\0')) throw invalid('Invalid path');
+  const candidate = resolve(await realpath(root), relative === '' ? '.' : relative);
+  try {
+    return await realpath(candidate);
+  } catch {
+    throw notFound(`Path ${relative}`);
+  }
+}

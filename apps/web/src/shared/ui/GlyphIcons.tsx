@@ -32,6 +32,14 @@ export const PinIcon = ({ size, pinned = false }: Props & { pinned?: boolean }) 
   </Svg>
 );
 
+/** A house: back to the session's base folder. */
+export const HomeIcon = (p: Props) => (
+  <Svg {...p}>
+    <path d="M14 48 50 16l36 32" />
+    <path d="M24 42v40h20V60h12v22h20V42" />
+  </Svg>
+);
+
 /** A branch that splits: a side chat. */
 export const ForkIcon = (p: Props) => (
   <Svg {...p}>

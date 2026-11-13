@@ -120,6 +120,7 @@ export const ru: Messages = {
   'files.ignoredTip': '{path} (игнорируется git)',
   'files.pick': 'Выберите файл для просмотра.',
   'files.back': 'Назад',
+  'files.home': 'Базовая папка',
   'files.copy': 'Копировать путь',
   'files.copied': 'Скопировано',
   'files.upload': 'Загрузить файл',

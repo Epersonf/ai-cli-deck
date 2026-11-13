@@ -121,6 +121,7 @@ export const ja: Messages = {
   'files.ignoredTip': '{path}（git で無視）',
   'files.pick': '表示するファイルを選んでください。',
   'files.back': '戻る',
+  'files.home': 'ベースフォルダ',
   'files.copy': 'パスをコピー',
   'files.copied': 'コピーしました',
   'files.upload': 'アップロード',

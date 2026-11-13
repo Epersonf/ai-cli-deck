@@ -47,9 +47,9 @@ describe('resolveInside', () => {
 describe('FileReader', () => {
   const reader = new FileReader();
 
-  it('lists entries and hides symlinks that escape', async () => {
+  it('lists entries, also symlinks that lead outside (browsing is read only)', async () => {
     const names = (await reader.list(root, '')).map((e) => e.name).sort();
-    expect(names).toEqual(['bin.dat', 'inner-link', 'sub']);
+    expect(names).toEqual(['bin.dat', 'escape', 'inner-link', 'sub']);
   });
 
   it('reads text, truncates and flags binary files', async () => {
@@ -60,7 +60,10 @@ describe('FileReader', () => {
     });
     expect(await reader.read(root, 'bin.dat', 100)).toMatchObject({ binary: true, content: '' });
     await expect(reader.read(root, 'sub', 10)).rejects.toThrow('directory');
-    await expect(reader.read(root, 'escape/secret.txt', 10)).rejects.toThrow('escapes');
+    expect(await reader.read(root, 'escape/secret.txt', 10)).toMatchObject({ content: 'secret' });
+    expect(await reader.read(root, '../outside/secret.txt', 10)).toMatchObject({
+      content: 'secret',
+    });
   });
 });
 
@@ -70,7 +73,7 @@ describe('FileReader.resolveFile', () => {
   it('returns real path and size for files only', async () => {
     expect(await reader.resolveFile(root, 'sub/a.txt')).toMatchObject({ size: 5 });
     await expect(reader.resolveFile(root, 'sub')).rejects.toThrow('not a file');
-    await expect(reader.resolveFile(root, 'escape/secret.txt')).rejects.toThrow('escapes');
+    expect(await reader.resolveFile(root, '../outside/secret.txt')).toMatchObject({ size: 6 });
   });
 });
 

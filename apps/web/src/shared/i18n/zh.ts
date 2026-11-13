@@ -118,6 +118,7 @@ export const zh: Messages = {
   'files.ignoredTip': '{path}（被 git 忽略）',
   'files.pick': '选择一个文件来查看。',
   'files.back': '返回',
+  'files.home': '基础文件夹',
   'files.copy': '复制路径',
   'files.copied': '已复制',
   'files.upload': '上传文件',

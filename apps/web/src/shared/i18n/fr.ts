@@ -125,6 +125,7 @@ export const fr: Messages = {
   'files.ignoredTip': '{path} (ignoré par git)',
   'files.pick': 'Choisissez un fichier à afficher.',
   'files.back': 'Retour',
+  'files.home': 'Dossier de base',
   'files.copy': 'Copier le chemin',
   'files.copied': 'Copié',
   'files.upload': 'Téléverser',

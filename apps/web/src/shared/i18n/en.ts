@@ -120,6 +120,7 @@ export const en = {
   'files.ignoredTip': '{path} (ignored by git)',
   'files.pick': 'Pick a file to view it.',
   'files.back': 'Back',
+  'files.home': 'Base folder',
   'files.copy': 'Copy path',
   'files.copied': 'Copied',
   'files.upload': 'Upload',
