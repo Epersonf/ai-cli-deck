@@ -20,7 +20,7 @@ export function SendButton({ busy, empty, onSend, onStop }: Props) {
     return (
       <button
         type="button"
-        className="primary send stop"
+        className="tool send stop"
         aria-label={t('chat.stop')}
         title={t('chat.stop')}
         onClick={onStop}
