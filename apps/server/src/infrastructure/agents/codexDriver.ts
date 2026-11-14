@@ -44,7 +44,7 @@ class CodexRun implements AgentRun {
     const args = [...bin.prefix, ...codexArgs(spec, this.chatId)];
     const child = spawn(bin.command, args, { cwd: spec.cwd, env: spec.env, stdio: 'pipe' });
     this.child = child;
-    const state = newCodexState();
+    const state = newCodexState(`${input.id}:`);
     const sink: AgentSink = {
       ...this.sink,
       chatId: (id) => {

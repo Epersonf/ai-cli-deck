@@ -9,7 +9,7 @@ const fixture = (name: string): string[] =>
     .split(String.fromCharCode(10))
     .filter((line) => line.trim() !== '');
 
-function run(lines: string[]) {
+function run(lines: string[], itemPrefix = '') {
   const events: ChatEvent[] = [];
   const chats: string[] = [];
   const usage: UsageReading[] = [];
@@ -21,12 +21,24 @@ function run(lines: string[]) {
     usage: (u) => usage.push(u),
     ended: () => undefined,
   };
-  const state = newCodexState();
+  const state = newCodexState(itemPrefix);
   for (const line of lines) mapCodexLine(JSON.parse(line) as Record<string, unknown>, state, sink);
   return { events, chats, state, usage };
 }
 
 describe('Codex exec events as chat steps', () => {
+  it('scopes reused item ids to the user message while keeping tools paired with their results', () => {
+    const lines = fixture('codex-0.167-command.jsonl');
+    const first = run(lines, 'message-1:').events;
+    const second = run(lines, 'message-2:').events;
+    expect(first[0]).toMatchObject({ t: 'tool', id: 'message-1:item_0' });
+    expect(first[1]).toMatchObject({ t: 'tool-result', id: 'message-1:item_0' });
+    expect(first[2]).toMatchObject({ t: 'text', id: 'message-1:item_1' });
+    expect(second[0]).toMatchObject({ t: 'tool', id: 'message-2:item_0' });
+    expect(second[1]).toMatchObject({ t: 'tool-result', id: 'message-2:item_0' });
+    expect(second[2]).toMatchObject({ t: 'text', id: 'message-2:item_1' });
+  });
+
   it("shows Codex's checklist as a TodoWrite step updated in place", () => {
     const { events } = run([
       '{"type":"item.started","item":{"id":"t1","type":"todo_list","items":[{"text":"read","completed":false},{"text":"fix","completed":false}]}}',

@@ -5,6 +5,49 @@ import { applyDelta, applyEvent, fromReplay, type Block } from './blocks';
 const fold = (events: ChatEvent[], from: Block[] = []): Block[] => events.reduce(applyEvent, from);
 
 describe('chat blocks', () => {
+  it('keeps replies and tool results in their own turns when Codex reuses item ids', () => {
+    const events: ChatEvent[] = [
+      { t: 'user', id: 'u1', text: 'first question', attachments: [], at: '' },
+      { t: 'turn-start' },
+      { t: 'text', id: 'item_0', text: 'first answer' },
+      { t: 'tool', id: 'item_1', name: 'shell', input: { command: 'first' } },
+      { t: 'tool-result', id: 'item_1', output: 'first result', isError: false },
+      { t: 'turn-end', error: null, costUsd: null, durationMs: null },
+      { t: 'user', id: 'u2', text: 'second question', attachments: [], at: '' },
+      { t: 'turn-start' },
+      { t: 'text', id: 'item_0', text: 'second answer' },
+      { t: 'tool', id: 'item_1', name: 'shell', input: { command: 'second' } },
+      { t: 'tool-result', id: 'item_1', output: 'second result', isError: false },
+      { t: 'turn-end', error: null, costUsd: null, durationMs: null },
+    ];
+    for (const blocks of [fold(events), fromReplay(events, [])]) {
+      expect(
+        blocks.flatMap((b) => (b.kind === 'user' || b.kind === 'text' ? [b.text] : [])),
+      ).toEqual(['first question', 'first answer', 'second question', 'second answer']);
+      expect(blocks.filter((b) => b.kind === 'tool').map((b) => b.result?.output)).toEqual([
+        'first result',
+        'second result',
+      ]);
+      expect(new Set(blocks.map((b) => `${b.kind}-${b.id}`)).size).toBe(blocks.length);
+    }
+  });
+
+  it('matches streamed text and replay partials to the current turn only', () => {
+    const events: ChatEvent[] = [
+      { t: 'text', id: 'item_0', text: 'first answer' },
+      { t: 'turn-end', error: null, costUsd: null, durationMs: null },
+      { t: 'turn-start' },
+    ];
+    const delta = { id: 'item_0', kind: 'text' as const, text: 'second' };
+    for (const initial of [applyDelta(fold(events), delta), fromReplay(events, [delta])]) {
+      const blocks = applyEvent(initial, { t: 'text', id: 'item_0', text: 'second answer' });
+      expect(blocks.flatMap((b) => (b.kind === 'text' ? [b.text] : []))).toEqual([
+        'first answer',
+        'second answer',
+      ]);
+    }
+  });
+
   it('pairs a tool with its result and a permission with its answer', () => {
     const blocks = fold([
       { t: 'tool', id: 't1', name: 'Bash', input: { command: 'ls' } },

@@ -11,6 +11,8 @@ const clip = (text: string): string =>
 
 /** What the mapper remembers between lines of one `codex exec` run. */
 export interface CodexState {
+  /** Exec restarts item numbering on each message; the deck needs ids unique across the chat. */
+  itemPrefix: string;
   /** Tool items already announced (so their completion only adds the result). */
   started: Set<string>;
   /** The last error Codex printed; used when the process ends without finishing the turn. */
@@ -18,7 +20,8 @@ export interface CodexState {
   finished: boolean;
 }
 
-export const newCodexState = (): CodexState => ({
+export const newCodexState = (itemPrefix = ''): CodexState => ({
+  itemPrefix,
   started: new Set(),
   lastError: null,
   finished: false,
@@ -84,7 +87,7 @@ function resultOf(item: Json): { output: string; isError: boolean } {
 }
 
 function itemEvents(type: string, item: Json, state: CodexState): ChatEvent[] {
-  const id = str(item['id']) || `item-${state.started.size}`;
+  const id = state.itemPrefix + (str(item['id']) || `item-${state.started.size}`);
   const kind = str(item['type']);
   if (kind === 'todo_list') return todoEvents(type, item, id);
   if (kind === 'agent_message' && type === 'item.completed' && str(item['text']).trim())

@@ -18,6 +18,11 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
     const json = (message: ServerMessage): void => {
       if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(message));
     };
+    const inputFailed = (error: unknown): void => {
+      const text = error instanceof Error ? error.message : 'The message could not be sent';
+      request.log.error({ err: error, sessionId: id }, 'Chat input failed');
+      json({ type: 'event', event: { t: 'notice', level: 'error', text } });
+    };
     // Until the conversation is sent, live steps wait: they would arrive before what they follow.
     let synced = false;
     const held: ServerMessage[] = [];
@@ -47,12 +52,11 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
           acceptInput(`${id}:${message.cid}`, message.seq);
         if (fresh) {
           const go = message.queue ? c.sessions.sendOrQueue : c.sessions.send;
-          void go.call(c.sessions, id, message.text, message.images).catch(() => undefined);
+          void go.call(c.sessions, id, message.text, message.images).catch(inputFailed);
         }
         if (message.seq !== undefined) json({ type: 'ack', seq: message.seq });
       } else if (message.type === 'interrupt') c.sessions.interrupt(id);
-      else if (message.type === 'queue-now')
-        void c.sessions.queueNow(id, message.id).catch(() => undefined);
+      else if (message.type === 'queue-now') void c.sessions.queueNow(id, message.id).catch(inputFailed);
       else if (message.type === 'queue-drop') c.sessions.queueDrop(id, message.id);
       else if (message.type === 'permission') {
         c.sessions.answer(id, message.id, {

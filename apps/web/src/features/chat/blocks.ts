@@ -20,6 +20,15 @@ const replaceAt = (blocks: readonly Block[], at: number, block: Block): Block[] 
 /** Rows without an event id of their own get one from their place in the list. */
 const rowId = (blocks: readonly Block[], prefix: string): string => `${prefix}-${blocks.length}`;
 
+/** Older Codex logs reuse item ids each turn. Scope rows during live updates and replay alike. */
+const itemId = (blocks: readonly Block[], id: string): string => {
+  for (let i = blocks.length - 1; i >= 0; i -= 1) {
+    const block = blocks[i];
+    if (block?.kind === 'turn') return `${block.id}:${id}`;
+  }
+  return id;
+};
+
 /** The conversation after one more event; the list is copied, the rows that did not change are shared. */
 export function applyEvent(blocks: readonly Block[], event: ChatEvent): Block[] {
   switch (event.t) {
@@ -30,17 +39,19 @@ export function applyEvent(blocks: readonly Block[], event: ChatEvent): Block[] 
       ];
     case 'text':
     case 'thinking': {
-      const at = indexOf(blocks, event.t, event.id);
-      const block: Block = { kind: event.t, id: event.id, text: event.text, streaming: false };
+      const id = itemId(blocks, event.id);
+      const at = indexOf(blocks, event.t, id);
+      const block: Block = { kind: event.t, id, text: event.text, streaming: false };
       return at < 0 ? [...blocks, block] : replaceAt(blocks, at, block);
     }
     case 'tool': {
-      const at = indexOf(blocks, 'tool', event.id);
+      const id = itemId(blocks, event.id);
+      const at = indexOf(blocks, 'tool', id);
       const old = at < 0 ? null : blocks[at];
       const result = old?.kind === 'tool' ? old.result : null;
       const block: Block = {
         kind: 'tool',
-        id: event.id,
+        id,
         name: event.name,
         input: event.input,
         result,
@@ -48,7 +59,7 @@ export function applyEvent(blocks: readonly Block[], event: ChatEvent): Block[] 
       return at < 0 ? [...blocks, block] : replaceAt(blocks, at, block);
     }
     case 'tool-result': {
-      const at = indexOf(blocks, 'tool', event.id);
+      const at = indexOf(blocks, 'tool', itemId(blocks, event.id));
       const old = at < 0 ? null : blocks[at];
       if (old?.kind !== 'tool') return [...blocks];
       return replaceAt(blocks, at, {
@@ -103,12 +114,13 @@ export function applyEvent(blocks: readonly Block[], event: ChatEvent): Block[] 
 
 /** More text for an answer being written (it becomes final when its `text`/`thinking` event arrives). */
 export function applyDelta(blocks: readonly Block[], delta: PartialText): Block[] {
-  const at = indexOf(blocks, delta.kind, delta.id);
+  const id = itemId(blocks, delta.id);
+  const at = indexOf(blocks, delta.kind, id);
   const old = at < 0 ? null : blocks[at];
   if (old && (old.kind === 'text' || old.kind === 'thinking')) {
     return replaceAt(blocks, at, { ...old, text: old.text + delta.text });
   }
-  return [...blocks, { kind: delta.kind, id: delta.id, text: delta.text, streaming: true }];
+  return [...blocks, { kind: delta.kind, id, text: delta.text, streaming: true }];
 }
 
 /** The whole conversation from a replay: its events, then the text still being written. */
@@ -121,7 +133,7 @@ export function fromReplay(
   for (const partial of partials) {
     blocks = [
       ...blocks,
-      { kind: partial.kind, id: partial.id, text: partial.text, streaming: true },
+      { kind: partial.kind, id: itemId(blocks, partial.id), text: partial.text, streaming: true },
     ];
   }
   return blocks;
