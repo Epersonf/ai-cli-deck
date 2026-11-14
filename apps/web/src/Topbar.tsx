@@ -32,9 +32,6 @@ export function Topbar({ wide, splitOn, hasSession, onSwitcher, onSplit, onSetti
       >
         <MenuIcon />
       </button>
-      <span className="brand">
-        <Gear size={22} className="spin" />
-      </span>
       <RemoteBadge />
       <strong className="current-name">
         {active ? sessionLabel(active, providers) : t('switcher.empty')}

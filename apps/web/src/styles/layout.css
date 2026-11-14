@@ -13,15 +13,6 @@
   border-bottom: 3px double var(--brass);
   box-shadow: 0 4px 14px rgb(0 0 0 / 60%);
 }
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-variant: small-caps;
-  letter-spacing: 0.15em;
-  color: var(--brass-hi);
-  text-shadow: var(--glow);
-}
 .tool.on {
   border-color: var(--amber);
   color: var(--amber);
