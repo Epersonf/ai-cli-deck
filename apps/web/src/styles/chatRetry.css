@@ -1,0 +1,30 @@
+.retry-banner {
+  flex: 0 0 auto;
+  margin: 8px 12px;
+  padding: 12px;
+  border: 1px solid var(--brass);
+  border-radius: 8px;
+  background: var(--leather);
+  font-size: 13px;
+}
+.retry-banner p {
+  margin: 6px 0;
+}
+.retry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.retry-actions button {
+  padding: 6px 10px;
+  border: 1px solid var(--brass);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.retry-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -66,6 +66,11 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('usage-refresh') }),
   /** Native manual context compaction. Never sent as ordinary model input. */
   z.object({ type: z.literal('compact') }),
+  z.object({
+    type: z.literal('retry'),
+    id: z.string().max(80),
+    action: z.enum(['wait', 'now', 'cancel']),
+  }),
   /** This device has the chat open and in view (or not): finished answers are then not announced. */
   z.object({ type: z.literal('viewing'), viewing: z.boolean() }),
 ]);

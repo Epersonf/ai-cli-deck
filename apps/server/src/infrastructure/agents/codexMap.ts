@@ -1,3 +1,5 @@
+import { codexTurnUsage } from './codexTurnUsage.js';
+import { providerRetry } from '../../domain/providerRetry.js';
 import type { ChatEvent } from '@deck/shared';
 import { friendlyError, RETRY_NOISE, type CodexState } from './codexState.js';
 export { friendlyError, newCodexState } from './codexState.js';
@@ -97,42 +99,28 @@ export function mapCodexLine(line: Json, state: CodexState, sink: AgentSink): vo
     if (item) for (const event of itemEvents(type, item, state)) sink.event(event);
   } else if (type === 'turn.completed') {
     state.finished = true;
-    const used = obj(line['usage']);
-    const number = (value: unknown): number =>
-      typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0;
-    const input = number(used?.['input_tokens']);
-    const cached = Math.min(input, number(used?.['cached_input_tokens']));
-    const output = number(used?.['output_tokens']);
-    const write = used?.['cache_write_input_tokens'];
-    if (used)
-      sink.usage({
-        // Exec reports totals over all requests of the turn, not context occupancy.
-        contextTokens: null,
-        cache: {
-          scope: 'turn',
-          read: cached,
-          write: typeof write === 'number' ? number(write) : null,
-          uncached: Math.max(0, input - cached - number(write)),
-          ttlMs: null,
-        },
-        turn: {
-          id: state.itemPrefix,
-          input,
-          cached,
-          output,
-          durationMs: Math.max(0, Date.now() - state.startedAt),
-          at: new Date().toISOString(),
-        },
-      });
+    const reading = codexTurnUsage(obj(line['usage']), state);
+    if (reading) sink.usage(reading);
     sink.event({ t: 'turn-end', error: null, costUsd: null, durationMs: null });
   } else if (type === 'turn.failed' || type === 'error') {
     const message = str(obj(line['error'])?.['message']) || str(line['message']);
-    if (message && !RETRY_NOISE.test(message)) state.lastError = message;
+    if (message && !RETRY_NOISE.test(message)) {
+      state.lastError = message;
+      const retry = providerRetry(line['error'] ?? message);
+      state.retry = retry
+        ? {
+            ...retry,
+            retryAt:
+              retry.retryAt ?? (state.retry?.kind === retry.kind ? state.retry.retryAt : null),
+          }
+        : null;
+    }
     if (type === 'turn.failed') {
       state.finished = true;
       sink.event({
         t: 'turn-end',
         error: friendlyError(state.lastError ?? 'The turn failed'),
+        ...(state.retry ? { retry: state.retry } : {}),
         costUsd: null,
         durationMs: null,
       });

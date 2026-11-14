@@ -86,6 +86,11 @@ export class SessionManager extends SessionChats {
       };
       this.reg.runtimes.set(session.id, { session, chat: this.runtimes.make(session, from) });
     }
+    await Promise.all(
+      [...this.reg.runtimes.values()]
+        .filter((r) => r.session.meta[CHAT_META.retry])
+        .map((r) => r.chat.restoreRetry()),
+    );
   }
 
   async remove(id: string): Promise<void> {
@@ -108,7 +113,11 @@ export class SessionManager extends SessionChats {
     this.deps.usageHistoryStore?.remove(id);
     this.reg.update(id, {
       provider,
-      meta: withMeta(withMeta(runtime.session.meta, CHAT_META.chat, ''), CHAT_META.fork, ''),
+      meta: withMeta(
+        withMeta(withMeta(runtime.session.meta, CHAT_META.chat, ''), CHAT_META.fork, ''),
+        CHAT_META.retry,
+        '',
+      ),
     });
     const session = this.reg.require(id).session;
     const chat = this.runtimes.make(session, { chatId: null, fork: false });

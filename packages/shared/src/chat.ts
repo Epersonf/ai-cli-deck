@@ -59,6 +59,7 @@ export const CHAT_META = {
   chat: 'chat',
   /** A copy has not received its own thread id yet. Preserve across server restarts. */
   fork: 'fork',
+  retry: 'retry',
   /** The settings picked in the chat (kept so a restart or another device sees the same). */
   model: 'model',
   mode: 'mode',

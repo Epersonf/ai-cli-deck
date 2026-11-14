@@ -1,3 +1,4 @@
+import type { RetryPersistence } from './RetryDeps.js';
 import type { ChatConfig } from '@deck/shared';
 import type { AgentConfig, AgentPort, AgentSpec } from '../domain/agent.js';
 import type { EventBus } from '../domain/events.js';
@@ -11,6 +12,7 @@ export interface RuntimeDeps {
   log: ChatLogPort;
   bus: EventBus;
   meter: UsageMeter;
+  retry?: RetryPersistence;
   /** A fresh uuid: the id of a `user` step, which Claude keeps as the message's uuid. */
   uuid(): string;
   now(): Date;

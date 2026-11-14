@@ -1,3 +1,5 @@
+import { RetryBanner } from './RetryBanner';
+import '../../styles/chatRetry.css';
 import { useEffect } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { Gear } from '../../shared/ui/Gear';
@@ -70,7 +72,15 @@ export function ChatPane({ sessionId, visible }: Props) {
           onResend={(text) => sendChat(sessionId, { type: 'send', text, images: [] })}
         />
       )}
-      <MessageList sessionId={sessionId} blocks={chat.blocks} busy={chat.busy} empty={empty} />
+      {chat.config?.retry && (
+        <RetryBanner sessionId={sessionId} retry={chat.config.retry} online={chat.online} />
+      )}
+      <MessageList
+        sessionId={sessionId}
+        blocks={chat.blocks}
+        busy={chat.busy && !chat.config?.retry}
+        empty={empty}
+      />
       {chat.config && <ModeModelBar sessionId={sessionId} config={chat.config} />}
       <Composer sessionId={sessionId} busy={chat.busy} visible={visible} />
     </section>

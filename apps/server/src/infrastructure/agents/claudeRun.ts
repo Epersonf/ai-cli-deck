@@ -1,3 +1,4 @@
+import { providerRetry } from '../../domain/providerRetry.js';
 import type {
   AgentConfig,
   AgentRun,
@@ -62,14 +63,13 @@ export class ClaudeRun implements AgentRun {
     this.input.push(claudeUserMessage(input.id, input.text, input.images));
     if (!this.query) void this.consume();
   }
-
   private async consume(): Promise<void> {
     const options = claudeOptions(this.spec, {
       abortController: this.abort,
       canUseTool: this.permissions.ask,
       stderr: (data: unknown) => (this.stderr = (this.stderr + String(data)).slice(-2000)),
     });
-    let failure: string | null = null;
+    let failure: unknown = null;
     try {
       this.query = this.queryFn({ prompt: this.input.iterate(), options });
       for await (const msg of this.query) {
@@ -79,31 +79,33 @@ export class ClaudeRun implements AgentRun {
         if (msg.type === 'result') this.turnOver();
       }
     } catch (error) {
-      if (!this.abort.signal.aborted)
-        failure = error instanceof Error ? error.message : String(error);
+      if (!this.abort.signal.aborted) failure = error;
     } finally {
       this.finish(failure);
     }
   }
-
   private begin(): void {
     this.idle.clear();
     this.turn = true;
     this.sink.event({ t: 'turn-start' });
   }
-
-  private finish(failure: string | null): void {
+  private finish(failure: unknown): void {
     this.permissions.denyAll();
     stopTasks(this.state.tasks, this.sink);
     if (this.turn) {
       this.turn = false;
       const stopped = this.abort.signal.aborted;
+      const text =
+        failure instanceof Error
+          ? failure.message
+          : typeof failure === 'string'
+            ? failure
+            : this.stderr.trim() || 'The agent stopped';
+      const retry = !stopped && !this.interrupted ? providerRetry(failure ?? text) : null;
       this.sink.event({
+        ...(retry ? { retry } : {}),
         t: 'turn-end',
-        error:
-          stopped || this.interrupted
-            ? null
-            : markAuth(failure ?? (this.stderr.trim() || 'The agent stopped')),
+        error: stopped || this.interrupted ? null : markAuth(text),
         costUsd: null,
         durationMs: null,
       });
@@ -111,7 +113,6 @@ export class ClaudeRun implements AgentRun {
     this.input.close();
     this.sink.ended();
   }
-
   private turnOver(): void {
     this.turn = false;
     this.stderr = '';
@@ -123,7 +124,6 @@ export class ClaudeRun implements AgentRun {
     this.interrupted = true;
     stopAnswer(this.query, () => this.cut());
   }
-
   setConfig(patch: Partial<AgentConfig>): void {
     const q = this.query;
     if (patch.model !== undefined)

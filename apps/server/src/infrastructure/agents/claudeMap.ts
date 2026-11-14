@@ -1,3 +1,4 @@
+import { ClaudeRetry } from './claudeRetry.js';
 import type { AgentSink } from '../../domain/agent.js';
 import { assistantEvents, resultEvents } from './claudeBlocks.js';
 import { assistantAuthLine, turnEnd } from './claudeEnd.js';
@@ -36,6 +37,7 @@ export interface MapState {
   chatId: string | null;
   /** The CLI's own "Not logged in" line, seen as an answer: the turn then ends as a sign-in failure. */
   authText: string | null;
+  retry: ClaudeRetry;
   /** The background jobs of this run. */
   tasks: Tasks;
   /** Blocks already finalized per API message id: the SDK sends one message per block, so each starts at its stream index. */
@@ -46,12 +48,14 @@ export const newMapState = (): MapState => ({
   messageId: '',
   chatId: null,
   authText: null,
+  retry: new ClaudeRetry(),
   tasks: new Map(),
   seen: new Map(),
 });
 
 /** Turns one Claude Agent SDK message into steps of the chat, deltas and the conversation id. */
 export function mapClaudeMessage(msg: SdkMessage, state: MapState, sink: AgentSink): void {
+  state.retry.observe(msg);
   if (msg.session_id && msg.session_id !== state.chatId) {
     state.chatId = msg.session_id;
     sink.chatId(msg.session_id);
@@ -61,6 +65,15 @@ export function mapClaudeMessage(msg: SdkMessage, state: MapState, sink: AgentSi
     mapTask(msg, state.tasks, sink);
     const reading = usageOf(msg);
     if (reading) sink.usage(reading);
+    const rejected = msg.type === 'rate_limit_event' ? state.retry.rejection() : null;
+    if (rejected?.hint)
+      sink.event({
+        t: 'turn-end',
+        error: 'Usage limit reached',
+        retry: rejected.hint,
+        costUsd: null,
+        durationMs: null,
+      });
     return;
   }
   if (msg.parent_tool_use_id) return; // what a sub-agent does inside a tool is not shown line by line
@@ -85,13 +98,13 @@ export function mapClaudeMessage(msg: SdkMessage, state: MapState, sink: AgentSi
     const count = Array.isArray(msg.message?.content) ? msg.message.content.length : 0;
     state.seen.set(mid, offset + count);
     for (const event of assistantEvents(msg, offset))
-      if (auth === null || event.t !== 'text') sink.event(event);
+      if ((auth === null && !msg.error) || event.t !== 'text') sink.event(event);
   } else if (msg.type === 'user') {
     for (const event of resultEvents(msg)) sink.event(event);
   } else if (msg.type === 'result') {
     const reading = usageOf(msg);
     if (reading) sink.usage(reading);
-    sink.event(turnEnd(msg, state.authText));
+    sink.event(turnEnd(msg, state.authText, state.retry.result(msg)));
     state.authText = null;
   }
 }

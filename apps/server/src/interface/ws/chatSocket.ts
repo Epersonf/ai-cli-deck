@@ -90,6 +90,8 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
             json({ type: 'event', event: { t: 'notice', level: 'error', text: reason } });
           });
       } else if (message.type === 'stop-task') c.sessions.stopTask(id, message.id);
+      else if (message.type === 'retry')
+        void c.sessions.chooseRetry(id, message.id, message.action).catch(inputFailed);
       else if (message.type === 'compact') void c.sessions.compact(id).catch(inputFailed);
       else if (message.type === 'usage-refresh') void c.sessions.refreshLimits(id);
       else if (message.type === 'viewing') c.viewers?.set(id, socket, message.viewing);

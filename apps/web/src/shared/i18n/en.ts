@@ -536,6 +536,19 @@ export const en = {
   'otp.rotated': 'New secret ready. Scan it now.',
   'otp.toStaticHint': 'Type the current code and choose the new password.',
   'otp.toStaticNow': 'Switch to static',
+  'retry.waiting': 'Waiting to continue',
+  'retry.overloaded': 'Provider temporarily overloaded',
+  'retry.limited': 'Usage limit reached',
+  'retry.estimated':
+    'The provider did not give a reset time. Next attempt: {at} (about {minutes} min).',
+  'retry.reset': 'Continuation scheduled for {at} (about {minutes} min).',
+  'retry.serverWait': 'The server will continue this task automatically. You can close this page.',
+  'retry.offer':
+    'Wait to continue this task in the same conversation, with up to five automatic attempts.',
+  'retry.exhausted': 'Five attempts failed. Choose again to authorize more attempts.',
+  'retry.wait': 'Wait and continue',
+  'retry.now': 'Try now',
+  'retry.cancel': 'Cancel continuation',
 } as const;
 
 export type MessageKey = keyof typeof en;

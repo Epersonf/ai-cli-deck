@@ -9,6 +9,7 @@ export interface UsageMessage {
   modelUsage?: Record<string, { contextWindow?: number }>;
   rate_limit_info?: {
     status?: string;
+    errorCode?: string;
     resetsAt?: number;
     rateLimitType?: string;
     utilization?: number;

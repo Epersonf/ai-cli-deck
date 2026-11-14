@@ -1,3 +1,4 @@
+import { sessionRetry } from './sessionRetry.js';
 import type { UsageHistoryStore } from './UsageHistoryStore.js';
 import { randomUUID } from 'node:crypto';
 import type { Session } from '@deck/shared';
@@ -48,6 +49,7 @@ export class RuntimeFactory {
         () => system.now(),
         this.d.usageHistoryStore ? { store: this.d.usageHistoryStore, sessionId: id } : undefined,
       ),
+      retry: sessionRetry(session, reg),
       uuid: randomUUID,
       now: () => system.now(),
       spec: (state) => launcher.spec(reg.require(id).session, state),

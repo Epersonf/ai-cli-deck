@@ -57,6 +57,16 @@
   Codex's native `tool_output_token_limit` / per-MCP-tool budgets remain profile-controlled; the display-only
   `codexMap` clip does not reduce model input. Cache lifetime, billing and cache breakpoint policy remain
   the CLI/provider's responsibility, rather than being inferred by the deck.
+- **Usage-limit continuation.** `providerRetry` classifies only temporary quota/rate/overload failures;
+  billing/auth/context/budget failures are excluded. Claude's rejected rate-limit events and synthetic
+  assistant errors and Codex's structured error events retain reset timing. `ChatRetry` offers a durable,
+  per-task opt-in through `ChatConfig.retry` and the `retry` WebSocket command. `RetryTimer` waits on the
+  server, scheduling only after the choice is saved in bounded `session.meta.retry` (references/timing,
+  no prompt/attachments). It cancels in-flight scheduling writes by generation, uses provider reset times
+  or bounded backoff, and asks again after five attempts. `RetryTask` resumes the existing thread and
+  checks restoration safety. `TurnRunner.release` and `guardedSink` invalidate old provider callbacks
+  so late completion events cannot end a resumed turn. Queue draining stays blocked during the choice
+  and wait; successful completion/cancellation releases it. Restoring a saved offer never authorizes work.
 - **Voice** (`WhisperEngine`): whisper.cpp, downloaded on Windows (pinned sha256, resumed after a stall), an
   installed `whisper-cli` elsewhere; the model is `<state>/voice/ggml-small.bin`.
 - **Keys are files, not terminals.** A profile's API key is typed in the profile dialog and kept in

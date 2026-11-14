@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ChatRetrySchema, RetryHintSchema } from './retry.js';
 
 /** Which agent engine drives a session. Both talk to the model themselves; the deck only renders the chat. */
 export const AgentKindSchema = z.enum(['claude', 'codex']);
@@ -86,6 +87,7 @@ export const ChatEventSchema = z.discriminatedUnion('t', [
     error: z.string().nullable().default(null),
     costUsd: z.number().nullable().default(null),
     durationMs: z.number().nullable().default(null),
+    retry: RetryHintSchema.nullable().optional(),
   }),
   z.object({ t: z.literal('notice'), level: z.enum(['info', 'error']), text: z.string() }),
   /** A background job the agent started (a dev server, a build...). Upserted by id; shown in the tasks panel. */
@@ -122,6 +124,7 @@ export const ChatConfigSchema = z.object({
   /** Detected on the server for the executable used by this profile. */
   canCompact: z.boolean().optional(),
   compacting: z.boolean().optional(),
+  retry: ChatRetrySchema.nullable().optional(),
   /** The model picked for this chat; null: the default of the profile/agent is used. */
   model: z.string().nullable(),
   /** The model actually answering now (as the agent reported it); null until known. */

@@ -1,3 +1,4 @@
+import { guardedSink } from './guardedSink.js';
 import type { ImageInput } from '@deck/shared';
 import type { AgentPort, AgentRun, AgentSink, AgentSpec } from '../domain/agent.js';
 import type { ChatBook } from './ChatBook.js';
@@ -20,6 +21,9 @@ export interface RunnerDeps {
 export class TurnRunner {
   /** The run behind the chat, while there is one. */
   run: AgentRun | null = null;
+  private generation = 0;
+  private retire: (cleanup: boolean) => void = () => {};
+  current: { id: string; prompt: string; images: readonly ImageInput[] } | null = null;
   /** `prompt` is what the agent is told: the text, or a replay in front of it. */
   private readonly queue: { id: string; prompt: string; images: readonly ImageInput[] }[] = [];
 
@@ -35,11 +39,26 @@ export class TurnRunner {
     const next = this.queue.shift();
     if (!next) return;
     const { settings, book, notice } = this.d;
+    this.current = next;
     this.d.setBusy(true);
     notice.began();
     book.add({ t: 'turn-start' });
     try {
-      this.run ??= this.d.agent.start(this.d.spec(settings.run()), this.d.sink());
+      if (!this.run) {
+        const generation = ++this.generation;
+        let cleanup = false;
+        this.retire = (keep) => {
+          cleanup = keep;
+        };
+        this.run = this.d.agent.start(
+          this.d.spec(settings.run()),
+          guardedSink(
+            this.d.sink(),
+            () => this.generation === generation,
+            () => cleanup,
+          ),
+        );
+      }
       settings.started();
       this.run.send({ id: next.id, text: next.prompt, images: next.images });
     } catch (error) {
@@ -47,6 +66,19 @@ export class TurnRunner {
       const message = error instanceof Error ? error.message : String(error);
       this.d.sink().event({ t: 'turn-end', error: message, costUsd: null, durationMs: null });
     }
+  }
+
+  release(cleanup = false): void {
+    this.retire(cleanup);
+    this.generation += 1;
+    const run = this.run;
+    this.run = null;
+    run?.close();
+  }
+
+  resume(id: string, prompt: string, images: readonly ImageInput[]): void {
+    this.queue.unshift({ id, prompt, images });
+    this.dispatch();
   }
 
   /** Stops the answer being written and drops what was waiting. */
@@ -61,7 +93,7 @@ export class TurnRunner {
   /** Ends the run (a later message starts a new one) and drops what was waiting. */
   close(): void {
     this.queue.length = 0;
-    this.run?.close();
-    this.run = null;
+    this.release();
+    this.current = null;
   }
 }

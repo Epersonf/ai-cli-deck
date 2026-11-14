@@ -1,3 +1,4 @@
+import type { ChatEvent } from '@deck/shared';
 import { markAuth } from '../domain/authError.js';
 import type { AgentConfig, AgentSink } from '../domain/agent.js';
 import type { ChatBook } from './ChatBook.js';
@@ -18,6 +19,7 @@ export interface SinkHost {
   next(): void;
   /** An answer ended: its error, if it failed. */
   finished(error: string | null): void;
+  blocked?(event: Extract<ChatEvent, { t: 'turn-end' }>): boolean;
   /** The agent run is over. */
   ended(): void;
 }
@@ -33,6 +35,7 @@ export function chatSink(h: SinkHost): AgentSink {
       if (event.t === 'turn-start') h.setBusy(true);
       if (event.t !== 'turn-end') return;
       h.book.dropPartials();
+      if (h.blocked?.(event)) return;
       h.finished(event.error);
       h.setBusy(false);
       h.next();

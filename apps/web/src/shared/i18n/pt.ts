@@ -542,4 +542,18 @@ export const pt: Messages = {
   'otp.rotated': 'Novo segredo pronto. Escaneie agora.',
   'otp.toStaticHint': 'Digite o código atual e escolha a nova senha.',
   'otp.toStaticNow': 'Voltar à senha fixa',
+  'retry.waiting': 'Aguardando para continuar',
+  'retry.overloaded': 'Provedor temporariamente sobrecarregado',
+  'retry.limited': 'Limite de uso atingido',
+  'retry.estimated':
+    'O provedor não informou o horário de liberação. Próxima tentativa: {at} (cerca de {minutes} min).',
+  'retry.reset': 'Retomada programada para {at} (cerca de {minutes} min).',
+  'retry.serverWait':
+    'O servidor continuará esta tarefa automaticamente. Você pode fechar esta página.',
+  'retry.offer':
+    'Aguarde para continuar esta tarefa na mesma conversa, com até cinco tentativas automáticas.',
+  'retry.exhausted': 'Cinco tentativas falharam. Escolha novamente para autorizar mais tentativas.',
+  'retry.wait': 'Aguardar e continuar',
+  'retry.now': 'Tentar agora',
+  'retry.cancel': 'Cancelar retomada',
 };

@@ -165,6 +165,27 @@ cache reuse and elapsed time survive server restarts (the most recent twenty tur
 Stable instruction snapshots are kept privately for each conversation; new conversations receive updated
 notes. Memory briefings have a full-section UTF-8 byte budget, and long MCP listings/snapshots are paginated.
 
+## Wait for usage limits and continue
+
+When a task is interrupted by a temporary provider limit, the chat offers **Wait and continue**,
+**Try now**, and **Cancel continuation**. This works with Claude and Codex, including API-key profiles
+such as DeepSeek. It is opt-in for that interrupted task; warnings and ordinary task failures do not
+schedule work. The server waits without keeping an agent process running or sending model requests.
+
+A provider reset timestamp, explicit time-zone clock, or `Retry-After` takes priority. Exhausted plan
+windows are respected too. If none is known, the panel marks the schedule as estimated and uses
+increasing delays, from one minute up to fifteen, with jitter. After five unsuccessful automatic attempts,
+the chat asks again. Closing the page does not stop an authorized wait; the saved choice survives a
+server restart. Stop, a new conversation, or a profile switch cancels it. Queued messages stay behind
+the interrupted task until it finishes or the wait is cancelled.
+
+Continuation resumes the same saved thread and asks the agent to check what already completed.
+The original request is resent when no thread was established or no assistant/tool progress confirmed its acceptance. Attachments are never stored in
+retry metadata: if a restart leaves no thread and requires missing attachments or an unrecoverable
+original prompt, the app asks the person to resend instead of continuing with incomplete context.
+Billing/insufficient-credit errors, bad keys, context-window errors and turn/budget caps are not retried.
+DeepSeek documents temporary [429/503 errors separately from insufficient balance (402)](https://api-docs.deepseek.com/quick_start/error_codes/).
+
 ## Your other devices: use the PC from the phone
 
 Settings > Devices pairs decks on the same network: on the PC turn on **Share this deck with my devices**

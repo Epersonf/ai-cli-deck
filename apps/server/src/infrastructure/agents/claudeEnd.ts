@@ -1,3 +1,5 @@
+import { providerRetry } from '../../domain/providerRetry.js';
+import type { ClaudeFailure } from './claudeRetry.js';
 import type { ChatEvent } from '@deck/shared';
 import { AUTH_MARKER, isAuthLine, markAuth } from '../../domain/authError.js';
 import type { Block, SdkMessage } from './claudeMap.js';
@@ -10,12 +12,21 @@ export function assistantAuthLine(msg: SdkMessage): string | null {
   return texts.length === 1 && texts[0] !== undefined && isAuthLine(texts[0]) ? texts[0] : null;
 }
 
-export function turnEnd(msg: SdkMessage, authText: string | null): ChatEvent {
+export function turnEnd(
+  msg: SdkMessage,
+  authText: string | null,
+  blocked: ClaudeFailure | null = null,
+): ChatEvent {
   const failed = msg.is_error === true || (msg.subtype !== undefined && msg.subtype !== 'success');
-  const reason = msg.result || msg.errors?.join('\n') || msg.subtype || 'The agent failed';
+  const reason =
+    blocked?.text || msg.result || msg.errors?.join('\n') || msg.subtype || 'The agent failed';
+  const retry =
+    authText === null ? (blocked ? blocked.hint : failed ? providerRetry(reason) : null) : null;
   return {
+    ...(retry ? { retry } : blocked && authText === null ? { retry: null } : {}),
     t: 'turn-end',
-    error: authText !== null ? `${AUTH_MARKER}${authText}` : failed ? markAuth(reason) : null,
+    error:
+      authText !== null ? `${AUTH_MARKER}${authText}` : failed || blocked ? markAuth(reason) : null,
     costUsd: msg.total_cost_usd ?? null,
     durationMs: msg.duration_ms ?? null,
   };

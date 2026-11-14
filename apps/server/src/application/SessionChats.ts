@@ -26,6 +26,11 @@ export class SessionChats {
     this.touch(id);
     await this.chatOf(id).queue.sendOrQueue(text, images);
   }
+  readonly chooseRetry = (
+    id: string,
+    retryId: string,
+    action: 'wait' | 'now' | 'cancel',
+  ): Promise<void> => this.chatOf(id).chooseRetry(retryId, action);
   readonly compact = (id: string): Promise<void> => this.chatOf(id).compact();
   readonly supportsFork = async (id: string): Promise<boolean> =>
     (await this.chatOf(id).capabilities()).fork;

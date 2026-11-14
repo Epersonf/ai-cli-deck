@@ -546,4 +546,17 @@ export const fr: Messages = {
   'otp.rotated': 'Nouveau secret prêt. Scannez-le maintenant.',
   'otp.toStaticHint': 'Saisissez le code actuel et choisissez le nouveau mot de passe.',
   'otp.toStaticNow': 'Revenir au mot de passe fixe',
+  'retry.waiting': 'En attente de reprise',
+  'retry.overloaded': 'Fournisseur temporairement surchargé',
+  'retry.limited': 'Limite d’utilisation atteinte',
+  'retry.estimated':
+    'Le fournisseur n’a pas indiqué d’heure de réinitialisation. Prochain essai : {at} (environ {minutes} min).',
+  'retry.reset': 'Reprise prévue à {at} (environ {minutes} min).',
+  'retry.serverWait':
+    'Le serveur reprendra automatiquement cette tâche. Vous pouvez fermer cette page.',
+  'retry.offer': 'Choisissez d’attendre pour reprendre cette tâche dans la même conversation.',
+  'retry.exhausted': 'Cinq essais ont échoué. Choisissez à nouveau pour autoriser d’autres essais.',
+  'retry.wait': 'Attendre et reprendre',
+  'retry.now': 'Réessayer maintenant',
+  'retry.cancel': 'Annuler la reprise',
 };

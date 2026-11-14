@@ -544,4 +544,17 @@ export const es: Messages = {
   'otp.rotated': 'Nuevo secreto listo. Escanéalo ahora.',
   'otp.toStaticHint': 'Escribe el código actual y elige la nueva contraseña.',
   'otp.toStaticNow': 'Volver a la contraseña fija',
+  'retry.waiting': 'Esperando para continuar',
+  'retry.overloaded': 'Proveedor temporalmente sobrecargado',
+  'retry.limited': 'Límite de uso alcanzado',
+  'retry.estimated':
+    'El proveedor no indicó la hora de restablecimiento. Próximo intento: {at} (unos {minutes} min).',
+  'retry.reset': 'Continuación programada para {at} (unos {minutes} min).',
+  'retry.serverWait':
+    'El servidor continuará esta tarea automáticamente. Puedes cerrar esta página.',
+  'retry.offer': 'Elige esperar para continuar esta tarea en la misma conversación.',
+  'retry.exhausted': 'Cinco intentos fallaron. Elige de nuevo para autorizar más intentos.',
+  'retry.wait': 'Esperar y continuar',
+  'retry.now': 'Intentar ahora',
+  'retry.cancel': 'Cancelar continuación',
 };

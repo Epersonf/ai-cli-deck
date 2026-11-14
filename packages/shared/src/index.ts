@@ -24,3 +24,4 @@ export * from './chat.js';
 export * from './network.js';
 export * from './machine.js';
 export * from './pushProtocol.js';
+export * from './retry.js';
