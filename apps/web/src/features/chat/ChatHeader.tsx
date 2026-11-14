@@ -14,6 +14,7 @@ import { toast } from '../../shared/ui/toast';
 import type { Block } from './blocks';
 import { ChatTasks } from './ChatTasks';
 import type { ChatTask } from './tasks';
+import { useChats } from './chatStore';
 import { UsageGauge } from './UsageGauge';
 import { transcript } from './transcript';
 import { ForkIcon } from '../../shared/ui/GlyphIcons';
@@ -32,6 +33,7 @@ export function ChatHeader({ session, blocks, online, tasks, usage }: Props) {
   const ask = useConfirm((x) => x.ask);
   const sideCount = useSessions((s) => sideChatsOf(s.sessions, session.id).length);
   const isMain = session.parentId === null;
+  const agent = useChats((s) => s.byId[session.id]?.config?.agent);
   const openSide = (): void =>
     void useSide
       .getState()
@@ -52,7 +54,7 @@ export function ChatHeader({ session, blocks, online, tasks, usage }: Props) {
         {session.cwd}
       </span>
       {!online && <span className="chat-offline">{t('chat.reconnecting')}</span>}
-      <UsageGauge usage={usage} />
+      <UsageGauge usage={usage} sessionId={session.id} canCompact={agent === 'claude'} />
       <ChatTasks sessionId={session.id} tasks={tasks} />
       {sideCount > 0 && (
         <button type="button" className="header-pop-btn" title={t('side.title')} onClick={openSide}>

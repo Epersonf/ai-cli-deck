@@ -4,13 +4,27 @@ export type Limit = NonNullable<UsageReading['limit']>;
 
 /** Keeps the limits between server runs. */
 export interface LimitStore {
-  load(): Promise<Record<string, Limit>>;
-  save(all: Record<string, Limit>): Promise<void>;
+  load(): Promise<Record<string, unknown>>;
+  save(all: Record<string, Limit[]>): Promise<void>;
 }
 
-/** The last usage window each account (profile) reported: shared by all that profile's sessions. */
+/** Older files kept one unnamed window per account. */
+function asLimits(saved: unknown): Limit[] {
+  const list = Array.isArray(saved) ? saved : [saved];
+  return list.flatMap((item): Limit[] => {
+    if (typeof item !== 'object' || item === null) return [];
+    const o = item as Record<string, unknown>;
+    if (typeof o['used'] !== 'number') return [];
+    const label = typeof o['label'] === 'string' ? o['label'] : null;
+    const key = typeof o['key'] === 'string' ? o['key'] : (label ?? 'limit');
+    const resetsAt = typeof o['resetsAt'] === 'string' ? o['resetsAt'] : null;
+    return [{ key, used: o['used'], resetsAt, label }];
+  });
+}
+
+/** The usage windows each account (profile) last reported: shared by all that profile's sessions. */
 export class LimitBook {
-  private readonly all = new Map<string, Limit>();
+  private readonly all = new Map<string, Map<string, Limit>>();
   private readonly listeners = new Set<(key: string) => void>();
 
   constructor(
@@ -19,22 +33,26 @@ export class LimitBook {
   ) {}
 
   async restore(): Promise<void> {
-    const saved: Record<string, Limit> = (await this.store?.load().catch(() => null)) ?? {};
-    for (const [key, limit] of Object.entries(saved)) this.all.set(key, limit);
+    const saved = (await this.store?.load().catch(() => null)) ?? {};
+    for (const [account, value] of Object.entries(saved))
+      this.all.set(account, new Map(asLimits(value).map((l) => [l.key, l])));
   }
 
-  /** The window as last seen; null once it has reset (the figure is then out of date). */
-  get(key: string): Limit | null {
-    const limit = this.all.get(key);
-    if (!limit) return null;
-    const resets = limit.resetsAt ? Date.parse(limit.resetsAt) : Number.NaN;
-    return resets <= this.now().getTime() ? null : limit;
+  /** The windows as last seen, leaving out the ones that have reset (their figure is out of date). */
+  get(account: string): Limit[] {
+    const now = this.now().getTime();
+    return [...(this.all.get(account)?.values() ?? [])].filter(
+      (l) => !l.resetsAt || Date.parse(l.resetsAt) > now || Number.isNaN(Date.parse(l.resetsAt)),
+    );
   }
 
-  set(key: string, limit: Limit): void {
-    this.all.set(key, limit);
-    void this.store?.save(Object.fromEntries(this.all)).catch(() => undefined);
-    for (const listener of this.listeners) listener(key);
+  set(account: string, limit: Limit): void {
+    const windows = this.all.get(account) ?? new Map<string, Limit>();
+    windows.set(limit.key, limit);
+    this.all.set(account, windows);
+    const everything = Object.fromEntries([...this.all].map(([k, w]) => [k, [...w.values()]]));
+    void this.store?.save(everything).catch(() => undefined);
+    for (const listener of this.listeners) listener(account);
   }
 
   onChange(listener: (key: string) => void): void {

@@ -8,7 +8,7 @@ import type {
 } from '../../domain/agent.js';
 import type { QueryFn, QueryLike } from './claudeDriver.js';
 import { mapClaudeMessage, newMapState, type SdkMessage } from './claudeMap.js';
-import { claudeMode, claudeOptions, claudeUserMessage } from './claudeOptions.js';
+import { applyAutoCompact, claudeMode, claudeOptions, claudeUserMessage } from './claudeOptions.js';
 import { ClaudePermissions } from './claudePermissions.js';
 import { runningTasks, stopTasks } from './claudeTasks.js';
 import { markAuth } from '../../domain/authError.js';
@@ -129,6 +129,7 @@ export class ClaudeRun implements AgentRun {
     if (patch.model !== undefined)
       void q?.setModel(patch.model ?? undefined).catch(() => undefined);
     if (patch.mode) void q?.setPermissionMode(claudeMode(patch.mode)).catch(() => undefined);
+    if (patch.autoCompact !== undefined) applyAutoCompact(q, patch.autoCompact);
   }
 
   answer(id: string, answer: PermissionAnswer): void {

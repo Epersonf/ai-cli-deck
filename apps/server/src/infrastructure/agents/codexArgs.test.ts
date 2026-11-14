@@ -38,6 +38,12 @@ describe('Codex exec arguments', () => {
     expect(codexArgs({ ...spec, mode: 'acceptEdits' }, null)).toContain(
       'sandbox_mode="workspace-write"',
     );
+    expect(codexArgs({ ...spec, autoCompact: 200_000 }, null)).toContain(
+      'model_auto_compact_token_limit=200000',
+    );
+    expect(codexArgs({ ...spec, autoCompact: 'off' }, null).join(' ')).not.toContain(
+      'auto_compact',
+    );
     expect(codexArgs({ ...spec, mode: 'bypassPermissions' }, null)).toContain(
       'sandbox_mode="danger-full-access"',
     );

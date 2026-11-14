@@ -1,6 +1,6 @@
 import type { ChatEvent } from '@deck/shared';
 import type { AgentSink, UsageReading } from '../../domain/agent.js';
-import type { QueryFn, QueryLike } from './claudeDriver.js';
+import type { ClaudeUsageAnswer, QueryFn, QueryLike } from './claudeDriver.js';
 import type { SdkMessage } from './claudeMap.js';
 
 /** A fake SDK: yields what the test pushes, and records the options and what the user sent. */
@@ -15,6 +15,8 @@ export function fakeQuery() {
     rewound: [] as string[],
     canRewind: true,
     models: [] as Array<string | undefined>,
+    flagSettings: [] as Array<Record<string, unknown>>,
+    usageAnswer: { rate_limits_available: false, rate_limits: null } as ClaudeUsageAnswer,
     supported: [] as Array<{ value: string; displayName?: string; description?: string }>,
     emit(message: SdkMessage) {
       out.push(message);
@@ -47,7 +49,13 @@ export function fakeQuery() {
         api.models.push(m);
         return Promise.resolve();
       },
+      usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET: () =>
+        Promise.resolve(api.usageAnswer),
       setPermissionMode: () => Promise.resolve(),
+      applyFlagSettings: (settings) => {
+        api.flagSettings.push(settings);
+        return Promise.resolve();
+      },
       supportedModels: () => Promise.resolve(api.supported),
       stopTask: (id) => {
         api.stopped.push(id);

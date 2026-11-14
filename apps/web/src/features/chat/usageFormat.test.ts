@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { band, contextFill, tokens, untilReset } from './usageFormat';
+import { band, cacheLeft, cacheShare, contextFill, tokens, untilReset } from './usageFormat';
 
 const usage = {
   costUsd: null,
   contextTokens: 50_000,
   contextWindow: 200_000,
-  limitUsed: null,
-  limitResetsAt: null,
-  limitLabel: null,
+  limits: [],
+  cache: null,
 };
 
 describe('usage format', () => {
@@ -35,5 +34,19 @@ describe('usage format', () => {
 
   it('bands the gauge', () => {
     expect([band(0.1), band(0.75), band(0.95)]).toEqual(['ok', 'warn', 'full']);
+  });
+
+  it('counts down the cache, and says nothing when its lifetime is unknown', () => {
+    const at = '2026-01-01T00:00:00Z';
+    const now = Date.parse(at);
+    expect(cacheLeft({ read: 1, write: 0, ttlMs: 300_000, at }, now + 60_000)).toBe(240_000);
+    expect(cacheLeft({ read: 1, write: 0, ttlMs: 300_000, at }, now + 400_000)).toBe(0);
+    expect(cacheLeft({ read: 1, write: 0, ttlMs: null, at }, now)).toBeNull();
+  });
+
+  it('computes the share of the prompt read from the cache', () => {
+    const at = '2026-01-01T00:00:00Z';
+    expect(cacheShare({ read: 900, write: 100, ttlMs: null, at })).toBe(0.9);
+    expect(cacheShare({ read: 0, write: 0, ttlMs: null, at })).toBeNull();
   });
 });

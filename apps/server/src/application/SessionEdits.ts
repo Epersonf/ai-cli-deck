@@ -56,6 +56,7 @@ export class SessionEdits {
       meta = withMeta(meta, CHAT_META.model, patch.config.model ?? '');
       meta = withMeta(meta, CHAT_META.mode, patch.config.mode);
       meta = withMeta(meta, CHAT_META.effort, patch.config.effort ?? '');
+      meta = withMeta(meta, CHAT_META.autoCompact, String(patch.config.autoCompact ?? ''));
     }
     this.reg.update(id, { meta });
     await this.reg.persist();

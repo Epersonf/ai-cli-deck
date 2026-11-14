@@ -5,6 +5,7 @@ import type { ChatLogPort, SessionStorePort, SystemPort } from '../domain/ports.
 import type { ProviderRegistry } from '../domain/provider.js';
 import type { AgentLauncher } from './AgentLauncher.js';
 import type { LimitBook } from './LimitBook.js';
+import { LimitProbe } from './LimitProbe.js';
 import type { PortAllocator } from './PortAllocator.js';
 import { existingDir } from './cwd.js';
 import { newSession } from './newSession.js';
@@ -45,11 +46,13 @@ export interface CreateOptions {
 export class SessionManager extends SessionChats {
   private readonly edits: SessionEdits;
   private readonly runtimes: RuntimeFactory;
+  private readonly probe: LimitProbe;
 
   constructor(private readonly deps: SessionManagerDeps) {
     const reg = new SessionRegistry(deps.store, deps.bus);
     super(reg);
     this.edits = new SessionEdits(reg, deps.system);
+    this.probe = new LimitProbe(deps.providers, deps.limits);
     this.runtimes = new RuntimeFactory({
       ...deps,
       reg,
@@ -69,6 +72,10 @@ export class SessionManager extends SessionChats {
       }
     });
   }
+
+  /** Asks the chat's account for its usage windows now, so they show before its first answer. */
+  readonly refreshLimits = (id: string): Promise<void> =>
+    this.probe.refresh(this.reg.require(id).session.provider);
 
   readonly list = (): Session[] => this.reg.list();
   readonly get = (id: string): Session | undefined => this.reg.get(id);

@@ -15,13 +15,27 @@ describe('the accounts usage windows', () => {
       const first = new LimitBook(store);
       const told: string[] = [];
       first.onChange((account) => told.push(account));
-      first.set('claude', { used: 0.5, resetsAt: later(60_000), label: '5-hour limit' });
-      expect(told).toEqual(['claude']);
+      first.set('claude', {
+        key: 'five_hour',
+        used: 0.5,
+        resetsAt: later(60_000),
+        label: '5-hour limit',
+      });
+      first.set('claude', {
+        key: 'seven_day',
+        used: 0.2,
+        resetsAt: later(120_000),
+        label: 'Weekly limit',
+      });
+      expect(told).toEqual(['claude', 'claude']);
       await new Promise((resolve) => setTimeout(resolve, 30));
       const second = new LimitBook(store);
       await second.restore();
-      expect(second.get('claude')).toMatchObject({ used: 0.5, label: '5-hour limit' });
-      expect(second.get('other')).toBeNull();
+      expect(second.get('claude').map((l) => [l.key, l.used])).toEqual([
+        ['five_hour', 0.5],
+        ['seven_day', 0.2],
+      ]);
+      expect(second.get('other')).toEqual([]);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -33,6 +47,24 @@ describe('the accounts usage windows', () => {
       save: () => Promise.resolve(),
     });
     await book.restore();
-    expect(book.get('claude')).toBeNull();
+    expect(book.get('claude')).toEqual([]);
+  });
+
+  it('reads the file of older versions, which kept one unnamed window per account', async () => {
+    const book = new LimitBook({
+      load: () =>
+        Promise.resolve({ claude: { used: 0.3, resetsAt: later(60_000), label: 'Weekly' } }),
+      save: () => Promise.resolve(),
+    });
+    await book.restore();
+    expect(book.get('claude')).toMatchObject([{ key: 'Weekly', used: 0.3 }]);
+  });
+
+  it('replaces a window by its key and drops the ones that reset', () => {
+    const book = new LimitBook();
+    book.set('a', { key: 'five_hour', used: 0.1, resetsAt: later(60_000), label: null });
+    book.set('a', { key: 'five_hour', used: 0.4, resetsAt: later(60_000), label: null });
+    book.set('a', { key: 'seven_day', used: 0.9, resetsAt: later(-1000), label: null });
+    expect(book.get('a').map((l) => [l.key, l.used])).toEqual([['five_hour', 0.4]]);
   });
 });

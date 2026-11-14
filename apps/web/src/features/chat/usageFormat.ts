@@ -31,3 +31,18 @@ export const cost = (usd: number): string => `$${usd.toFixed(usd < 0.1 ? 4 : 2)}
 /** The gauge's colour band: calm, getting full, nearly out. */
 export const band = (fraction: number): 'ok' | 'warn' | 'full' =>
   fraction >= 0.9 ? 'full' : fraction >= 0.7 ? 'warn' : 'ok';
+
+/** Milliseconds until the prompt cache expires (0 once it has); null when its lifetime is unknown. */
+export function cacheLeft(
+  cache: NonNullable<ChatUsage['cache']>,
+  now: number = Date.now(),
+): number | null {
+  if (cache.ttlMs === null) return null;
+  return Math.max(0, Date.parse(cache.at) + cache.ttlMs - now);
+}
+
+/** The share of the prompt that came from the cache, 0..1; null when nothing was counted. */
+export function cacheShare(cache: NonNullable<ChatUsage['cache']>): number | null {
+  const total = cache.read + cache.write;
+  return total > 0 ? cache.read / total : null;
+}

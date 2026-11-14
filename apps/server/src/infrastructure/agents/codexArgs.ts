@@ -29,6 +29,8 @@ export function codexArgs(spec: AgentSpec, chatId: string | null): string[] {
     developer_instructions: toml(spec.guide),
   };
   if (spec.effort) config['model_reasoning_effort'] = toml(spec.effort);
+  if (typeof spec.autoCompact === 'number')
+    config['model_auto_compact_token_limit'] = String(spec.autoCompact);
   for (const [key, value] of Object.entries(config)) args.push('-c', `${key}=${value}`);
   return args;
 }

@@ -12,6 +12,7 @@ import { killTree } from '../process/killTree.js';
 import { codexArgs } from './codexArgs.js';
 import { resolveCodex } from './codexBin.js';
 import { friendlyError, mapCodexLine, newCodexState } from './codexMap.js';
+import { codexUsage } from './codexRollout.js';
 
 /** How long Codex may take to exit after finishing a turn before it is cut. */
 const REAP_AFTER_MS = 4000;
@@ -30,7 +31,12 @@ class CodexRun implements AgentRun {
     private readonly sink: AgentSink,
   ) {
     this.chatId = spec.resumeId;
-    this.config = { model: spec.model, mode: spec.mode, effort: spec.effort };
+    this.config = {
+      model: spec.model,
+      mode: spec.mode,
+      effort: spec.effort,
+      autoCompact: spec.autoCompact ?? null,
+    };
   }
 
   send(input: UserInput): void {
@@ -69,6 +75,11 @@ class CodexRun implements AgentRun {
     });
     child.on('close', () => {
       this.child = null;
+      // The rollout holds what the stream leaves out: the real context, the cache and the account's limits.
+      if (state.finished && this.chatId)
+        void codexUsage(spec.env, this.chatId).then((readings) =>
+          readings.forEach((reading) => this.sink.usage(reading)),
+        );
       if (!state.finished) {
         const error = this.stopped
           ? null
@@ -107,6 +118,8 @@ class CodexRun implements AgentRun {
       model: patch.model !== undefined ? patch.model : this.config.model,
       mode: patch.mode ?? this.config.mode,
       effort: patch.effort !== undefined ? patch.effort : this.config.effort,
+      autoCompact:
+        patch.autoCompact !== undefined ? patch.autoCompact : (this.config.autoCompact ?? null),
     };
   }
 

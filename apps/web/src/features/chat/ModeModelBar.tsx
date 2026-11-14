@@ -1,6 +1,7 @@
 import {
   AGENT_EFFORTS,
   AGENT_MODES,
+  AutoCompactSchema,
   EffortSchema,
   PermissionModeSchema,
   type ChatConfig,
@@ -9,6 +10,7 @@ import { useT } from '../../shared/i18n/store';
 import { Dropdown } from '../../shared/ui/Dropdown';
 import { WarnIcon } from '../../shared/ui/GlyphIcons';
 import { sendChat } from './connection';
+import { autoCompactId, autoCompactOptions } from './autoCompactOptions';
 import { ModelDropdown } from './ModelDropdown';
 import { RISKY } from './risky';
 import { useBarOpen } from './useBarOpen';
@@ -46,6 +48,15 @@ export function ModeModelBar({ sessionId, config }: { sessionId: string; config:
         onChange={(id) => {
           const next = EffortSchema.safeParse(id);
           sendChat(sessionId, { type: 'config', effort: next.success ? next.data : null });
+        }}
+      />
+      <Dropdown
+        caption={t('chat.autoCompact')}
+        value={autoCompactId(config.autoCompact)}
+        options={autoCompactOptions(config, t('chat.effortDefault'), t('chat.autoCompact.off'))}
+        onChange={(id) => {
+          const next = AutoCompactSchema.safeParse(id === 'off' ? id : Number(id));
+          sendChat(sessionId, { type: 'config', autoCompact: next.success ? next.data : null });
         }}
       />
       <div className="bar-tools">

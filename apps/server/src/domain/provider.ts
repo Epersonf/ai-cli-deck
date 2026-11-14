@@ -1,4 +1,5 @@
 import type { AgentKind, ModelChoice } from '@deck/shared';
+import type { AccountLimit } from './agent.js';
 import type { ChatSupport } from './chat.js';
 import type { LoginSupport } from './signin.js';
 
@@ -38,6 +39,8 @@ export interface Provider {
   shellEnv?(ctx: ProviderContext): Record<string, string>;
   /** Asks the agent (or its endpoint) which models it offers right now; absent: none are known. */
   discoverModels?(): Promise<ModelListing>;
+  /** Asks the account's usage windows without running a chat (5-hour, weekly...); absent: only a chat's own answers tell. */
+  discoverLimits?(): Promise<AccountLimit[]>;
   /** Where its saved chats are read from, for the chat list; absent: the deck cannot list them. */
   readonly chat?: ChatSupport | null;
   /** Signing in with the agent's own login; absent: the provider cannot. */

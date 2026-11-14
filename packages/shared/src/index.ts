@@ -1,4 +1,5 @@
 export * from './agent.js';
+export * from './usage.js';
 export * from './signin.js';
 export * from './memory.js';
 export * from './session.js';

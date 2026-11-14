@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   ChatConfigSchema,
   ChatEventSchema,
-  ChatUsageSchema,
+  AutoCompactSchema,
   EffortSchema,
   ImageInputSchema,
   PartialSchema,
@@ -10,6 +10,7 @@ import {
 } from './agent.js';
 import { ApprovalRequestSchema } from './approval.js';
 import { SessionSchema } from './session.js';
+import { ChatUsageSchema } from './usage.js';
 
 /** What a device sends on a session's chat socket. */
 export const ClientMessageSchema = z.discriminatedUnion('type', [
@@ -45,6 +46,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     model: z.string().max(200).nullable().optional(),
     mode: PermissionModeSchema.optional(),
     effort: EffortSchema.nullable().optional(),
+    autoCompact: AutoCompactSchema.nullable().optional(),
   }),
   /**
    * Edit a sent message: the chat goes back to just before the `user` event `id` (everything after is
@@ -60,6 +62,8 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   /** Stop a background task (`task` event id). */
   z.object({ type: z.literal('stop-task'), id: z.string() }),
   z.object({ type: z.literal('ping') }),
+  /** Ask the account's usage windows now (the usage panel was opened), so they show before any answer. */
+  z.object({ type: z.literal('usage-refresh') }),
   /** This device has the chat open and in view (or not): finished answers are then not announced. */
   z.object({ type: z.literal('viewing'), viewing: z.boolean() }),
 ]);

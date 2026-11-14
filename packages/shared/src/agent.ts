@@ -106,6 +106,16 @@ export const ModelChoiceSchema = z.object({
 });
 export type ModelChoice = z.infer<typeof ModelChoiceSchema>;
 
+/**
+ * When the agent compacts the conversation by itself: `'off'` never, a number of context tokens at which
+ * it does, or null for the agent's own default.
+ */
+export const AutoCompactSchema = z.union([
+  z.literal('off'),
+  z.number().int().min(10_000).max(10_000_000),
+]);
+export type AutoCompact = z.infer<typeof AutoCompactSchema>;
+
 /** What the person may change about the running chat, and what is on offer. */
 export const ChatConfigSchema = z.object({
   agent: AgentKindSchema,
@@ -117,6 +127,7 @@ export const ChatConfigSchema = z.object({
   defaultModel: z.string().nullable().default(null),
   mode: PermissionModeSchema,
   effort: EffortSchema.nullable(),
+  autoCompact: AutoCompactSchema.nullable().default(null),
   /** Models for the picker, discovered at run time (any text is still accepted). May be empty. */
   modelChoices: z.array(ModelChoiceSchema),
   /** The conversation id the agent saved (what "continue" resumes); null before the first answer. */
@@ -131,17 +142,3 @@ export const PartialSchema = z.object({
   text: z.string(),
 });
 export type ChatPartial = z.infer<typeof PartialSchema>;
-
-/** What the chat has used, for the usage meter. Any part may be unknown (null) for an agent or endpoint. */
-export const ChatUsageSchema = z.object({
-  /** Cost of this chat so far, in USD. */
-  costUsd: z.number().nullable(),
-  /** Tokens in the model's context after the last answer, and the model's window. */
-  contextTokens: z.number().nullable(),
-  contextWindow: z.number().nullable(),
-  /** The account's usage window (e.g. the 5-hour limit): fraction used 0..1 and when it resets (ISO). */
-  limitUsed: z.number().min(0).max(1).nullable(),
-  limitResetsAt: z.string().nullable(),
-  limitLabel: z.string().nullable(),
-});
-export type ChatUsage = z.infer<typeof ChatUsageSchema>;

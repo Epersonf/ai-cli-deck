@@ -61,4 +61,5 @@ export const CHAT_META = {
   model: 'model',
   mode: 'mode',
   effort: 'effort',
+  autoCompact: 'autoCompact',
 } as const;

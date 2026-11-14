@@ -43,7 +43,7 @@ const newBody = (
 });
 
 /** The settings a side chat takes over from the chat it branches from. */
-const SETTINGS = [CHAT_META.model, CHAT_META.mode, CHAT_META.effort];
+const SETTINGS = [CHAT_META.model, CHAT_META.mode, CHAT_META.effort, CHAT_META.autoCompact];
 
 /** Starting over, forking and moving conversations, between any agents. The agent is never asked anything. */
 export class ChatActions {

@@ -1,10 +1,19 @@
-import type { AgentKind, ChatEvent, Effort, ImageInput, PermissionMode } from '@deck/shared';
+import type {
+  AgentKind,
+  AutoCompact,
+  ChatEvent,
+  Effort,
+  ImageInput,
+  PermissionMode,
+} from '@deck/shared';
 
 /** What the person may change while a chat runs. */
 export interface AgentConfig {
   model: string | null;
   mode: PermissionMode;
   effort: Effort | null;
+  /** When the agent compacts by itself; null or left out: its own default. */
+  autoCompact?: AutoCompact | null;
 }
 
 /** Everything an agent needs to run one conversation. */
@@ -26,14 +35,21 @@ export interface AgentSpec extends AgentConfig {
   guide: string;
 }
 
-/** What an agent knows about usage; any part may be missing. `limit` is the account's usage window. */
+/** What an agent knows about usage; any part may be missing. `limit` is one usage window of the account. */
 export interface UsageReading {
   /** Cost of the agent run so far (it restarts at 0 with each new run). */
   costUsd?: number;
   contextTokens?: number;
   contextWindow?: number;
-  limit?: { used: number; resetsAt: string | null; label: string | null };
+  limit?: { key: string; used: number; resetsAt: string | null; label: string | null };
+  /** The prompt cache as of this answer (the deck stamps the time). */
+  cache?: { read: number; write: number; ttlMs: number | null };
+  /** The conversation was compacted: the context is `contextTokens` now (or unknown until the next answer). */
+  compacted?: boolean;
 }
+
+/** One usage window of an account, as an agent or its provider reports it. */
+export type AccountLimit = NonNullable<UsageReading['limit']>;
 
 /** What an agent reports back; the chat runtime keeps, stores and forwards it. */
 export interface AgentSink {

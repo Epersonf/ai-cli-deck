@@ -7,6 +7,7 @@ const config: ChatConfig = {
   model: null,
   mode: 'default',
   effort: null,
+  autoCompact: null,
   modelChoices: [],
   effectiveModel: null,
   defaultModel: null,
@@ -52,9 +53,8 @@ describe('chat store', () => {
       costUsd: 0.2,
       contextTokens: 10,
       contextWindow: 100,
-      limitUsed: null,
-      limitResetsAt: null,
-      limitLabel: null,
+      limits: [],
+      cache: null,
     });
     expect(state()?.usage?.costUsd).toBe(0.2);
   });

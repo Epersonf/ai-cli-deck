@@ -86,6 +86,21 @@
   color: var(--muted);
   text-align: right;
 }
+.usage-row .usage-wide {
+  grid-column: 1 / -1;
+  text-align: left;
+}
+.usage-action {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 2px 10px;
+  border: 1px solid var(--brass);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--parchment);
+  font-size: 12px;
+  cursor: pointer;
+}
 .chat-task-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -5,6 +5,7 @@ import { invalid } from '../domain/errors.js';
 import type { ProviderContext, ProviderRegistry } from '../domain/provider.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
 import { agentGuide } from '../infrastructure/providers/agentGuide.js';
+import { parseAutoCompact } from './autoCompact.js';
 import { utf8Locale } from './utf8Env.js';
 
 export interface LauncherDeps {
@@ -19,7 +20,7 @@ export interface LauncherDeps {
   defaultModel?(providerId: string): string | null;
   /** The permission mode last chosen in a provider; new chats start with it. */
   defaultMode?(providerId: string): string | null;
-  /** The Memory section of the briefing for a provider's chats (changes show from the next run). */
+  /** The Memory section of the briefing for a provider's chats (changes show in the next conversation). */
   memoryBriefing?(providerId: string): string;
   /** True when the Android app lets agents use the phone: the briefing then tells them so. */
   phoneEnabled?(): boolean;
@@ -37,21 +38,36 @@ export class AgentLauncher {
     return provider;
   }
 
-  private context(session: Session): ProviderContext {
+  /**
+   * The briefing of each conversation, written when it starts and then kept as it was: it is the start of
+   * every request, so a changed word (a device paired, a note edited) would make the provider read the
+   * whole chat again instead of taking it from its cache. A new conversation writes it again.
+   */
+  private readonly briefings = new Map<string, string>();
+
+  private briefing(session: Session, fresh: boolean): string {
+    const kept = this.briefings.get(session.id);
+    if (kept !== undefined && !fresh) return kept;
+    const guide = [
+      agentGuide({
+        phone: this.deps.phoneEnabled?.() ?? false,
+        devices: this.deps.pairedDevices?.() ?? [],
+      }),
+      this.deps.memoryBriefing?.(session.provider) ?? '',
+    ]
+      .filter((part) => part !== '')
+      .join(String.fromCharCode(10).repeat(2));
+    this.briefings.set(session.id, guide);
+    return guide;
+  }
+
+  private context(session: Session, fresh = false): ProviderContext {
     return {
       sessionId: session.id,
       cwd: session.cwd,
       port: session.port,
       mcpUrl: `${this.deps.mcpBaseUrl}/${session.id}`,
-      guide: [
-        agentGuide({
-          phone: this.deps.phoneEnabled?.() ?? false,
-          devices: this.deps.pairedDevices?.() ?? [],
-        }),
-        this.deps.memoryBriefing?.(session.provider) ?? '',
-      ]
-        .filter((part) => part !== '')
-        .join(String.fromCharCode(10).repeat(2)),
+      guide: this.briefing(session, fresh),
     };
   }
 
@@ -84,11 +100,12 @@ export class AgentLauncher {
       model: session.meta['model'] || null,
       mode: (mode ?? this.deps.defaultMode?.(session.provider) ?? 'default') as PermissionMode,
       effort: effort === 'low' || effort === 'medium' || effort === 'high' ? effort : null,
+      autoCompact: parseAutoCompact(session.meta['autoCompact']),
     };
   }
 
   spec(session: Session, state: RunState): AgentSpec {
-    const ctx = this.context(session);
+    const ctx = this.context(session, state.chatId === null);
     const setup = this.provider(session.provider).buildAgent(ctx);
     return {
       kind: setup.kind,

@@ -5,6 +5,7 @@ import { fieldVars, fillText, type Profile, type ProfileTemplate } from '@deck/s
 import type { Provider, ProviderContext } from '../../domain/provider.js';
 import { chatSupport } from '../chats/chatSupport.js';
 import { readLegacyKey, readSecret } from './profileSecret.js';
+import { discoverLimits } from './limitDiscovery.js';
 import { discoverModels } from './modelDiscovery.js';
 
 /** Everything a template may refer to with `{name}`, for one launch. */
@@ -68,6 +69,11 @@ export function createTemplateProvider(
     agent: template.agent,
     discoverModels: () =>
       discoverModels(
+        template.agent,
+        envFor({ sessionId: '', cwd: homedir(), port: 0, mcpUrl: '', guide: '' }),
+      ),
+    discoverLimits: () =>
+      discoverLimits(
         template.agent,
         envFor({ sessionId: '', cwd: homedir(), port: 0, mcpUrl: '', guide: '' }),
       ),

@@ -45,6 +45,7 @@ export class ChatSettings {
     return {
       agent: info.agent,
       ...this.config,
+      autoCompact: this.config.autoCompact ?? null,
       effectiveModel: this.effectiveModel(),
       defaultModel: info.models.defaultModel(),
       modelChoices: info.models.choices(),

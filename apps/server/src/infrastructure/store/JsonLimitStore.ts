@@ -6,15 +6,15 @@ import type { Limit, LimitStore } from '../../application/LimitBook.js';
 export class JsonLimitStore implements LimitStore {
   constructor(private readonly path: string) {}
 
-  async load(): Promise<Record<string, Limit>> {
+  async load(): Promise<Record<string, unknown>> {
     try {
-      return JSON.parse(await readFile(this.path, 'utf8')) as Record<string, Limit>;
+      return JSON.parse(await readFile(this.path, 'utf8')) as Record<string, unknown>;
     } catch {
       return {};
     }
   }
 
-  async save(all: Record<string, Limit>): Promise<void> {
+  async save(all: Record<string, Limit[]>): Promise<void> {
     await mkdir(dirname(this.path), { recursive: true });
     await writeFile(this.path, JSON.stringify(all));
   }

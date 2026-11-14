@@ -12,11 +12,13 @@ interface Props {
   label: ReactNode;
   title: string;
   className?: string;
+  /** The panel was just opened. */
+  onOpen?: () => void;
   children: ReactNode;
 }
 
 /** A header button that drops a brass panel under it; any click outside or Escape closes it. */
-export function HeaderPopover({ label, title, className = '', children }: Props) {
+export function HeaderPopover({ label, title, className = '', onOpen, children }: Props) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
@@ -62,7 +64,10 @@ export function HeaderPopover({ label, title, className = '', children }: Props)
         title={title}
         aria-label={title}
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (!open) onOpen?.();
+          setOpen(!open);
+        }}
       >
         {label}
       </button>

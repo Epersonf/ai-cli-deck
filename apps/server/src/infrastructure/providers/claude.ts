@@ -1,6 +1,7 @@
 import type { AgentKind } from '@deck/shared';
 import type { Provider } from '../../domain/provider.js';
 import { chatSupport } from '../chats/chatSupport.js';
+import { discoverLimits } from './limitDiscovery.js';
 import { discoverModels } from './modelDiscovery.js';
 
 /** An agent on this machine's own sign-in and config folder (no profile). */
@@ -10,6 +11,7 @@ export function createBuiltin(id: string, label: string, agent: AgentKind): Prov
     label,
     agent,
     discoverModels: () => discoverModels(agent, {}),
+    discoverLimits: () => discoverLimits(agent, {}),
     buildAgent: () => ({ kind: agent, env: {}, model: null }),
     shellEnv: () => ({}),
     chat: chatSupport(agent, null),

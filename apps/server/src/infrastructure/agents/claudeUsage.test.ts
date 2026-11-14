@@ -47,7 +47,10 @@ describe('usage from Claude', () => {
         },
       },
     );
-    expect(usage).toEqual([{ contextTokens: 1150 }, { costUsd: 0.21, contextWindow: 200_000 }]);
+    expect(usage).toEqual([
+      { contextTokens: 1150, cache: { read: 1000, write: 100, ttlMs: null } },
+      { costUsd: 0.21, contextWindow: 200_000 },
+    ]);
   });
 
   it('reads the account window from a rate limit event, and ignores one that says no amount', () => {
@@ -71,13 +74,37 @@ describe('usage from Claude', () => {
     expect(usage).toEqual([
       {
         limit: {
+          key: 'five_hour',
           used: 0.91,
           resetsAt: new Date(1_900_000_000_000).toISOString(),
           label: '5-hour limit',
         },
       },
-      { limit: { used: 1, resetsAt: null, label: 'Weekly limit' } },
+      { limit: { key: 'seven_day', used: 1, resetsAt: null, label: 'Weekly limit' } },
     ]);
+  });
+
+  it('tells the cache lifetime from what an answer wrote, the hour one first', () => {
+    const { usage, feed } = collect();
+    const answer = (cache_creation: Record<string, number>): SdkMessage => ({
+      type: 'assistant',
+      message: {
+        id: 'm',
+        content: [],
+        usage: { cache_creation_input_tokens: 10, cache_creation },
+      },
+    });
+    feed(answer({ ephemeral_5m_input_tokens: 10 }), answer({ ephemeral_1h_input_tokens: 10 }));
+    expect(usage.map((u) => u.cache?.ttlMs)).toEqual([300_000, 3_600_000]);
+  });
+
+  it('reports a compaction, with the context it left when the SDK says', () => {
+    const { usage, feed } = collect();
+    feed(
+      { type: 'system', subtype: 'compact_boundary', compact_metadata: { post_tokens: 8000 } },
+      { type: 'system', subtype: 'compact_boundary', compact_metadata: {} },
+    );
+    expect(usage).toEqual([{ compacted: true, contextTokens: 8000 }, { compacted: true }]);
   });
 
   it('leaves sub-agent answers out of the context figure', () => {
@@ -88,5 +115,24 @@ describe('usage from Claude', () => {
       message: { id: 'm', content: [], usage: { input_tokens: 5000 } },
     });
     expect(usage).toEqual([]);
+  });
+});
+
+describe('the cache as other endpoints report it', () => {
+  it('counts what was not read from it, which is all DeepSeek says besides its hits', () => {
+    const { usage, feed } = collect();
+    feed({
+      type: 'assistant',
+      message: {
+        id: 'm',
+        content: [],
+        usage: {
+          input_tokens: 300,
+          cache_read_input_tokens: 9_000,
+          cache_creation_input_tokens: 0,
+        },
+      },
+    });
+    expect(usage[0]?.cache).toEqual({ read: 9_000, write: 300, ttlMs: null });
   });
 });

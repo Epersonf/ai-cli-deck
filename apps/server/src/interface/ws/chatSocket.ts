@@ -70,6 +70,7 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
           ...(message.model !== undefined && { model: message.model }),
           ...(message.mode !== undefined && { mode: message.mode }),
           ...(message.effort !== undefined && { effort: message.effort }),
+          ...(message.autoCompact !== undefined && { autoCompact: message.autoCompact }),
         });
       } else if (message.type === 'rewind') {
         const { id: messageId, text, images, revertFiles } = message;
@@ -86,6 +87,7 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
             json({ type: 'event', event: { t: 'notice', level: 'error', text: reason } });
           });
       } else if (message.type === 'stop-task') c.sessions.stopTask(id, message.id);
+      else if (message.type === 'usage-refresh') void c.sessions.refreshLimits(id);
       else json({ type: 'pong', lag: loopLagMs() });
     });
 

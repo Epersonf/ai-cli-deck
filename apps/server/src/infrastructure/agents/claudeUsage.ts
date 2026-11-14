@@ -3,6 +3,8 @@ import type { UsageReading } from '../../domain/agent.js';
 /** The SDK fields that tell usage. */
 export interface UsageMessage {
   type?: string;
+  subtype?: string;
+  compact_metadata?: { post_tokens?: number };
   total_cost_usd?: number;
   modelUsage?: Record<string, { contextWindow?: number }>;
   rate_limit_info?: {
@@ -17,11 +19,13 @@ export interface UsageMessage {
       cache_read_input_tokens?: number;
       cache_creation_input_tokens?: number;
       output_tokens?: number;
+      /** Which cache lifetime the written tokens were billed at. */
+      cache_creation?: { ephemeral_1h_input_tokens?: number; ephemeral_5m_input_tokens?: number };
     };
   };
 }
 
-const LABELS: Record<string, string> = {
+export const LABELS: Record<string, string> = {
   five_hour: '5-hour limit',
   seven_day: 'Weekly limit',
   seven_day_opus: 'Weekly limit (Opus)',
@@ -34,6 +38,7 @@ function limitOf(info: NonNullable<UsageMessage['rate_limit_info']>): UsageReadi
   const used = info.status === 'rejected' ? 1 : info.utilization;
   if (typeof used !== 'number' || Number.isNaN(used)) return null;
   return {
+    key: info.rateLimitType ?? 'limit',
     used: Math.min(1, Math.max(0, used)),
     resetsAt: info.resetsAt ? new Date(info.resetsAt * 1000).toISOString() : null,
     label: LABELS[info.rateLimitType ?? ''] ?? null,
@@ -45,6 +50,13 @@ export function usageOf(msg: UsageMessage): UsageReading | null {
   if (msg.type === 'rate_limit_event' && msg.rate_limit_info) {
     const limit = limitOf(msg.rate_limit_info);
     return limit ? { limit } : null;
+  }
+  if (msg.type === 'system' && msg.subtype === 'compact_boundary') {
+    const after = msg.compact_metadata?.post_tokens;
+    return {
+      compacted: true,
+      ...(typeof after === 'number' && after > 0 ? { contextTokens: after } : {}),
+    };
   }
   if (msg.type === 'result') {
     const windows = Object.values(msg.modelUsage ?? {}).map((m) => m.contextWindow ?? 0);
@@ -61,5 +73,14 @@ export function usageOf(msg: UsageMessage): UsageReading | null {
     (usage.cache_read_input_tokens ?? 0) +
     (usage.cache_creation_input_tokens ?? 0) +
     (usage.output_tokens ?? 0);
-  return tokens > 0 ? { contextTokens: tokens } : null;
+  if (tokens <= 0) return null;
+  const read = usage.cache_read_input_tokens ?? 0;
+  // Everything sent that did not come from the cache: what was written to it, and what went uncached
+  // (DeepSeek never reports a write, only the hits and the rest).
+  const write = (usage.cache_creation_input_tokens ?? 0) + (usage.input_tokens ?? 0);
+  const hour = usage.cache_creation?.ephemeral_1h_input_tokens ?? 0;
+  const five = usage.cache_creation?.ephemeral_5m_input_tokens ?? 0;
+  // Reading says nothing of the lifetime: only a write does (the hour one wins when both are there).
+  const ttlMs = hour > 0 ? 3_600_000 : five > 0 ? 300_000 : null;
+  return { contextTokens: tokens, ...(read + write > 0 ? { cache: { read, write, ttlMs } } : {}) };
 }
