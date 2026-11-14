@@ -9,6 +9,7 @@ import type { TaskService } from '../application/TaskService.js';
 import type { TemplateService } from '../application/TemplateService.js';
 import type { ProviderStatusInfo } from '../infrastructure/providers/status.js';
 import type { BrowserTabs } from '../application/BrowserTabs.js';
+import type { ChatViewers } from '../application/ChatViewers.js';
 import type { ActivityTracker } from '../application/ActivityTracker.js';
 import type { ReplyLinks } from '../application/ReplyLinks.js';
 import type { ApprovalNotifier } from '../application/ApprovalNotifier.js';
@@ -57,6 +58,8 @@ export interface Container {
   replyLinks?: ReplyLinks;
   /** What every terminal is doing, pushed to devices as it changes. */
   activity?: ActivityTracker;
+  /** Which chats are on someone's screen (their finished answers are not announced). */
+  viewers?: ChatViewers;
   /** The browser tabs of each session, one list for every device. */
   browserTabs?: BrowserTabs;
   workspace: WorkspaceService;

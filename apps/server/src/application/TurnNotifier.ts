@@ -12,6 +12,8 @@ export interface TurnNotifierDeps {
   label(sessionId: string): string;
   /** The secret address behind the Reply box of a chat's notification; absent without phone access. */
   replyUrl?(sessionId: string): string;
+  /** True while a device has this chat open and in view: nothing to announce then. */
+  isViewed?(sessionId: string): boolean;
 }
 
 const firstLine = (text: string): string =>
@@ -19,7 +21,7 @@ const firstLine = (text: string): string =>
 
 /**
  * Tells the person, on every device, when an agent finishes an answer, fails, or waits for a decision.
- * An answer the person stopped is not news. Devices get a `notify` push; the phone also gets a system notification.
+ * Silent while the person is looking at that chat. An answer the person stopped is not news. Devices get a `notify` push; the phone also gets a system notification.
  */
 export class TurnNotifier {
   constructor(private readonly deps: TurnNotifierDeps) {}
@@ -40,6 +42,7 @@ export class TurnNotifier {
   }
 
   private tell(sessionId: string, reason: 'done' | 'error' | 'permission', text: string): void {
+    if (this.deps.isViewed?.(sessionId)) return;
     const title = this.deps.label(sessionId);
     this.deps.bus.publish({ kind: 'notify', sessionId, title, text, reason });
     // A finished answer can be replied to from the notification itself; a request for approval cannot.

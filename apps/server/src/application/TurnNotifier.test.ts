@@ -3,13 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { agentBody, createHarness } from '../testing/harness.js';
 import { TurnNotifier } from './TurnNotifier.js';
 
-function setup() {
+function setup(isViewed?: (id: string) => boolean) {
   const h = createHarness();
   const phone: Array<[string, string, unknown]> = [];
   new TurnNotifier({
     bus: h.bus,
     phone: { request: (m, p, b) => (phone.push([m, p, b]), Promise.resolve(null)) },
     label: (id) => h.sessions.get(id)?.name ?? id,
+    ...(isViewed && { isViewed }),
   }).start();
   const notes = () =>
     h.events.filter((e): e is Extract<DeckEvent, { kind: 'notify' }> => e.kind === 'notify');
@@ -62,5 +63,16 @@ describe('telling the person an answer is done', () => {
     await h.sessions.send(id, 'again');
     h.agent.last.reply('ok');
     expect(notes()).toHaveLength(1);
+  });
+});
+
+describe('a chat the person is looking at', () => {
+  it('is not announced, on any device or the phone', async () => {
+    const { h, phone, notes } = setup(() => true);
+    const { id } = await h.sessions.create(agentBody());
+    await h.sessions.send(id, 'go');
+    h.agent.last.reply('All done.');
+    expect(notes()).toEqual([]);
+    expect(phone).toEqual([]);
   });
 });

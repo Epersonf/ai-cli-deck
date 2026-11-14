@@ -19,6 +19,21 @@ interface Props {
   visible: boolean;
 }
 
+/** Tells the server while this chat is on screen and the page is visible, so it skips the "finished" notifications. */
+function useReportViewing(sessionId: string, visible: boolean, online: boolean): void {
+  useEffect(() => {
+    if (!online) return;
+    const report = (): void =>
+      sendChat(sessionId, { type: 'viewing', viewing: visible && !document.hidden });
+    report();
+    document.addEventListener('visibilitychange', report);
+    return () => {
+      document.removeEventListener('visibilitychange', report);
+      sendChat(sessionId, { type: 'viewing', viewing: false });
+    };
+  }, [sessionId, visible, online]);
+}
+
 /** One session's chat; stays mounted (and connected) while hidden so the conversation keeps flowing. */
 export function ChatPane({ sessionId, visible }: Props) {
   const t = useT();
@@ -26,6 +41,7 @@ export function ChatPane({ sessionId, visible }: Props) {
   const providers = useProfiles((s) => s.providers);
   const chat = useChat(sessionId);
   useEffect(() => connectChat(sessionId), [sessionId]);
+  useReportViewing(sessionId, visible, chat.online);
   useReadAloud(chat.blocks, chat.loaded, visible);
   if (!session) return null;
   const lastUser = [...chat.blocks].reverse().find((b) => b.kind === 'user');

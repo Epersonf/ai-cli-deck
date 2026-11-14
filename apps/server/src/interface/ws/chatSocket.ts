@@ -32,7 +32,9 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
       if (synced) json(message);
       else held.push(message);
     });
+    const leave = (): void => c.viewers?.drop(id, socket);
     socket.on('close', unsubscribe);
+    socket.on('close', leave);
     socket.on('error', unsubscribe);
 
     // The session can be removed while a device is still connected: tell that device, never throw.
@@ -88,6 +90,7 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
           });
       } else if (message.type === 'stop-task') c.sessions.stopTask(id, message.id);
       else if (message.type === 'usage-refresh') void c.sessions.refreshLimits(id);
+      else if (message.type === 'viewing') c.viewers?.set(id, socket, message.viewing);
       else json({ type: 'pong', lag: loopLagMs() });
     });
 
