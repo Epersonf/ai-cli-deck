@@ -1,8 +1,8 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { codexLimits } from '../agents/codexLimits.js';
+import { codexLimits, parseRateLimits } from '../agents/codexLimits.js';
 import { fakeQuery } from '../agents/fakeClaude.js';
 import { claudeLimits } from './claudeLimits.js';
 
@@ -30,36 +30,50 @@ describe('Claude plan limits', () => {
   });
 });
 
-const count = (used: number): string =>
-  JSON.stringify({
-    type: 'event_msg',
-    payload: {
-      type: 'token_count',
-      rate_limits: {
-        primary: { used_percent: used, window_minutes: 300, resets_at: 1_900_000_000 },
-      },
-    },
-  });
-
 describe('Codex account limits', () => {
-  it('are the last ones any chat of the profile wrote, newest chat first', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'deck-codex-limits-'));
-    try {
-      const day = join(home, 'sessions', '2026', '11', '12');
-      const later = join(home, 'sessions', '2026', '11', '13');
-      await mkdir(day, { recursive: true });
-      await mkdir(later, { recursive: true });
-      await writeFile(join(day, 'rollout-2026-11-12T01-00-00-a.jsonl'), `${count(10)}\n`);
-      await writeFile(join(later, 'rollout-2026-11-13T01-00-00-b.jsonl'), 'no counts here\n');
-      await writeFile(join(later, 'rollout-2026-11-13T02-00-00-c.jsonl'), `${count(55)}\n`);
-      const found = await codexLimits({ CODEX_HOME: home });
-      expect(found).toMatchObject([{ key: 'five_hour', used: 0.55 }]);
-    } finally {
-      await rm(home, { recursive: true, force: true });
-    }
+  const answer = {
+    rateLimits: {
+      primary: { usedPercent: 100, windowDurationMins: 300, resetsAt: 1_900_000_000 },
+      secondary: { usedPercent: 16, windowDurationMins: 10_080, resetsAt: null },
+    },
+  };
+
+  it('are the two windows of the main bucket, as fractions', () => {
+    expect(parseRateLimits(answer)).toEqual([
+      {
+        key: 'five_hour',
+        label: '5-hour limit',
+        used: 1,
+        resetsAt: new Date(1_900_000_000_000).toISOString(),
+      },
+      { key: 'seven_day', label: 'Weekly limit', used: 0.16, resetsAt: null },
+    ]);
+    expect(parseRateLimits({ rateLimits: { primary: null } })).toEqual([]);
+    expect(parseRateLimits(null)).toEqual([]);
   });
 
-  it('are none when there are no chats yet', async () => {
-    expect(await codexLimits({ CODEX_HOME: join(tmpdir(), 'deck-no-codex-here') })).toEqual([]);
+  it('come from the Codex app server, which is asked and then stopped', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'deck-codex-bin-'));
+    try {
+      const script = `#!/usr/bin/env node
+require('readline').createInterface({ input: process.stdin }).on('line', (l) => {
+  const m = JSON.parse(l);
+  if (m.method === 'account/rateLimits/read')
+    console.log(JSON.stringify({ id: m.id, result: ${JSON.stringify(answer)} }));
+});
+`;
+      await writeFile(join(dir, 'codex'), script, { mode: 0o755 });
+      const found = await codexLimits({ PATH: `${dir}:${process.env['PATH'] ?? ''}` });
+      expect(found.map((l) => [l.key, l.used])).toEqual([
+        ['five_hour', 1],
+        ['seven_day', 0.16],
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 20_000);
+
+  it('are none when Codex cannot be started', async () => {
+    expect(await codexLimits({ PATH: join(tmpdir(), 'deck-no-codex-here') })).toEqual([]);
   });
 });

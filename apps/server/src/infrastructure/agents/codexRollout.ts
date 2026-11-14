@@ -10,7 +10,7 @@ const obj = (v: unknown): Json | null =>
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
 /** A usage window as Codex names it by its length: 300 minutes is the 5-hour one, 10080 the weekly one. */
-function windowOf(minutes: number): { key: string; label: string } {
+export function windowOf(minutes: number): { key: string; label: string } {
   if (minutes === 10_080) return { key: 'seven_day', label: 'Weekly limit' };
   if (minutes === 300) return { key: 'five_hour', label: '5-hour limit' };
   if (minutes % 60 === 0 && minutes < 48 * 60)

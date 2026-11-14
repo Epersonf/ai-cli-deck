@@ -1,28 +1,71 @@
-import { join } from 'node:path';
+import { spawn } from 'node:child_process';
+import { createInterface } from 'node:readline';
 import type { AccountLimit } from '../../domain/agent.js';
-import { codexHome, lastReadings, newestFirst } from './codexRollout.js';
+import { killTree } from '../process/killTree.js';
+import { resolveCodex } from './codexBin.js';
+import { windowOf } from './codexRollout.js';
 
-/** How many of the newest rollouts are looked through for a count that carries the windows. */
-const LOOK_AT = 8;
+const TIMEOUT_MS = 30_000;
+
+type Json = Record<string, unknown>;
+const obj = (v: unknown): Json | null =>
+  typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Json) : null;
+const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/** The windows of an `account/rateLimits/read` answer (the main bucket: 5-hour and weekly). */
+export function parseRateLimits(result: unknown): AccountLimit[] {
+  const bucket = obj(obj(result)?.['rateLimits']);
+  return ['primary', 'secondary'].flatMap((name): AccountLimit[] => {
+    const w = obj(bucket?.[name]);
+    const used = num(w?.['usedPercent']);
+    const minutes = num(w?.['windowDurationMins']);
+    if (!w || used === null || minutes === null) return [];
+    const at = num(w['resetsAt']);
+    return [
+      {
+        ...windowOf(minutes),
+        used: Math.min(1, Math.max(0, used / 100)),
+        resetsAt: at === null ? null : new Date(at * 1000).toISOString(),
+      },
+    ];
+  });
+}
 
 /**
- * The account's usage windows as Codex last wrote them in a rollout (it records them with every answer).
- * Codex has no way to ask without running, so this is as fresh as the last answer, on any chat of the profile.
+ * The account's usage windows as the ChatGPT backend says them now, asked through Codex's own app server
+ * (`account/rateLimits/read`): it counts everything the account used, on any device. No tokens are spent.
+ * Empty when Codex is not signed in, offline or too old to know the call.
  */
-export async function codexLimits(env: Record<string, string>): Promise<AccountLimit[]> {
-  const root = join(codexHome(env), 'sessions');
-  let looked = 0;
-  for (const year of await newestFirst(root))
-    for (const month of await newestFirst(join(root, year)))
-      for (const day of await newestFirst(join(root, year, month))) {
-        const dir = join(root, year, month, day);
-        for (const name of await newestFirst(dir)) {
-          if (!name.endsWith('.jsonl') || looked++ >= LOOK_AT) return [];
-          const limits = (await lastReadings(join(dir, name)).catch(() => [])).flatMap((r) =>
-            r.limit ? [r.limit] : [],
-          );
-          if (limits.length) return limits;
-        }
+export function codexLimits(env: Record<string, string>): Promise<AccountLimit[]> {
+  const merged = { ...(process.env as Record<string, string>), ...env };
+  const bin = resolveCodex(merged);
+  const child = spawn(bin.command, [...bin.prefix, 'app-server'], { env: merged, stdio: 'pipe' });
+  return new Promise((resolve) => {
+    const done = (limits: AccountLimit[]): void => {
+      clearTimeout(timer);
+      killTree(child);
+      resolve(limits);
+    };
+    const timer = setTimeout(() => done([]), TIMEOUT_MS);
+    timer.unref();
+    child.on('error', () => done([]));
+    child.on('close', () => done([]));
+    child.stdin.on('error', () => undefined);
+    createInterface({ input: child.stdout }).on('line', (line) => {
+      try {
+        const message = obj(JSON.parse(line));
+        if (message?.['id'] === 2) done(parseRateLimits(message['result']));
+      } catch {
+        // not a JSON line
       }
-  return [];
+    });
+    const send = (m: Json): void => void child.stdin.write(`${JSON.stringify(m)}\n`);
+    send({
+      id: 1,
+      method: 'initialize',
+      params: { clientInfo: { name: 'ai-cli-deck', version: '1' } },
+    });
+    send({ method: 'initialized' });
+    send({ id: 2, method: 'account/rateLimits/read', params: null });
+  });
 }
