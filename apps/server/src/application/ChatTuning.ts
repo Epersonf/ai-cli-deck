@@ -1,3 +1,4 @@
+import type { ChatConfig } from '@deck/shared';
 import type { AgentConfig, AgentRun } from '../domain/agent.js';
 import type { EventBus } from '../domain/events.js';
 import type { ChatSettings } from './ChatSettings.js';
@@ -9,6 +10,7 @@ export interface TuningDeps {
   remember(patch: { config?: AgentConfig }): void;
   /** The agent run behind the chat, while there is one. */
   run(): AgentRun | null;
+  view?(): ChatConfig;
 }
 
 /** Changes to a chat's settings (model, mode, effort) and telling every device about them. */
@@ -44,6 +46,6 @@ export class ChatTuning {
 
   push(): void {
     const { id, bus, settings } = this.d;
-    bus.publish({ kind: 'config', sessionId: id, config: settings.view() });
+    bus.publish({ kind: 'config', sessionId: id, config: this.d.view?.() ?? settings.view() });
   }
 }

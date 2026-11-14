@@ -58,7 +58,8 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
         }
         if (message.seq !== undefined) json({ type: 'ack', seq: message.seq });
       } else if (message.type === 'interrupt') c.sessions.interrupt(id);
-      else if (message.type === 'queue-now') void c.sessions.queueNow(id, message.id).catch(inputFailed);
+      else if (message.type === 'queue-now')
+        void c.sessions.queueNow(id, message.id).catch(inputFailed);
       else if (message.type === 'queue-drop') c.sessions.queueDrop(id, message.id);
       else if (message.type === 'permission') {
         c.sessions.answer(id, message.id, {
@@ -89,6 +90,7 @@ export function chatSocket(app: FastifyInstance, c: Container): void {
             json({ type: 'event', event: { t: 'notice', level: 'error', text: reason } });
           });
       } else if (message.type === 'stop-task') c.sessions.stopTask(id, message.id);
+      else if (message.type === 'compact') void c.sessions.compact(id).catch(inputFailed);
       else if (message.type === 'usage-refresh') void c.sessions.refreshLimits(id);
       else if (message.type === 'viewing') c.viewers?.set(id, socket, message.viewing);
       else json({ type: 'pong', lag: loopLagMs() });

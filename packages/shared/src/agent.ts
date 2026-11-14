@@ -119,6 +119,9 @@ export type AutoCompact = z.infer<typeof AutoCompactSchema>;
 /** What the person may change about the running chat, and what is on offer. */
 export const ChatConfigSchema = z.object({
   agent: AgentKindSchema,
+  /** Detected on the server for the executable used by this profile. */
+  canCompact: z.boolean().optional(),
+  compacting: z.boolean().optional(),
   /** The model picked for this chat; null: the default of the profile/agent is used. */
   model: z.string().nullable(),
   /** The model actually answering now (as the agent reported it); null until known. */

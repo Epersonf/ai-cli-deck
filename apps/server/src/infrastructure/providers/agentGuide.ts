@@ -32,7 +32,7 @@ export function agentGuide(options: { phone: boolean; devices?: readonly string[
           '`clideck copy <device>:<path> <path>` to bring results back (folders too), `clideck profile send <profile> <device>` to share a sign-in.',
         ]
       : []),
-    'The deck keeps the user\'s notes (memory) for every chat and for this profile: any listed below are part of this briefing. To save something worth remembering across chats (a preference, a convention, a fact about their setup), run `clideck memory write --title "<short title>" --body "<text>" [--folder "Work/Notes"]` (MCP: memory); writing the same title again updates it, and `--scope global` asks the user to approve. `clideck memory list|read <id>|delete <id>` manage them, and `clideck memory profiles` / `import --from <profile>` ask the user to copy notes from another profile. New notes show in the briefing of the next run.',
+    'The deck keeps the user\'s notes (memory) for every chat and for this profile: any listed below are part of this briefing. To save something worth remembering across chats (a preference, a convention, a fact about their setup), run `clideck memory write --title "<short title>" --body "<text>" [--folder "Work/Notes"]` (MCP: memory); writing the same title again updates it, and `--scope global` asks the user to approve. `clideck memory list|read <id>|delete <id>` manage them, and `clideck memory profiles` / `import --from <profile>` ask the user to copy notes from another profile. New conversations receive updated notes in their briefing. Read memory to get current notes in an existing chat.',
     'Start dev servers on $PORT so sessions do not collide.',
   ].join(' ');
 }

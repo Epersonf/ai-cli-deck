@@ -28,4 +28,18 @@ describe('the permission mode a person chose', () => {
     expect((await second.sessions.snapshot(id)).config.mode).toBe('dontAsk');
     expect(second.sessions.get(id)?.meta['mode']).toBe('dontAsk');
   });
+  it.each([
+    ['claude', 'max'],
+    ['codex', 'xhigh'],
+  ] as const)(
+    'preserves %s reasoning effort after restart instead of silently changing the prefix',
+    async (provider, effort) => {
+      const h = createHarness();
+      const { id } = await h.sessions.create({ ...agentBody(), provider });
+      h.sessions.configure(id, { effort });
+      const restored = createHarness({ stored: h.store.saved });
+      await restored.sessions.restore();
+      expect((await restored.sessions.settings(id)).effort).toBe(effort);
+    },
+  );
 });

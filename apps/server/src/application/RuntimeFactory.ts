@@ -1,3 +1,4 @@
+import type { UsageHistoryStore } from './UsageHistoryStore.js';
 import { randomUUID } from 'node:crypto';
 import type { Session } from '@deck/shared';
 import type { AgentConfig, AgentPort } from '../domain/agent.js';
@@ -16,6 +17,7 @@ import { UsageMeter } from './UsageMeter.js';
 export interface FactoryDeps {
   reg: SessionRegistry;
   launcher: AgentLauncher;
+  usageHistoryStore?: UsageHistoryStore;
   agent: AgentPort;
   providers: ProviderRegistry;
   log: ChatLogPort;
@@ -40,7 +42,12 @@ export class RuntimeFactory {
       agent,
       log,
       bus,
-      meter: new UsageMeter(limits, session.provider),
+      meter: new UsageMeter(
+        limits,
+        session.provider,
+        () => system.now(),
+        this.d.usageHistoryStore ? { store: this.d.usageHistoryStore, sessionId: id } : undefined,
+      ),
       uuid: randomUUID,
       now: () => system.now(),
       spec: (state) => launcher.spec(reg.require(id).session, state),

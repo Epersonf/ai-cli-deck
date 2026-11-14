@@ -1,46 +1,14 @@
+import type { SessionManagerDeps, CreateOptions } from './SessionManagerDeps.js';
+export type { SessionManagerDeps, CreateOptions } from './SessionManagerDeps.js';
 import { CHAT_META, type CreateSessionBody, type Session } from '@deck/shared';
-import type { AgentPort } from '../domain/agent.js';
-import type { EventBus } from '../domain/events.js';
-import type { ChatLogPort, SessionStorePort, SystemPort } from '../domain/ports.js';
-import type { ProviderRegistry } from '../domain/provider.js';
-import type { AgentLauncher } from './AgentLauncher.js';
-import type { LimitBook } from './LimitBook.js';
 import { LimitProbe } from './LimitProbe.js';
-import type { PortAllocator } from './PortAllocator.js';
 import { existingDir } from './cwd.js';
 import { newSession } from './newSession.js';
 import { RuntimeFactory } from './RuntimeFactory.js';
 import { SessionChats } from './SessionChats.js';
 import { SessionEdits } from './SessionEdits.js';
 import { SessionRegistry, type Runtime } from './SessionRegistry.js';
-import type { ModelBook } from './ModelBook.js';
-import type { ModelCatalog } from './ModelCatalog.js';
 import { withMeta } from './sessionMeta.js';
-
-export interface SessionManagerDeps {
-  launcher: AgentLauncher;
-  agent: AgentPort;
-  providers: ProviderRegistry;
-  store: SessionStorePort;
-  log: ChatLogPort;
-  ports: PortAllocator;
-  system: SystemPort;
-  bus: EventBus;
-  /** What each account's usage window last said; shared by its sessions. */
-  limits: LimitBook;
-  /** The default and last-answering model of each provider. */
-  models: ModelBook;
-  /** The models each provider offers. */
-  catalog: ModelCatalog;
-}
-
-export interface CreateOptions {
-  /** Continue this saved conversation (as a copy when `fork`). */
-  chatId?: string | null;
-  fork?: boolean;
-  /** Notes to start with (a side chat keeps its source's model, mode and effort). */
-  meta?: Record<string, string>;
-}
 
 /** The sessions: each one a conversation with an agent, started on its first message. */
 export class SessionManager extends SessionChats {
@@ -91,10 +59,14 @@ export class SessionManager extends SessionChats {
     session.meta = options.meta ?? {};
     const chatId = options.chatId ?? body.chatId;
     if (chatId) session.meta = withMeta(session.meta, CHAT_META.chat, chatId);
+    if (chatId && options.fork) session.meta = withMeta(session.meta, CHAT_META.fork, 'true');
     try {
+      if (options.briefingFrom)
+        this.deps.launcher.inherit(this.reg.require(options.briefingFrom).session, session);
       const from = { chatId: chatId ?? null, fork: options.fork ?? false };
       this.reg.runtimes.set(session.id, { session, chat: this.runtimes.make(session, from) });
     } catch (error) {
+      this.deps.launcher.forget(session.id);
       ports.release(session.port);
       throw error;
     }
@@ -108,7 +80,10 @@ export class SessionManager extends SessionChats {
     for (const saved of await this.deps.store.load()) {
       this.deps.ports.reserve(saved.port);
       const session: Session = { ...saved, status: 'idle' };
-      const from = { chatId: session.meta[CHAT_META.chat] ?? null, fork: false };
+      const from = {
+        chatId: session.meta[CHAT_META.chat] ?? null,
+        fork: session.meta[CHAT_META.fork] === 'true',
+      };
       this.reg.runtimes.set(session.id, { session, chat: this.runtimes.make(session, from) });
     }
   }
@@ -117,6 +92,8 @@ export class SessionManager extends SessionChats {
     const runtime = this.reg.require(id);
     for (const child of this.reg.childrenOf(id)) await this.remove(child.id);
     runtime.chat.close();
+    this.deps.launcher.forget(id);
+    this.deps.usageHistoryStore?.remove(id);
     await this.deps.log.remove(id).catch(() => undefined);
     this.deps.ports.release(runtime.session.port);
     this.reg.runtimes.delete(id);
@@ -127,7 +104,12 @@ export class SessionManager extends SessionChats {
   async switchProvider(id: string, provider: string): Promise<void> {
     const runtime: Runtime = this.reg.require(id);
     runtime.chat.close();
-    this.reg.update(id, { provider, meta: withMeta(runtime.session.meta, CHAT_META.chat, '') });
+    this.deps.launcher.forget(id);
+    this.deps.usageHistoryStore?.remove(id);
+    this.reg.update(id, {
+      provider,
+      meta: withMeta(withMeta(runtime.session.meta, CHAT_META.chat, ''), CHAT_META.fork, ''),
+    });
     const session = this.reg.require(id).session;
     const chat = this.runtimes.make(session, { chatId: null, fork: false });
     await chat.seed(runtime.chat.recent());

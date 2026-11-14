@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { DeckError } from '../../domain/errors.js';
 import type { AgentTools } from '../agent/agentTools.js';
+import { pageText } from './pagination.js';
 import { runAsync } from './mcpResult.js';
 
 /** The tools that drive the deck's Chromium (shown to the user in the Preview pane). */
@@ -21,8 +22,26 @@ export function registerBrowserTools(server: McpServer, tools: AgentTools): void
   );
   server.registerTool(
     'browser_snapshot',
-    { description: 'Accessibility outline (text) of the current page: read this to see the page.' },
-    () => runAsync(() => tools.browserOutline()),
+    {
+      description:
+        'Accessibility outline of the current page, up to 16000 characters. Continue with nextOffset to read more of the same page.',
+      inputSchema: {
+        offset: z.number().int().nonnegative().optional(),
+        limit: z.number().int().min(2).max(40000).optional(),
+      },
+    },
+    ({ offset, limit }) =>
+      runAsync(async () => {
+        const { outline, ...info } = await tools.browserOutline();
+        const page = pageText(outline, offset ?? 0, limit ?? 16000);
+        return {
+          ...info,
+          outline: page.text,
+          offset: page.offset,
+          total: page.total,
+          nextOffset: page.nextOffset,
+        };
+      }),
   );
   server.registerTool(
     'browser_screenshot',

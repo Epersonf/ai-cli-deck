@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { wavHeader } from '../../application/wav.js';
 import type { Asset } from './assets.js';
 import { locate } from './locate.js';
@@ -14,7 +14,8 @@ beforeEach(async () => {
 });
 afterEach(() => rm(dir, { recursive: true, force: true }));
 
-const tick = () => new Promise((resolve) => setTimeout(resolve, 20));
+const settled = (e: WhisperEngine) =>
+  vi.waitFor(() => expect(e.status().downloading).toBe(false), { timeout: 5000 });
 const sha = (text: string): string => createHash('sha256').update(text).digest('hex');
 const asset = (text: string): Asset => ({
   url: 'http://x/a',
@@ -66,7 +67,7 @@ describe('the speech engine', () => {
     });
     expect(e.status()).toMatchObject({ supported: true, ready: false });
     expect(e.prepare().downloading).toBe(true);
-    await tick();
+    await settled(e);
     expect(got).toEqual(['engine', 'model']);
     expect(e.status()).toMatchObject({
       ready: true,
@@ -87,11 +88,11 @@ describe('the speech engine', () => {
       },
     });
     e.prepare();
-    await tick();
+    await settled(e);
     expect(e.status()).toMatchObject({ ready: false, downloading: false, error: 'offline' });
     fail = false;
     expect(e.prepare().error).toBeNull();
-    await tick();
+    await settled(e);
   });
 
   it('transcribes with an engine it was given, trimming what it prints, and says nothing for a blip', async () => {

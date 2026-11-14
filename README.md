@@ -146,13 +146,24 @@ so a restart, a reload or another device shows the same chat, and the next messa
 
 - **New session > Load chat history** lists the chats Claude Code or Codex saved for the chosen profile and
   folder; any of them continues in a new session (its earlier turns are shown).
-- **Header menu > Fork or move** starts a new session from this conversation: Claude Code forks the chat
-  natively in the same profile; any other case (another profile, Codex) hands the conversation over as a
+- **Header menu > Fork or move** starts a new session from this conversation: Claude Code and supported Codex
+  versions fork natively in the same profile. Older Codex versions and moves to another profile use a
   transcript, written to `.deck/chats/` in the project folder (kept out of git) and read by the new agent.
 - **Edit a sent message** (pencil on your message): the chat goes back to just before it and your new text is
   sent; optionally the files the dropped turns changed are restored (Claude Code checkpoints).
 - **Side chat**: a fork of the conversation in a drawer beside it, for a quick question that must not touch the
   main thread. Discard it when you are done.
+
+The **Usage** panel offers **Compact** after the first message, including for Codex versions with native
+compaction support. It remains available when context measurements are unknown, shows progress, and can
+be stopped with the chat's Stop button. Claude continues to use its SDK `/compact` command. Codex uses
+`thread/compact/start`, without sending a summary request as a user message.
+
+The panel separates current context from whole-turn token usage. Cache reads, reported writes and
+uncached input are distinct; unknown write counts and cache lifetimes stay unknown. Codex turn totals,
+cache reuse and elapsed time survive server restarts (the most recent twenty turns are retained).
+Stable instruction snapshots are kept privately for each conversation; new conversations receive updated
+notes. Memory briefings have a full-section UTF-8 byte budget, and long MCP listings/snapshots are paginated.
 
 ## Your other devices: use the PC from the phone
 

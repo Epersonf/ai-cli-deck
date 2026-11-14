@@ -1,6 +1,7 @@
 import type { ChatEvent } from '@deck/shared';
 import type {
   AgentConfig,
+  AgentCapabilities,
   AgentPort,
   AgentRun,
   AgentSink,
@@ -54,6 +55,21 @@ export class FakeRun implements AgentRun {
 export class FakeAgentPort implements AgentPort {
   readonly runs: FakeRun[] = [];
   failWith: Error | null = null;
+  available: AgentCapabilities | null = null;
+  compactions: Array<{ spec: AgentSpec; sink: AgentSink; signal: AbortSignal }> = [];
+  compactResult: ((signal: AbortSignal) => Promise<void>) | null = null;
+
+  capabilities(spec: AgentSpec): Promise<AgentCapabilities> {
+    return Promise.resolve(
+      this.available ?? { fork: spec.kind === 'claude', compact: spec.kind === 'claude' },
+    );
+  }
+
+  async compact(spec: AgentSpec, sink: AgentSink, signal: AbortSignal): Promise<void> {
+    this.compactions.push({ spec, sink, signal });
+    await this.compactResult?.(signal);
+    sink.usage({ compacted: true });
+  }
   /** What `rewind` answers, and what it was asked. */
   rewindTo: RewindResult = { resumeAt: null };
   readonly rewinds: Array<{ userId: string; revertFiles: boolean; spec: AgentSpec }> = [];

@@ -19,7 +19,7 @@ function failure(error: unknown): TextResult {
 
 export async function runAsync(action: () => Promise<unknown>): Promise<TextResult> {
   try {
-    return text(JSON.stringify(await action(), null, 2));
+    return text(JSON.stringify(await action()));
   } catch (error) {
     return failure(error);
   }
@@ -27,7 +27,7 @@ export async function runAsync(action: () => Promise<unknown>): Promise<TextResu
 
 export function run(action: () => unknown): TextResult {
   try {
-    return text(JSON.stringify(action(), null, 2));
+    return text(JSON.stringify(action()));
   } catch (error) {
     return failure(error);
   }

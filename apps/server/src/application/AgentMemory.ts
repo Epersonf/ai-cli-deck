@@ -1,8 +1,9 @@
-import { CreateMemoryBodySchema, type MemoryTree } from '@deck/shared';
+import { memoryListing, type MemoryPage } from './memoryListing.js';
+import { CreateMemoryBodySchema } from '@deck/shared';
 import { forbidden, invalid, notFound } from '../domain/errors.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 import type { ApprovalService } from './ApprovalService.js';
-import { findPath, folderPath } from './memoryFolders.js';
+import { findPath } from './memoryFolders.js';
 import { importRequest } from './memoryImportRequest.js';
 import type { MemoryService } from './MemoryService.js';
 
@@ -15,14 +16,6 @@ export interface AgentMemoryDeps {
   /** Shows a line in the chat of the session. */
   notice(sessionId: string, text: string): void;
 }
-
-const titles = (tree: MemoryTree, withState = false) =>
-  tree.entries.map((e) => ({
-    id: e.id,
-    title: e.title,
-    folder: folderPath(tree, e.folderId),
-    ...(withState ? { enabled: e.enabled } : {}),
-  }));
 
 /** What an agent may do with the deck's memory, for ONE session: its own profile and the global notes. */
 export function agentMemory(d: AgentMemoryDeps, sessionId: string) {
@@ -51,17 +44,8 @@ export function agentMemory(d: AgentMemoryDeps, sessionId: string) {
       d.providers.list().map((p) => ({ id: p.id, label: p.label, you: p.id === own() })),
 
     /** Titles, ids and folders: the global notes and this profile's, or only the titles of another profile. */
-    list: (scope?: 'global' | 'profile', profile?: string) => {
-      if (profile && profile !== own())
-        return { profile, titlesOnly: true, notes: titles(d.memory.tree('profile', profile)) };
-      const global = { scope: 'global', notes: titles(d.memory.tree('global'), true) };
-      const mine = {
-        scope: 'profile',
-        profile: own(),
-        notes: titles(d.memory.tree('profile', own()), true),
-      };
-      return scope === 'global' ? [global] : scope === 'profile' ? [mine] : [global, mine];
-    },
+    list: (scope?: 'global' | 'profile', profile?: string, page?: MemoryPage) =>
+      memoryListing(d.memory, own(), scope, profile, page),
 
     /** A note of the global memory or of this profile, with its text. Another profile's is never readable. */
     read: (id: string) => {

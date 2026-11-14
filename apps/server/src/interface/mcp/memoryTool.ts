@@ -17,11 +17,11 @@ export function registerMemoryTool(server: McpServer, tools: AgentTools): void {
     {
       description:
         "The deck's memory: notes the user keeps for every chat (global) and for this profile. " +
-        'list (scope?, profile?) gives titles, ids and folder paths; with another profile it gives titles only. ' +
+        'list (scope?, profile?, offset?, limit? default 50, max 100) returns a page with nextOffset and gives titles, ids and folder paths; with another profile it gives titles only. ' +
         'read (id) returns a note. write (title, body, folder? as "Work/Notes", scope? profile|global) saves a note of this profile now ' +
         '(the same title and folder is updated); a global note waits for the user to approve. delete (id) removes a note of your own profile. ' +
         'profiles lists the profiles; import (from_profile, ids?, folder_ids?) asks the user to copy chosen notes of another profile here ' +
-        "(you cannot read another profile's notes before the user approves). Changes show in the briefing of the next run.",
+        "(you cannot read another profile's notes before the user approves). New conversations receive updated briefings; read notes to refresh an existing chat.",
       inputSchema: {
         action: z
           .enum(['list', 'read', 'write', 'delete', 'profiles', 'import'])
@@ -33,6 +33,8 @@ export function registerMemoryTool(server: McpServer, tools: AgentTools): void {
         folder: z.string().max(400).optional(),
         scope: z.enum(['global', 'profile']).optional(),
         profile: z.string().optional(),
+        offset: z.number().int().nonnegative().optional(),
+        limit: z.number().int().min(1).max(100).optional(),
         from_profile: z.string().optional(),
         ids: z.array(z.string()).optional(),
         folder_ids: z.array(z.string()).optional(),
@@ -44,7 +46,7 @@ export function registerMemoryTool(server: McpServer, tools: AgentTools): void {
           case 'profiles':
             return memory.profiles();
           case 'list':
-            return memory.list(a.scope, a.profile);
+            return memory.list(a.scope, a.profile, { offset: a.offset ?? 0, limit: a.limit ?? 50 });
           case 'read':
             return memory.read(need(a.id, 'id'));
           case 'delete':

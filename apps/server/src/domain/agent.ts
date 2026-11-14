@@ -5,6 +5,7 @@ import type {
   Effort,
   ImageInput,
   PermissionMode,
+  TurnUsage,
 } from '@deck/shared';
 
 /** What the person may change while a chat runs. */
@@ -39,11 +40,19 @@ export interface AgentSpec extends AgentConfig {
 export interface UsageReading {
   /** Cost of the agent run so far (it restarts at 0 with each new run). */
   costUsd?: number;
-  contextTokens?: number;
+  contextTokens?: number | null;
+  /** One completed turn, distinct from the current context / last model call. */
+  turn?: TurnUsage;
   contextWindow?: number;
   limit?: { key: string; used: number; resetsAt: string | null; label: string | null };
   /** The prompt cache as of this answer (the deck stamps the time). */
-  cache?: { read: number; write: number; ttlMs: number | null };
+  cache?: {
+    scope?: 'request' | 'turn';
+    read: number;
+    write: number | null;
+    uncached?: number;
+    ttlMs: number | null;
+  };
   /** The conversation was compacted: the context is `contextTokens` now (or unknown until the next answer). */
   compacted?: boolean;
 }
@@ -102,7 +111,15 @@ export interface RewindResult {
   error?: string;
 }
 
+export interface AgentCapabilities {
+  fork: boolean;
+  compact: boolean;
+}
+
 export interface AgentPort {
+  capabilities?(spec: AgentSpec): Promise<AgentCapabilities>;
+  /** Manual compaction; resolves only when the stored thread has actually been compacted. */
+  compact?(spec: AgentSpec, sink: AgentSink, signal: AbortSignal): Promise<void>;
   start(spec: AgentSpec, sink: AgentSink): AgentRun;
   /** Works out where to go back to before the user message `userId`, and restores the files when asked. */
   rewind(spec: AgentSpec, userId: string, revertFiles: boolean): Promise<RewindResult>;

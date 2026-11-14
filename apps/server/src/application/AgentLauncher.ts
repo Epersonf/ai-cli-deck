@@ -1,4 +1,6 @@
-import { type PermissionMode, type Session } from '@deck/shared';
+import { BriefingBook } from './BriefingBook.js';
+import type { BriefingStore } from './BriefingStore.js';
+import { AGENT_EFFORTS, type PermissionMode, type Session } from '@deck/shared';
 import type { AgentConfig, AgentSpec } from '../domain/agent.js';
 import type { RunState } from './ChatSettings.js';
 import { invalid } from '../domain/errors.js';
@@ -10,6 +12,7 @@ import { utf8Locale } from './utf8Env.js';
 
 export interface LauncherDeps {
   providers: ProviderRegistry;
+  briefingStore?: BriefingStore;
   mcpBaseUrl: string;
   /** Base URL of this server as seen from an agent (loopback), exported as DECK_URL. */
   deckUrl: string;
@@ -20,7 +23,7 @@ export interface LauncherDeps {
   defaultModel?(providerId: string): string | null;
   /** The permission mode last chosen in a provider; new chats start with it. */
   defaultMode?(providerId: string): string | null;
-  /** The Memory section of the briefing for a provider's chats (changes show in the next conversation). */
+  /** The Memory section of the briefing for a provider's chats (changes show in new conversations). */
   memoryBriefing?(providerId: string): string;
   /** True when the Android app lets agents use the phone: the briefing then tells them so. */
   phoneEnabled?(): boolean;
@@ -30,7 +33,10 @@ export interface LauncherDeps {
 
 /** Turns a session record into what its agent needs to run: engine, folder and environment. */
 export class AgentLauncher {
-  constructor(private readonly deps: LauncherDeps) {}
+  private readonly briefings: BriefingBook;
+  constructor(private readonly deps: LauncherDeps) {
+    this.briefings = new BriefingBook(deps.briefingStore);
+  }
 
   private provider(id: string) {
     const provider = this.deps.providers.get(id);
@@ -38,27 +44,26 @@ export class AgentLauncher {
     return provider;
   }
 
-  /**
-   * The briefing of each conversation, written when it starts and then kept as it was: it is the start of
-   * every request, so a changed word (a device paired, a note edited) would make the provider read the
-   * whole chat again instead of taking it from its cache. A new conversation writes it again.
-   */
-  private readonly briefings = new Map<string, string>();
+  forget(sessionId: string): void {
+    this.briefings.forget(sessionId);
+  }
+
+  inherit(source: Session, target: Session): void {
+    this.briefings.keep(target, this.briefing(source, false));
+  }
 
   private briefing(session: Session, fresh: boolean): string {
-    const kept = this.briefings.get(session.id);
-    if (kept !== undefined && !fresh) return kept;
-    const guide = [
-      agentGuide({
-        phone: this.deps.phoneEnabled?.() ?? false,
-        devices: this.deps.pairedDevices?.() ?? [],
-      }),
-      this.deps.memoryBriefing?.(session.provider) ?? '',
-    ]
-      .filter((part) => part !== '')
-      .join(String.fromCharCode(10).repeat(2));
-    this.briefings.set(session.id, guide);
-    return guide;
+    return this.briefings.get(session, fresh, () =>
+      [
+        agentGuide({
+          phone: this.deps.phoneEnabled?.() ?? false,
+          devices: [...(this.deps.pairedDevices?.() ?? [])].sort(),
+        }),
+        this.deps.memoryBriefing?.(session.provider) ?? '',
+      ]
+        .filter((part) => part !== '')
+        .join('\n\n'),
+    );
   }
 
   private context(session: Session, fresh = false): ProviderContext {
@@ -93,13 +98,14 @@ export class AgentLauncher {
 
   /** The settings a session starts with: its saved ones, else the provider's. */
   initialConfig(session: Session): AgentConfig {
-    this.provider(session.provider); // an unknown provider fails here
+    const provider = this.provider(session.provider);
     const mode = session.meta['mode'];
-    const effort = session.meta['effort'];
+    const effort =
+      AGENT_EFFORTS[provider.agent].find((value) => value === session.meta['effort']) ?? null;
     return {
       model: session.meta['model'] || null,
       mode: (mode ?? this.deps.defaultMode?.(session.provider) ?? 'default') as PermissionMode,
-      effort: effort === 'low' || effort === 'medium' || effort === 'high' ? effort : null,
+      effort,
       autoCompact: parseAutoCompact(session.meta['autoCompact']),
     };
   }

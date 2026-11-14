@@ -49,4 +49,9 @@ describe('usage format', () => {
     expect(cacheShare({ read: 900, write: 100, ttlMs: null, at })).toBe(0.9);
     expect(cacheShare({ read: 0, write: 0, ttlMs: null, at })).toBeNull();
   });
+  it('includes uncached input without inventing a cache write', () => {
+    const at = '2026-01-01T00:00:00Z';
+    expect(cacheShare({ read: 900, write: null, uncached: 100, ttlMs: null, at })).toBe(0.9);
+    expect(cacheShare({ read: 900, write: 50, uncached: 50, ttlMs: null, at })).toBe(0.9);
+  });
 });

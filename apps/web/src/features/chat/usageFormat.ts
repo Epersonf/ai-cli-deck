@@ -43,6 +43,6 @@ export function cacheLeft(
 
 /** The share of the prompt that came from the cache, 0..1; null when nothing was counted. */
 export function cacheShare(cache: NonNullable<ChatUsage['cache']>): number | null {
-  const total = cache.read + cache.write;
+  const total = cache.read + (cache.write ?? 0) + (cache.uncached ?? 0);
   return total > 0 ? cache.read / total : null;
 }

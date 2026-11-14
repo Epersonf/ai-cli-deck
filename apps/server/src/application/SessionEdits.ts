@@ -51,7 +51,10 @@ export class SessionEdits {
     const runtime = this.reg.runtimes.get(id);
     if (!runtime) return;
     let meta = runtime.session.meta;
-    if (patch.chatId !== undefined) meta = withMeta(meta, CHAT_META.chat, patch.chatId);
+    if (patch.chatId !== undefined) {
+      meta = withMeta(meta, CHAT_META.chat, patch.chatId);
+      meta = withMeta(meta, CHAT_META.fork, '');
+    }
     if (patch.config) {
       meta = withMeta(meta, CHAT_META.model, patch.config.model ?? '');
       meta = withMeta(meta, CHAT_META.mode, patch.config.mode);

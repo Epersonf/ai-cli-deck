@@ -336,10 +336,18 @@ export const es: Messages = {
   'chat.usage.cost': 'Coste de este chat',
   'chat.usage.resets': 'se restablece en {time}',
   'chat.usage.empty': 'Aún no hay uso informado.',
+  'chat.usage.cache.request': 'Caché en la última llamada',
+  'chat.usage.cache.turn': 'Caché en el último turno',
   'chat.usage.cache': 'Caché del prompt',
   'chat.usage.cache.left': 'quedan {time}',
   'chat.usage.cache.expired': 'expirada',
   'chat.usage.cache.rw': '{read} leídos ({share}) · {write} fuera de la caché',
+  'chat.usage.compacting': 'Compactando…',
+  'chat.usage.cache.written': 'Escrituras de caché informadas: {write}',
+  'chat.usage.history': 'Uso entre turnos',
+  'chat.usage.totals':
+    '{turns} turnos · {input} entrada · {cached} en caché ({share}) · {output} salida',
+  'chat.usage.lastTurn': 'Último turno: {input} entrada · {cached} en caché · {time}s',
   'chat.usage.compact': 'Compactar',
   'chat.usage.compact.hint':
     'El agente resume el chat hasta ahora para liberar contexto (/compact)',

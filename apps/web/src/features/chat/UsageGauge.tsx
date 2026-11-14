@@ -1,29 +1,33 @@
+import { CacheDetails, HistoryDetails } from './UsageDetails';
 import type { ChatUsage } from '@deck/shared';
 import { useT } from '../../shared/i18n/store';
 import { sendChat } from './connection';
 import { HeaderPopover } from './HeaderPopover';
 import { Bar, useNow } from './usageParts';
-import {
-  cacheLeft,
-  cacheShare,
-  contextFill,
-  cost,
-  percent,
-  tokens,
-  untilReset,
-} from './usageFormat';
+import { contextFill, cost, percent, tokens, untilReset } from './usageFormat';
 
 interface Props {
   usage: ChatUsage | null;
   sessionId: string;
-  /** The agent takes `/compact` as a message. */
+  /** The server detected native manual compaction support. */
   canCompact: boolean;
+  /** Codex uses an RPC; Claude retains its existing SDK slash-command transport. */
+  nativeCompact?: boolean;
+  busy?: boolean;
+  compacting?: boolean;
 }
 
 /** Brass gauges for the chat's context, cache, cost and the account's limits; unknown parts are left out. */
-export function UsageGauge({ usage, sessionId, canCompact }: Props) {
+export function UsageGauge({
+  usage,
+  sessionId,
+  canCompact,
+  nativeCompact = false,
+  busy = false,
+  compacting = false,
+}: Props) {
   const t = useT();
-  const now = useNow(usage?.cache != null, 15_000);
+  const now = useNow(usage?.cache != null || (usage?.limits.length ?? 0) > 0, 15_000);
   // Always there: opening it asks the account's limits, which can be known before the first answer.
   const empty: ChatUsage = {
     costUsd: null,
@@ -41,10 +45,13 @@ export function UsageGauge({ usage, sessionId, canCompact }: Props) {
     (top, l) => (top === null || l.used > top.used ? l : top),
     null,
   );
-  const left = cache ? cacheLeft(cache, now) : null;
-  const share = cache ? cacheShare(cache) : null;
   const compact = (): void =>
-    sendChat(sessionId, { type: 'send', text: '/compact', images: [], queue: true });
+    sendChat(
+      sessionId,
+      nativeCompact
+        ? { type: 'compact' }
+        : { type: 'send', text: '/compact', images: [], queue: true },
+    );
   return (
     <HeaderPopover
       title={t('chat.usage')}
@@ -62,56 +69,29 @@ export function UsageGauge({ usage, sessionId, canCompact }: Props) {
       }
     >
       <h3>{t('chat.usage')}</h3>
+      {canCompact && (
+        <button
+          type="button"
+          className={`usage-chip${fill !== null && fill >= 0.7 ? ' hot' : ''}`}
+          onClick={compact}
+          disabled={busy}
+          title={t('chat.usage.compact.hint')}
+        >
+          {t(compacting ? 'chat.usage.compacting' : 'chat.usage.compact')}
+        </button>
+      )}
       {nothing && <p className="hint">{t('chat.usage.empty')}</p>}
       {fill !== null && contextTokens !== null && contextWindow !== null && (
         <div className="usage-row">
-          <span className="usage-label">
-            {t('chat.usage.context')}
-            {canCompact && (
-              <button
-                type="button"
-                className={`usage-chip${fill >= 0.7 ? ' hot' : ''}`}
-                onClick={compact}
-                title={t('chat.usage.compact.hint')}
-              >
-                {t('chat.usage.compact')}
-              </button>
-            )}
-          </span>
+          <span className="usage-label">{t('chat.usage.context')}</span>
           <small>
             {tokens(contextTokens)} / {tokens(contextWindow)} · {percent(fill)}
           </small>
           <Bar fraction={fill} label={t('chat.usage.context')} />
         </div>
       )}
-      {cache !== null && (
-        <div className="usage-row" title={t('chat.usage.cache')}>
-          <span>{t('chat.usage.cache')}</span>
-          <small>
-            {left === null
-              ? ''
-              : left > 0
-                ? t('chat.usage.cache.left', {
-                    time: untilReset(new Date(now + left).toISOString(), now),
-                  })
-                : t('chat.usage.cache.expired')}
-          </small>
-          {cache.ttlMs !== null && left !== null && (
-            <Bar
-              fraction={left / cache.ttlMs}
-              tone={1 - left / cache.ttlMs}
-              label={t('chat.usage.cache')}
-            />
-          )}
-          <small className="usage-wide">
-            {t('chat.usage.cache.rw', {
-              read: tokens(cache.read),
-              share: share === null ? '–' : percent(share),
-              write: tokens(cache.write),
-            })}
-          </small>
-        </div>
-      )}
+      {cache !== null && <CacheDetails cache={cache} now={now} />}
+      {shown.history && <HistoryDetails history={shown.history} />}
       {limits.map((limit) => (
         <div className="usage-row" key={limit.key}>
           <span>{limit.label ?? t('chat.usage.limit')}</span>

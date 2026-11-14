@@ -33,7 +33,8 @@ export function ChatHeader({ session, blocks, online, tasks, usage }: Props) {
   const ask = useConfirm((x) => x.ask);
   const sideCount = useSessions((s) => sideChatsOf(s.sessions, session.id).length);
   const isMain = session.parentId === null;
-  const agent = useChats((s) => s.byId[session.id]?.config?.agent);
+  const config = useChats((s) => s.byId[session.id]?.config);
+  const busy = useChats((s) => s.byId[session.id]?.busy ?? false);
   const openSide = (): void =>
     void useSide
       .getState()
@@ -54,7 +55,14 @@ export function ChatHeader({ session, blocks, online, tasks, usage }: Props) {
         {session.cwd}
       </span>
       {!online && <span className="chat-offline">{t('chat.reconnecting')}</span>}
-      <UsageGauge usage={usage} sessionId={session.id} canCompact={agent === 'claude'} />
+      <UsageGauge
+        usage={usage}
+        sessionId={session.id}
+        canCompact={Boolean(config?.chatId) && (config?.canCompact ?? config?.agent === 'claude')}
+        nativeCompact={config?.agent === 'codex'}
+        busy={busy || !online}
+        compacting={config?.compacting ?? false}
+      />
       <ChatTasks sessionId={session.id} tasks={tasks} />
       {sideCount > 0 && (
         <button type="button" className="header-pop-btn" title={t('side.title')} onClick={openSide}>

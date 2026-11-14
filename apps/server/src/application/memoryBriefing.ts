@@ -16,10 +16,8 @@ const linesOf = (tree: MemoryTree): Line[] =>
     })
     .sort((a, b) => a.label.localeCompare(b.label));
 
-/**
- * The "Memory" section of an agent's briefing: the enabled notes of the global memory, then of the profile,
- * as `folder/title: body`, until the briefing is as long as allowed; the rest is listed by title with its id so
- * the agent can read it with the memory tool. Empty when there is nothing to say.
+/** A byte budget bounds the whole section (including its index), even for non-ASCII notes.
+ * This is a conservative size bound, not a model-specific token count. Bodies are never cut mid-note.
  */
 export function memoryBriefing(global: MemoryTree, profile: MemoryTree): string {
   const groups: Array<[string, Line[]]> = [
@@ -27,24 +25,36 @@ export function memoryBriefing(global: MemoryTree, profile: MemoryTree): string 
     ['Notes for this profile', linesOf(profile)],
   ];
   if (groups.every(([, lines]) => lines.length === 0)) return '';
-  let room = MEMORY_LIMITS.briefing;
   const out = ['Memory (notes the user keeps for you; follow them, and do not repeat them back):'];
+  const footer =
+    'More notes are available: use the memory tool list (offset/limit) or `clideck memory list`, then read by id.';
+  const indexHeader = 'More notes (read by id):';
+  let room =
+    MEMORY_LIMITS.briefing - Buffer.byteLength(out[0] ?? '') - Buffer.byteLength(footer) - 2;
   const later: Line[] = [];
   for (const [title, lines] of groups) {
-    const kept: string[] = [];
+    let heading = false;
     for (const line of lines) {
-      const text = `${line.label}: ${line.body}`;
-      if (later.length === 0 && text.length <= room) {
-        kept.push(`- ${text}`);
-        room -= text.length;
+      const text = `${heading ? '' : `${title}:\n`}- ${line.label}: ${line.body}`;
+      const size = Buffer.byteLength(text) + 1;
+      if (later.length === 0 && size <= room) {
+        out.push(text);
+        room -= size;
+        heading = true;
       } else later.push(line);
     }
-    if (kept.length > 0) out.push(`${title}:`, ...kept);
   }
-  if (later.length > 0)
-    out.push(
-      'More notes (too long to include; read one with the memory tool or `clideck memory read <id>`):',
-      ...later.map((l) => `- ${l.label} (id ${l.id})`),
-    );
+  if (later.length > 0) {
+    let heading = false;
+    for (const line of later) {
+      const text = `${heading ? '' : `${indexHeader}\n`}- ${line.label} (id ${line.id})`;
+      const size = Buffer.byteLength(text) + 1;
+      if (size > room) break;
+      out.push(text);
+      room -= size;
+      heading = true;
+    }
+    out.push(footer);
+  }
   return out.join('\n');
 }

@@ -64,6 +64,8 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ping') }),
   /** Ask the account's usage windows now (the usage panel was opened), so they show before any answer. */
   z.object({ type: z.literal('usage-refresh') }),
+  /** Native manual context compaction. Never sent as ordinary model input. */
+  z.object({ type: z.literal('compact') }),
   /** This device has the chat open and in view (or not): finished answers are then not announced. */
   z.object({ type: z.literal('viewing'), viewing: z.boolean() }),
 ]);

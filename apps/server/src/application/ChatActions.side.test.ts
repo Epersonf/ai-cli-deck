@@ -58,4 +58,35 @@ describe('a side chat', () => {
     expect((await h.sessions.snapshot(side.id)).events).toEqual([]);
     expect(h.agent.runs).toHaveLength(0);
   });
+  it('uses a native Codex fork when the profile executable supports it, with no transcript turn', async () => {
+    const { h, id } = await talked('codex');
+    h.agent.available = { fork: true, compact: true };
+    const guide = h.agent.last.spec.guide;
+    const before = h.agent.runs.length;
+    const side = await h.chatActions.side(id);
+    expect(h.agent.runs).toHaveLength(before);
+    expect(h.chatFiles.transcripts.size).toBe(0);
+    await h.sessions.send(side.id, 'quick question');
+    expect(h.agent.last.spec).toMatchObject({
+      kind: 'codex',
+      resumeId: 'abc-123',
+      fork: true,
+      guide,
+    });
+    expect(h.agent.last.sent[0]?.text).toBe('quick question');
+    expect(h.sessions.get(side.id)?.meta['fork']).toBe('true');
+    h.agent.last.sink.chatId('new-codex-thread');
+    expect(h.sessions.get(side.id)?.meta['fork']).toBeUndefined();
+    expect(h.sessions.get(id)?.meta['chat']).toBe('abc-123');
+  });
+
+  it('preserves a pending native fork through a server restart', async () => {
+    const { h, id } = await talked('codex');
+    h.agent.available = { fork: true, compact: true };
+    const side = await h.chatActions.side(id);
+    const restored = createHarness({ stored: h.store.saved, log: h.log });
+    await restored.sessions.restore();
+    await restored.sessions.send(side.id, 'after restart');
+    expect(restored.agent.last.spec).toMatchObject({ resumeId: 'abc-123', fork: true });
+  });
 });

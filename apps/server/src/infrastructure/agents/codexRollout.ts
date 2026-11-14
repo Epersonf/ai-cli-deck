@@ -35,11 +35,22 @@ export function codexTokenCount(line: string, now: number = Date.now()): UsageRe
   if (last) {
     const input = num(last['input_tokens']) ?? 0;
     const cached = Math.min(input, num(last['cached_input_tokens']) ?? 0);
+    const write = num(last['cache_write_input_tokens']);
     const context = input + (num(last['output_tokens']) ?? 0);
     out.push({
       ...(context > 0 ? { contextTokens: context } : {}),
       ...(window ? { contextWindow: window } : {}),
-      ...(input > 0 ? { cache: { read: cached, write: input - cached, ttlMs: null } } : {}),
+      ...(input > 0
+        ? {
+            cache: {
+              scope: 'request',
+              read: cached,
+              write,
+              uncached: Math.max(0, input - cached - (write ?? 0)),
+              ttlMs: null,
+            },
+          }
+        : {}),
     });
   }
   const limits = obj(payload['rate_limits']);
@@ -99,6 +110,17 @@ export async function lastReadings(path: string): Promise<UsageReading[]> {
     const buffer = Buffer.alloc(size - start);
     await file.read(buffer, 0, buffer.length, start);
     for (const line of buffer.toString('utf8').split('\n').reverse()) {
+      // A compaction after the last count makes that old occupancy invalid.
+      try {
+        const entry = obj(JSON.parse(line));
+        if (
+          entry?.['type'] === 'compacted' ||
+          obj(entry?.['payload'])?.['type'] === 'context_compacted'
+        )
+          return [{ compacted: true }];
+      } catch {
+        /* Partial first line of the bounded tail. */
+      }
       if (!line.includes('"token_count"')) continue;
       const readings = codexTokenCount(line);
       if (readings.length) return readings;

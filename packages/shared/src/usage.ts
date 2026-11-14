@@ -14,13 +14,38 @@ export type UsageLimit = z.infer<typeof UsageLimitSchema>;
 export const UsageCacheSchema = z.object({
   /** Input tokens taken from the cache. */
   read: z.number().nonnegative(),
-  /** Input tokens that were not: written to the cache, or sent without it. */
-  write: z.number().nonnegative(),
+  /** Last model request, or the whole turn when only aggregated usage is available. */
+  scope: z.enum(['request', 'turn']).optional(),
+  /** Cache writes explicitly reported by the provider; null when unknown. */
+  write: z.number().nonnegative().nullable(),
+  /** Input processed without a cache read or a reported cache write. */
+  uncached: z.number().nonnegative().optional(),
   ttlMs: z.number().positive().nullable(),
   /** When that answer came (ISO): the cache expires `ttlMs` after it. */
   at: z.string(),
 });
 export type UsageCache = z.infer<typeof UsageCacheSchema>;
+
+export const TurnUsageSchema = z.object({
+  id: z.string(),
+  input: z.number().nonnegative(),
+  cached: z.number().nonnegative(),
+  output: z.number().nonnegative(),
+  durationMs: z.number().nonnegative(),
+  at: z.string(),
+});
+export type TurnUsage = z.infer<typeof TurnUsageSchema>;
+
+export const UsageHistorySchema = z.object({
+  turns: z.number().int().nonnegative(),
+  input: z.number().nonnegative(),
+  cached: z.number().nonnegative(),
+  output: z.number().nonnegative(),
+  durationMs: z.number().nonnegative(),
+  /** The latest twenty turns; totals include earlier turns too. */
+  recent: z.array(TurnUsageSchema).max(20),
+});
+export type UsageHistory = z.infer<typeof UsageHistorySchema>;
 
 /** What the chat has used, for the usage meter. Any part may be unknown (null or empty) for an agent or endpoint. */
 export const ChatUsageSchema = z.object({
@@ -32,5 +57,6 @@ export const ChatUsageSchema = z.object({
   /** The account's usage windows the agent has reported (shared by the chats of one profile). */
   limits: z.array(UsageLimitSchema).default([]),
   cache: UsageCacheSchema.nullable().default(null),
+  history: UsageHistorySchema.optional(),
 });
 export type ChatUsage = z.infer<typeof ChatUsageSchema>;

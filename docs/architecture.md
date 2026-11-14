@@ -34,10 +34,29 @@
   uuid, so an edit (`rewind`) can resume the saved chat at the entry just before it (`resumeSessionAt`,
   found in Claude's own JSONL; the files come back through the SDK's file checkpoints). Codex cannot go back
   in a thread, and neither can a chat saved without those uuids: the edit starts a new thread whose first
-  message replays what was kept (`chatRewind`). A side chat is a fork (`forkSession` for Claude, a handover
-  for Codex) with `parentId` set to the main session. Background jobs of Claude are `task` steps from the SDK's
+  message replays what was kept (`chatRewind`). A side chat is a fork (`forkSession` for Claude, `exec fork` for capable Codex versions,
+  a transcript handover for older versions) with `parentId` set to the main session. Background jobs of Claude are `task` steps from the SDK's
   task messages; the run stays open while one runs. `UsageMeter` adds a chat's cost and context, and
   `LimitBook` keeps the account's last usage window per profile (`<state>/limits.json`), shared by its chats.
+- **Prompt stability and native compaction.** `AgentLauncher` snapshots the exact deck briefing and a SHA-256
+  hash privately under `<state>/briefings/`. The snapshot survives restarts, is inherited by native forks,
+  and is replaced for new conversations or profile changes. Pending fork state is persisted in `meta.fork`
+  until the agent reports its new thread id. `codexCapabilities` detects executable capabilities locally,
+  caching the result for five minutes without a model request. Codex manual compaction uses a short-lived
+  app-server connection: initialize, resume with the same profile/config/instructions, `thread/compact/start`,
+  then wait for `turn/completed`. RPC acknowledgement alone never counts as completion. Errors/cancellation
+  leave prior context measurements intact; successful compaction invalidates them until measured again.
+- **Usage and output budgets.** Codex exec completion reports whole-turn tokens, never context occupancy.
+  The final rollout `token_count` provides last-request context/cache; stale closed runs cannot overwrite
+  newer readings. Cache writes are nullable and separate from uncached input for both Codex and
+  Anthropic-compatible profiles. Whole-turn Codex totals and the last twenty samples live privately under
+  `<state>/usage/`; they survive restart and reset with the conversation. MCP returns compact JSON and
+  continuation offsets for memory titles, sessions and browser outlines. CLI response shapes are retained.
+  The memory section's entire UTF-8 representation fits `MEMORY_LIMITS.briefing` bytes, including headers
+  and the overflow index; this is a conservative size bound, not a model-specific token estimate.
+  Codex's native `tool_output_token_limit` / per-MCP-tool budgets remain profile-controlled; the display-only
+  `codexMap` clip does not reduce model input. Cache lifetime, billing and cache breakpoint policy remain
+  the CLI/provider's responsibility, rather than being inferred by the deck.
 - **Voice** (`WhisperEngine`): whisper.cpp, downloaded on Windows (pinned sha256, resumed after a stall), an
   installed `whisper-cli` elsewhere; the model is `<state>/voice/ggml-small.bin`.
 - **Keys are files, not terminals.** A profile's API key is typed in the profile dialog and kept in

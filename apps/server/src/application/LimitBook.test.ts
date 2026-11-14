@@ -28,7 +28,6 @@ describe('the accounts usage windows', () => {
         label: 'Weekly limit',
       });
       expect(told).toEqual(['claude', 'claude']);
-      await new Promise((resolve) => setTimeout(resolve, 30));
       const second = new LimitBook(store);
       await second.restore();
       expect(second.get('claude').map((l) => [l.key, l.used])).toEqual([

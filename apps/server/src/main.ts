@@ -29,6 +29,8 @@ import { createSignIn } from './infrastructure/signin/signInWiring.js';
 import { createVoice } from './infrastructure/voice/voiceWiring.js';
 import { createAgentPort } from './infrastructure/agents/agentPort.js';
 import { sdkQuery } from './infrastructure/agents/claudeQuery.js';
+import { FileUsageHistoryStore } from './infrastructure/store/FileUsageHistoryStore.js';
+import { FileBriefingStore } from './infrastructure/store/FileBriefingStore.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
 import { memoryServices } from './infrastructure/memoryWiring.js';
 import { runCommand } from './infrastructure/machine/exec.js';
@@ -62,6 +64,7 @@ async function main(): Promise<void> {
   const kept = await memoryServices({ ...paths, providers, bus, system });
   const launcher = new AgentLauncher({
     providers,
+    briefingStore: new FileBriefingStore(join(paths.stateDir, 'briefings')),
     mcpBaseUrl: `http://127.0.0.1:${config.port}${MCP_PATH}`,
     deckUrl: `http://127.0.0.1:${config.port}`,
     binDir: join(here, '..', 'bin'),
@@ -75,6 +78,7 @@ async function main(): Promise<void> {
     models: kept.models,
     catalog: kept.catalog,
     launcher,
+    usageHistoryStore: new FileUsageHistoryStore(join(paths.stateDir, 'usage')),
     agent: createAgentPort(sdkQuery),
     providers,
     store: new JsonSessionStore(join(paths.stateDir, 'sessions.json')),

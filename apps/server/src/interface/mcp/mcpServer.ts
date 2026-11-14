@@ -6,6 +6,7 @@ import { registerDeviceTool } from './deviceTool.js';
 import { registerMemoryTool } from './memoryTool.js';
 import { registerBrowserTools } from './browserTools.js';
 import { registerPhoneAndTaskTools } from './phoneTaskTools.js';
+import { pageItems } from './pagination.js';
 import { run, runAsync } from './mcpResult.js';
 
 /** One MCP server per request, bound to the calling session. No tool runs git or writes files. */
@@ -17,8 +18,15 @@ export function buildMcpServer(
 
   server.registerTool(
     'list_sessions',
-    { description: 'List the other sessions open in the deck (provider, folder, status).' },
-    () => run(tools.listSessions),
+    {
+      description:
+        'List the other sessions of your profile (folder, status). A page of up to 50 by default; continue with nextOffset.',
+      inputSchema: {
+        offset: z.number().int().nonnegative().optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+      },
+    },
+    ({ offset, limit }) => run(() => pageItems(tools.listSessions(), offset ?? 0, limit ?? 50)),
   );
   server.registerTool(
     'session_title',

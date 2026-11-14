@@ -27,7 +27,7 @@ describe('Codex token_count lines', () => {
       {
         contextTokens: 12_500,
         contextWindow: 258_400,
-        cache: { read: 9_000, write: 3_000, ttlMs: null },
+        cache: { scope: 'request', read: 9_000, write: null, uncached: 3_000, ttlMs: null },
       },
       {
         limit: {

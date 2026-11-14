@@ -75,12 +75,16 @@ export function usageOf(msg: UsageMessage): UsageReading | null {
     (usage.output_tokens ?? 0);
   if (tokens <= 0) return null;
   const read = usage.cache_read_input_tokens ?? 0;
-  // Everything sent that did not come from the cache: what was written to it, and what went uncached
-  // (DeepSeek never reports a write, only the hits and the rest).
-  const write = (usage.cache_creation_input_tokens ?? 0) + (usage.input_tokens ?? 0);
+  const write = usage.cache_creation_input_tokens ?? null;
+  const uncached = usage.input_tokens ?? 0;
   const hour = usage.cache_creation?.ephemeral_1h_input_tokens ?? 0;
   const five = usage.cache_creation?.ephemeral_5m_input_tokens ?? 0;
   // Reading says nothing of the lifetime: only a write does (the hour one wins when both are there).
   const ttlMs = hour > 0 ? 3_600_000 : five > 0 ? 300_000 : null;
-  return { contextTokens: tokens, ...(read + write > 0 ? { cache: { read, write, ttlMs } } : {}) };
+  return {
+    contextTokens: tokens,
+    ...(read + (write ?? 0) + uncached > 0
+      ? { cache: { scope: 'request', read, write, uncached, ttlMs } }
+      : {}),
+  };
 }

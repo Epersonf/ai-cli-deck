@@ -12,6 +12,7 @@ export interface SinkHost {
   /** The agent named the model that is answering. */
   reportModel(model: string): void;
   pushUsage(): void;
+  configChanged?(): void;
   setBusy(busy: boolean): void;
   /** The turn is over: start the next queued message. */
   next(): void;
@@ -40,6 +41,7 @@ export function chatSink(h: SinkHost): AgentSink {
     chatId: (id) => {
       h.settings.saved(id);
       h.remember({ chatId: id });
+      h.configChanged?.();
     },
     model: (name) => h.reportModel(name),
     usage: (reading) => {

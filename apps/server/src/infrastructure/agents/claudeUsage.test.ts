@@ -48,7 +48,10 @@ describe('usage from Claude', () => {
       },
     );
     expect(usage).toEqual([
-      { contextTokens: 1150, cache: { read: 1000, write: 100, ttlMs: null } },
+      {
+        contextTokens: 1150,
+        cache: { scope: 'request', read: 1000, write: 90, uncached: 10, ttlMs: null },
+      },
       { costUsd: 0.21, contextWindow: 200_000 },
     ]);
   });
@@ -133,6 +136,12 @@ describe('the cache as other endpoints report it', () => {
         },
       },
     });
-    expect(usage[0]?.cache).toEqual({ read: 9_000, write: 300, ttlMs: null });
+    expect(usage[0]?.cache).toEqual({
+      scope: 'request',
+      read: 9_000,
+      write: 0,
+      uncached: 300,
+      ttlMs: null,
+    });
   });
 });

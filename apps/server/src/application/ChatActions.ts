@@ -7,13 +7,13 @@ import {
   type RestartSessionBody,
   type Session,
 } from '@deck/shared';
-import { HANDOVER_START, type ChatFilesPort } from '../domain/chat.js';
+import type { ChatFilesPort } from '../domain/chat.js';
 import { invalid, notFound } from '../domain/errors.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 import { eventsToTurns, turnsToEvents } from './chatHistory.js';
 import type { ChatService } from './ChatService.js';
 import type { CreateOptions } from './SessionManager.js';
-import { transcript } from './transcript.js';
+import { handoverPrompt } from './handoverPrompt.js';
 
 export interface ChatActionsDeps {
   chats: ChatService;
@@ -24,6 +24,7 @@ export interface ChatActionsDeps {
     switchProvider(id: string, provider: string): Promise<void>;
     snapshotEvents(id: string): Promise<ChatEvent[]>;
     seed(id: string, events: ChatEvent[]): Promise<void>;
+    supportsFork?(id: string): Promise<boolean>;
   };
   files: ChatFilesPort;
   providers: ProviderRegistry;
@@ -72,10 +73,21 @@ export class ChatActions {
     this.label(target);
     const chatId = source.meta[CHAT_META.chat];
     const native =
-      target === source.provider && Boolean(chatId) && providers.get(target)?.agent === 'claude';
+      target === source.provider &&
+      Boolean(chatId) &&
+      (providers.get(target)?.agent === 'claude' || (await sessions.supportsFork?.(id)) === true);
     const created = await sessions.create(
       newBody(target, source.cwd),
-      native && chatId ? { chatId, fork: true } : {},
+      native && chatId
+        ? {
+            chatId,
+            fork: true,
+            briefingFrom: id,
+            meta: Object.fromEntries(
+              SETTINGS.flatMap((key) => (source.meta[key] ? [[key, source.meta[key]]] : [])),
+            ),
+          }
+        : {},
     );
     if (native) await sessions.seed(created.id, await sessions.snapshotEvents(id));
     else await sessions.send(created.id, await this.handover(source));
@@ -90,13 +102,16 @@ export class ChatActions {
     const { chats, sessions, providers } = this.deps;
     const source = chats.must(id);
     const chatId = source.meta[CHAT_META.chat];
-    const native = Boolean(chatId) && providers.get(source.provider)?.agent === 'claude';
+    const native =
+      Boolean(chatId) &&
+      (providers.get(source.provider)?.agent === 'claude' ||
+        (await sessions.supportsFork?.(id)) === true);
     const meta = Object.fromEntries(
       SETTINGS.flatMap((key) => (source.meta[key] ? [[key, source.meta[key]]] : [])),
     );
     const created = await sessions.create(newBody(source.provider, source.cwd, source.id), {
       meta,
-      ...(native && chatId ? { chatId, fork: true } : {}),
+      ...(native && chatId ? { chatId, fork: true, briefingFrom: id } : {}),
     });
     const events = await sessions.snapshotEvents(id);
     if (native) await sessions.seed(created.id, events);
@@ -120,20 +135,8 @@ export class ChatActions {
     return created;
   }
 
-  /** The conversation written down for the next AI, as the message that makes it read it. */
-  private async handover(source: Session): Promise<string> {
-    const { sessions, files, now } = this.deps;
-    const turns = eventsToTurns(await sessions.snapshotEvents(source.id));
-    if (turns.length === 0) throw invalid('There is no conversation to hand over yet');
-    const from = this.label(source.provider);
-    const text = transcript(turns, { from, cwd: source.cwd, date: now() });
-    const stamp = now().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-    const file = await files.writeTranscript(source.cwd, `${stamp}-${source.id}.md`, text);
-    return (
-      `${HANDOVER_START}${from} in this folder. ` +
-      `Read ${file} first: it is that conversation so far. Then say in one short line that you ` +
-      'have the context, and wait for the user.'
-    );
+  private handover(source: Session): Promise<string> {
+    return handoverPrompt(source, this.deps);
   }
 
   private label(provider: string): string {

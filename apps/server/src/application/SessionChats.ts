@@ -26,6 +26,9 @@ export class SessionChats {
     this.touch(id);
     await this.chatOf(id).queue.sendOrQueue(text, images);
   }
+  readonly compact = (id: string): Promise<void> => this.chatOf(id).compact();
+  readonly supportsFork = async (id: string): Promise<boolean> =>
+    (await this.chatOf(id).capabilities()).fork;
   readonly queued = (id: string) => this.chatOf(id).queue.view();
   readonly queueNow = (id: string, item: string): Promise<void> => this.chatOf(id).queue.now(item);
   readonly queueDrop = (id: string, item: string): void => this.chatOf(id).queue.drop(item);
@@ -56,6 +59,7 @@ export class SessionChats {
   async snapshot(id: string): Promise<ReturnType<ChatRuntime['snapshot']>> {
     const chat = this.chatOf(id);
     await chat.ready();
+    await chat.capabilities();
     return chat.snapshot();
   }
 

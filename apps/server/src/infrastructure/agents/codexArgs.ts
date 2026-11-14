@@ -19,9 +19,16 @@ const toml = (value: string): string => JSON.stringify(value);
  */
 export function codexArgs(spec: AgentSpec, chatId: string | null): string[] {
   const args = ['exec'];
-  if (chatId) args.push('resume', chatId);
+  if (chatId) args.push(spec.fork ? 'fork' : 'resume', chatId);
   args.push('--json', '--skip-git-repo-check');
   if (spec.model) args.push('-m', spec.model);
+  args.push(...codexConfigArgs(spec));
+  return args;
+}
+
+/** Identical configuration for exec and manual compaction: preserve the rendered instructions. */
+export function codexConfigArgs(spec: AgentSpec): string[] {
+  const args: string[] = [];
   const config: Record<string, string> = {
     sandbox_mode: toml(SANDBOX[spec.mode]),
     approval_policy: toml('never'),

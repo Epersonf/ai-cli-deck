@@ -1,43 +1,16 @@
 import type { ChatEvent } from '@deck/shared';
-import { AUTH_MARKER } from '../../domain/authError.js';
+import { friendlyError, RETRY_NOISE, type CodexState } from './codexState.js';
+export { friendlyError, newCodexState } from './codexState.js';
+export type { CodexState } from './codexState.js';
 import type { AgentSink } from '../../domain/agent.js';
 
 import { obj, str, type Json } from './codexJson.js';
 import { todoEvents } from './codexTodos.js';
 
+// Display/log bound only. Prompt output budgets belong to Codex; MCP tools paginate before returning.
 const MAX_OUTPUT = 20_000;
 const clip = (text: string): string =>
   text.length > MAX_OUTPUT ? `${text.slice(0, MAX_OUTPUT)}\n… (cut)` : text;
-
-/** What the mapper remembers between lines of one `codex exec` run. */
-export interface CodexState {
-  /** Exec restarts item numbering on each message; the deck needs ids unique across the chat. */
-  itemPrefix: string;
-  /** Tool items already announced (so their completion only adds the result). */
-  started: Set<string>;
-  /** The last error Codex printed; used when the process ends without finishing the turn. */
-  lastError: string | null;
-  finished: boolean;
-}
-
-export const newCodexState = (itemPrefix = ''): CodexState => ({
-  itemPrefix,
-  started: new Set(),
-  lastError: null,
-  finished: false,
-});
-
-/** Codex retries a failing connection five times and says so on every try: not worth showing. */
-const RETRY_NOISE = /^(Reconnecting|Falling back)/;
-
-const NOT_SIGNED_IN = /401|unauthori[sz]ed|bearer|api key|not logged in|log in/i;
-
-/** What Codex said when a turn failed, with a hint when the cause is a missing or wrong key. */
-export function friendlyError(message: string): string {
-  return NOT_SIGNED_IN.test(message)
-    ? `${AUTH_MARKER}Codex could not sign in: sign in again or set a key for this profile. ${message.slice(0, 200)}`
-    : message;
-}
 
 const TOOL_TYPES = new Set(['command_execution', 'file_change', 'mcp_tool_call', 'web_search']);
 
@@ -116,12 +89,41 @@ export function mapCodexLine(line: Json, state: CodexState, sink: AgentSink): vo
     if (id) sink.chatId(id);
   } else if (type === 'item.started' || type === 'item.completed' || type === 'item.updated') {
     const item = obj(line['item']);
+    if (
+      type === 'item.completed' &&
+      ['context_compaction', 'contextCompaction'].includes(str(item?.['type']))
+    )
+      sink.usage({ compacted: true });
     if (item) for (const event of itemEvents(type, item, state)) sink.event(event);
   } else if (type === 'turn.completed') {
     state.finished = true;
     const used = obj(line['usage']);
-    const tokens = Number(used?.['input_tokens'] ?? 0) + Number(used?.['output_tokens'] ?? 0);
-    if (tokens > 0) sink.usage({ contextTokens: tokens });
+    const number = (value: unknown): number =>
+      typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0;
+    const input = number(used?.['input_tokens']);
+    const cached = Math.min(input, number(used?.['cached_input_tokens']));
+    const output = number(used?.['output_tokens']);
+    const write = used?.['cache_write_input_tokens'];
+    if (used)
+      sink.usage({
+        // Exec reports totals over all requests of the turn, not context occupancy.
+        contextTokens: null,
+        cache: {
+          scope: 'turn',
+          read: cached,
+          write: typeof write === 'number' ? number(write) : null,
+          uncached: Math.max(0, input - cached - number(write)),
+          ttlMs: null,
+        },
+        turn: {
+          id: state.itemPrefix,
+          input,
+          cached,
+          output,
+          durationMs: Math.max(0, Date.now() - state.startedAt),
+          at: new Date().toISOString(),
+        },
+      });
     sink.event({ t: 'turn-end', error: null, costUsd: null, durationMs: null });
   } else if (type === 'turn.failed' || type === 'error') {
     const message = str(obj(line['error'])?.['message']) || str(line['message']);

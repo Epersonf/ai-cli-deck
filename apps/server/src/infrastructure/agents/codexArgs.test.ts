@@ -48,4 +48,10 @@ describe('Codex exec arguments', () => {
       'sandbox_mode="danger-full-access"',
     );
   });
+  it('uses a native fork once, and preserves identical configuration when resuming it', () => {
+    const fork = codexArgs({ ...spec, fork: true }, 'source-thread');
+    expect(fork.slice(0, 4)).toEqual(['exec', 'fork', 'source-thread', '--json']);
+    const resume = codexArgs({ ...spec, fork: false }, 'new-thread');
+    expect(fork.slice(3)).toEqual(resume.slice(3));
+  });
 });

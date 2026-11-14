@@ -111,4 +111,17 @@ describe('the agent memory tool', () => {
     const { memory } = await setup();
     expect(memory.profiles().find((p) => p.you)?.id).toBe('claude');
   });
+  it('paginates titles without exposing another profile body and preserves the CLI list shape', async () => {
+    const { memory, other } = await setup();
+    await memory.write({ title: 'A', body: 'private A' });
+    await memory.write({ title: 'B', body: 'private B' });
+    const first = memory.list('profile', undefined, { offset: 0, limit: 1 });
+    expect(first).toMatchObject({ total: 2, notes: [{ title: 'A' }], nextOffset: 1 });
+    const second = memory.list('profile', undefined, { offset: 1, limit: 1 });
+    expect(second).toMatchObject({ notes: [{ title: 'B' }], nextOffset: null });
+    expect(Array.isArray(memory.list())).toBe(true);
+    const peek = other.list('profile', 'claude', { offset: 0, limit: 1 });
+    expect(peek).toMatchObject({ titlesOnly: true, total: 2, notes: [{ title: 'A' }] });
+    expect(JSON.stringify(peek)).not.toContain('private');
+  });
 });

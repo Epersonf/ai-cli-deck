@@ -45,9 +45,9 @@ describe('the memory in a briefing', () => {
   });
 
   it('stops at the limit and lists the rest by title with ids', () => {
-    const big = 'x'.repeat(MEMORY_LIMITS.briefing - 100);
+    const big = 'x'.repeat(MEMORY_LIMITS.briefing - 650);
     const text = memoryBriefing(
-      tree([note('1', 'A', big), note('2', 'B', 'y'.repeat(500))]),
+      tree([note('1', 'A', big), note('2', 'B', 'y'.repeat(1000))]),
       tree([note('3', 'C', 'z')]),
     );
     expect(text).toContain('- A: xxx');
@@ -55,5 +55,15 @@ describe('the memory in a briefing', () => {
     expect(text).toContain('More notes');
     expect(text).toContain('- B (id 2)');
     expect(text).toContain('- C (id 3)');
+    expect(Buffer.byteLength(text)).toBeLessThanOrEqual(MEMORY_LIMITS.briefing);
+  });
+  it('bounds headers, unicode bodies and the index even with thousands of notes', () => {
+    const entries = Array.from({ length: 2000 }, (_, i) =>
+      note(String(i), `Nota ${i} 漢字`, '😀'.repeat(4000)),
+    );
+    const text = memoryBriefing(tree(entries), tree([]));
+    expect(Buffer.byteLength(text)).toBeLessThanOrEqual(MEMORY_LIMITS.briefing);
+    expect(text).toContain('offset/limit');
+    expect(text).not.toContain('😀');
   });
 });
