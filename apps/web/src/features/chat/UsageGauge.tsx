@@ -65,21 +65,23 @@ export function UsageGauge({ usage, sessionId, canCompact }: Props) {
       {nothing && <p className="hint">{t('chat.usage.empty')}</p>}
       {fill !== null && contextTokens !== null && contextWindow !== null && (
         <div className="usage-row">
-          <span>{t('chat.usage.context')}</span>
+          <span className="usage-label">
+            {t('chat.usage.context')}
+            {canCompact && (
+              <button
+                type="button"
+                className={`usage-chip${fill >= 0.7 ? ' hot' : ''}`}
+                onClick={compact}
+                title={t('chat.usage.compact.hint')}
+              >
+                {t('chat.usage.compact')}
+              </button>
+            )}
+          </span>
           <small>
             {tokens(contextTokens)} / {tokens(contextWindow)} · {percent(fill)}
           </small>
           <Bar fraction={fill} label={t('chat.usage.context')} />
-          {canCompact && (
-            <button
-              type="button"
-              className="usage-action"
-              onClick={compact}
-              title={t('chat.usage.compact.hint')}
-            >
-              {t('chat.usage.compact')}
-            </button>
-          )}
         </div>
       )}
       {cache !== null && (

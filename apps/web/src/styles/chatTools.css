@@ -90,16 +90,34 @@
   grid-column: 1 / -1;
   text-align: left;
 }
-.usage-action {
-  grid-column: 1 / -1;
-  justify-self: start;
-  padding: 2px 10px;
+.usage-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* A small brass pill beside the row's name: the row keeps the same shape as the others. */
+.usage-chip {
+  min-height: 0;
+  padding: 1px 10px;
   border: 1px solid var(--brass);
-  border-radius: 4px;
+  border-radius: 999px;
   background: transparent;
-  color: var(--parchment);
-  font-size: 12px;
+  box-shadow: none;
+  color: var(--brass-hi);
+  font-size: 11px;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
   cursor: pointer;
+}
+.usage-chip:hover,
+.usage-chip:focus-visible {
+  background: rgb(200 160 90 / 18%);
+}
+.usage-chip.hot {
+  border-color: var(--amber);
+  color: var(--amber);
+  box-shadow: var(--glow);
 }
 .chat-task-list {
   display: grid;
