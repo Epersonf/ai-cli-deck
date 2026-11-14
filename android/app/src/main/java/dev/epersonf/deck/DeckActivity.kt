@@ -114,8 +114,24 @@ class DeckActivity : Activity() {
         override fun onShowFileChooser(v: WebView, cb: ValueCallback<Array<Uri>>, p: FileChooserParams): Boolean {
             chooser?.onReceiveValue(null)
             chooser = cb
-            return try { startActivityForResult(p.createIntent(), 7); true } catch (_: Exception) { chooser = null; false }
+            return try { startActivityForResult(pickerIntent(p), 7); true } catch (_: Exception) { chooser = null; false }
         }
+    }
+
+    /**
+     * The file picker for a web <input type=file>. `createIntent()` alone takes only the first accepted type
+     * and never turns multi-selection on, so a page with `multiple` could pick just one file.
+     */
+    private fun pickerIntent(p: WebChromeClient.FileChooserParams): Intent {
+        val intent = p.createIntent()
+        if (p.mode == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE)
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        val types = p.acceptTypes.map { it.trim() }.filter { it.isNotEmpty() }
+        if (types.size > 1) {
+            intent.type = "*/*"
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, types.toTypedArray())
+        }
+        return intent
     }
 
     private fun openExternal(uri: Uri) {
