@@ -305,6 +305,7 @@
 }
 .memory-tree {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   max-height: 42dvh;
   min-height: 120px;
@@ -317,6 +318,7 @@
 }
 .memory-row {
   display: flex;
+  min-width: 0;
   gap: 4px;
   align-items: center;
   border-radius: 6px;
@@ -342,9 +344,13 @@
   text-align: left;
 }
 .memory-name span {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.memory-row > .kebab {
+  flex-shrink: 0;
 }
 .memory-count,
 .memory-budget {
