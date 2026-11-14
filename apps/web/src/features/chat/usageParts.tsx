@@ -1,7 +1,19 @@
 import { useEffect, useState } from 'react';
 import { band, percent } from './usageFormat';
 
-export function Bar({ fraction, label }: { fraction: number; label: string }) {
+/**
+ * A gauge filled to `fraction`. Its colour follows `tone` (how worrying it is, 0..1), which is the fraction
+ * itself unless the bar fills up as things go well (a cache with time left): then the tone is the opposite.
+ */
+export function Bar({
+  fraction,
+  label,
+  tone = fraction,
+}: {
+  fraction: number;
+  label: string;
+  tone?: number;
+}) {
   return (
     <div
       className="gauge"
@@ -9,7 +21,7 @@ export function Bar({ fraction, label }: { fraction: number; label: string }) {
       aria-label={label}
       aria-valuenow={Math.round(fraction * 100)}
     >
-      <span className={`gauge-fill ${band(fraction)}`} style={{ width: percent(fraction) }} />
+      <span className={`gauge-fill ${band(tone)}`} style={{ width: percent(fraction) }} />
     </div>
   );
 }

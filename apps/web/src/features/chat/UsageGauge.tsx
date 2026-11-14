@@ -95,7 +95,11 @@ export function UsageGauge({ usage, sessionId, canCompact }: Props) {
                 : t('chat.usage.cache.expired')}
           </small>
           {cache.ttlMs !== null && left !== null && (
-            <Bar fraction={1 - left / cache.ttlMs} label={t('chat.usage.cache')} />
+            <Bar
+              fraction={left / cache.ttlMs}
+              tone={1 - left / cache.ttlMs}
+              label={t('chat.usage.cache')}
+            />
           )}
           <small className="usage-wide">
             {t('chat.usage.cache.rw', {
