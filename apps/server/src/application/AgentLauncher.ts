@@ -6,6 +6,7 @@ import type { RunState } from './ChatSettings.js';
 import { invalid } from '../domain/errors.js';
 import type { ProviderContext, ProviderRegistry } from '../domain/provider.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
+import { codexGuide } from '../infrastructure/providers/codexGuide.js';
 import { agentGuide } from '../infrastructure/providers/agentGuide.js';
 import { parseAutoCompact } from './autoCompact.js';
 import { utf8Locale } from './utf8Env.js';
@@ -55,7 +56,7 @@ export class AgentLauncher {
   private briefing(session: Session, fresh: boolean): string {
     return this.briefings.get(session, fresh, () =>
       [
-        agentGuide({
+        (this.provider(session.provider).agent === 'codex' ? codexGuide : agentGuide)({
           phone: this.deps.phoneEnabled?.() ?? false,
           devices: [...(this.deps.pairedDevices?.() ?? [])].sort(),
         }),

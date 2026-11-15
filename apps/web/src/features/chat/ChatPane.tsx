@@ -1,3 +1,4 @@
+import { useCacheSend } from './useCacheSend';
 import { RetryBanner } from './RetryBanner';
 import '../../styles/chatRetry.css';
 import { useEffect } from 'react';
@@ -39,6 +40,7 @@ function useReportViewing(sessionId: string, visible: boolean, online: boolean):
 /** One session's chat; stays mounted (and connected) while hidden so the conversation keeps flowing. */
 export function ChatPane({ sessionId, visible }: Props) {
   const t = useT();
+  const cacheSend = useCacheSend(sessionId);
   const session = useSessions((s) => s.sessions.find((x) => x.id === sessionId));
   const providers = useProfiles((s) => s.providers);
   const chat = useChat(sessionId);
@@ -69,9 +71,12 @@ export function ChatPane({ sessionId, visible }: Props) {
         <AuthBanner
           provider={session.provider}
           lastText={lastUser?.kind === 'user' ? lastUser.text : null}
-          onResend={(text) => sendChat(sessionId, { type: 'send', text, images: [] })}
+          onResend={(text) =>
+            cacheSend.request(() => sendChat(sessionId, { type: 'send', text, images: [] }))
+          }
         />
       )}
+      {cacheSend.dialog}
       {chat.config?.retry && (
         <RetryBanner sessionId={sessionId} retry={chat.config.retry} online={chat.online} />
       )}

@@ -165,6 +165,18 @@ cache reuse and elapsed time survive server restarts (the most recent twenty tur
 Stable instruction snapshots are kept privately for each conversation; new conversations receive updated
 notes. Memory briefings have a full-section UTF-8 byte budget, and long MCP listings/snapshots are paginated.
 
+Codex starts new conversations with a shorter deck briefing and retains at most 6,000 tokens per tool
+output. Its MCP defaults return smaller pages (20 sessions, 6,000 snapshot characters and 12,000 task-log
+characters); offsets and explicit limits let the agent retrieve the rest. Claude and API profiles keep
+their existing defaults. Existing instruction snapshots are preserved to avoid disrupting cache reuse.
+
+Before sending into an idle chat, the composer asks for confirmation when a reported cache lifetime has
+elapsed. For Codex, which does not report a lifetime, it warns of **possible** cache loss after one hour
+of inactivity. This is a heuristic, not expiry detection. The dialog shows the last known context size,
+not cumulative input or a billing estimate. Cancel preserves the draft and attachments. Cache reuse is
+controlled by the provider; resuming a thread does not guarantee a cache hit, and compaction itself may
+consume tokens and change the cache prefix.
+
 ## Wait for usage limits and continue
 
 When a task is interrupted by a temporary provider limit, the chat offers **Wait and continue**,

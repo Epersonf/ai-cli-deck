@@ -6,7 +6,7 @@ import { pageText } from './pagination.js';
 import { runAsync } from './mcpResult.js';
 
 /** The tools that drive the deck's Chromium (shown to the user in the Preview pane). */
-export function registerBrowserTools(server: McpServer, tools: AgentTools): void {
+export function registerBrowserTools(server: McpServer, tools: AgentTools, pageSize = 16000): void {
   const target = z
     .string()
     .min(1)
@@ -23,8 +23,7 @@ export function registerBrowserTools(server: McpServer, tools: AgentTools): void
   server.registerTool(
     'browser_snapshot',
     {
-      description:
-        'Accessibility outline of the current page, up to 16000 characters. Continue with nextOffset to read more of the same page.',
+      description: `Accessibility outline, up to ${pageSize} characters by default. Continue with nextOffset to read more of the same page.`,
       inputSchema: {
         offset: z.number().int().nonnegative().optional(),
         limit: z.number().int().min(2).max(40000).optional(),
@@ -33,7 +32,7 @@ export function registerBrowserTools(server: McpServer, tools: AgentTools): void
     ({ offset, limit }) =>
       runAsync(async () => {
         const { outline, ...info } = await tools.browserOutline();
-        const page = pageText(outline, offset ?? 0, limit ?? 16000);
+        const page = pageText(outline, offset ?? 0, limit ?? pageSize);
         return {
           ...info,
           outline: page.text,

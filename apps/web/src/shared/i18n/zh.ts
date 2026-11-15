@@ -1,6 +1,13 @@
 import type { Messages } from './en';
 
 export const zh: Messages = {
+  'chat.cacheWarning.title': '可能需要重建缓存',
+  'chat.cacheWarning.expired': '提供商报告的缓存有效期已过。',
+  'chat.cacheWarning.possible': '闲置这么久后，Codex 缓存可能已不可用。确切有效期未知。',
+  'chat.cacheWarning.body':
+    '继续可能需要在不复用缓存的情况下处理保留的上下文，增加用量和延迟。这不代表会再次计算整个对话累计的所有令牌费用。',
+  'chat.cacheWarning.tokens': '上次已知上下文：约 {n} 个令牌。下次请求可能不同。',
+  'chat.cacheWarning.send': '仍然发送',
   'app.welcome': '在浏览器中与 AI 编程助手对话,旁边是文件和实时预览。',
   'app.start': '开始会话',
   'common.close': '关闭',

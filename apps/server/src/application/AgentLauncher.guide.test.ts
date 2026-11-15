@@ -58,4 +58,15 @@ describe('the briefing at the start of every request', () => {
     expect(next).toContain('use tabs');
     expect(launcher.spec(session, state('chat-2')).guide).toBe(next);
   });
+  it('selects the smaller guide only for Codex profiles', async () => {
+    const { session, launcher } = await setup();
+    const claude = launcher.spec(session, state(null)).guide;
+    const codex = launcher.spec(
+      { ...session, id: 'codex-chat', provider: 'codex' },
+      state(null),
+    ).guide;
+    expect(claude).toContain('Other commands you should know exist:');
+    expect(codex).not.toContain('Other commands you should know exist:');
+    expect(codex).toContain('Keep tool output focused');
+  });
 });

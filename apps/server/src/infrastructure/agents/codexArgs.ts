@@ -32,6 +32,8 @@ export function codexConfigArgs(spec: AgentSpec): string[] {
   const config: Record<string, string> = {
     sandbox_mode: toml(SANDBOX[spec.mode]),
     approval_policy: toml('never'),
+    // Bound retained tool output; the agent can request missing ranges explicitly.
+    tool_output_token_limit: '6000',
     'mcp_servers.deck.url': toml(spec.mcpUrl),
     developer_instructions: toml(spec.guide),
   };

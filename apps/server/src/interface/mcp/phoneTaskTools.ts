@@ -1,10 +1,15 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { AgentTools } from '../agent/agentTools.js';
+import { pageText } from './pagination.js';
 import { runAsync } from './mcpResult.js';
 
 /** The tools for the phone (only when the user enabled phone access) and for background tasks. */
-export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools): void {
+export function registerPhoneAndTaskTools(
+  server: McpServer,
+  tools: AgentTools,
+  compact = false,
+): void {
   if (tools.phoneEnabled) {
     server.registerTool(
       'phone',
@@ -63,7 +68,7 @@ export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools):
     'task',
     {
       description:
-        'Background jobs of this terminal. action: run (a command that keeps running: command, name?), watch_battery (notify the phone: below and/or above a percent, text?; needs phone access), list, stop (id), log (id).',
+        'Background jobs of this terminal. action: run (a command that keeps running: command, name?), watch_battery (notify the phone: below and/or above a percent, text?; needs phone access), list, stop (id), log (id, offset?, limit?; continue with nextOffset).',
       inputSchema: {
         action: z.enum(['run', 'watch_battery', 'list', 'stop', 'log']),
         command: z.string().max(2000).optional(),
@@ -72,14 +77,19 @@ export function registerPhoneAndTaskTools(server: McpServer, tools: AgentTools):
         above: z.number().int().min(1).max(99).optional(),
         text: z.string().max(300).optional(),
         id: z.string().optional(),
+        offset: z.number().int().nonnegative().optional(),
+        limit: z.number().int().min(2).max(40000).optional(),
       },
     },
-    ({ action, command, name, below, above, text, id }) =>
+    ({ action, command, name, below, above, text, id, offset, limit }) =>
       runAsync(async () => {
         if (action === 'list') return tools.taskList();
         if (action === 'run') return tools.taskRun(command ?? '', name);
         if (action === 'watch_battery') return tools.taskWatchBattery({ below, above, text }, name);
-        return action === 'stop' ? tools.taskStop(id ?? '') : tools.taskLog(id ?? '');
+        if (action === 'stop') return tools.taskStop(id ?? '');
+        const log = tools.taskLog(id ?? '');
+        if (!compact && offset === undefined && limit === undefined) return log;
+        return pageText(log.text, offset ?? 0, limit ?? 12000);
       }),
   );
 }

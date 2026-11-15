@@ -13,6 +13,7 @@ import { run, runAsync } from './mcpResult.js';
 export function buildMcpServer(
   tools: AgentTools,
   devices: { tools: DeviceTools; cwd: string } | null = null,
+  compact = false,
 ): McpServer {
   const server = new McpServer({ name: 'ai-cli-deck', version: '0.1.0' });
 
@@ -20,13 +21,14 @@ export function buildMcpServer(
     'list_sessions',
     {
       description:
-        'List the other sessions of your profile (folder, status). A page of up to 50 by default; continue with nextOffset.',
+        'List the other sessions of your profile (folder, status). Paginated; continue with nextOffset.',
       inputSchema: {
         offset: z.number().int().nonnegative().optional(),
         limit: z.number().int().min(1).max(100).optional(),
       },
     },
-    ({ offset, limit }) => run(() => pageItems(tools.listSessions(), offset ?? 0, limit ?? 50)),
+    ({ offset, limit }) =>
+      run(() => pageItems(tools.listSessions(), offset ?? 0, limit ?? (compact ? 20 : 50))),
   );
   server.registerTool(
     'session_title',
@@ -95,8 +97,8 @@ export function buildMcpServer(
     ({ requestId }) => run(() => tools.requestStatus(requestId)),
   );
 
-  registerPhoneAndTaskTools(server, tools);
-  registerBrowserTools(server, tools);
+  registerPhoneAndTaskTools(server, tools, compact);
+  registerBrowserTools(server, tools, compact ? 6000 : 16000);
   registerMemoryTool(server, tools);
   if (devices) registerDeviceTool(server, devices.tools, devices.cwd);
   return server;

@@ -1,6 +1,15 @@
 import type { Messages } from './en';
 
 export const it: Messages = {
+  'chat.cacheWarning.title': 'Potrebbe essere necessario ricreare la cache',
+  'chat.cacheWarning.expired': 'La durata della cache indicata dal fornitore è scaduta.',
+  'chat.cacheWarning.possible':
+    'Dopo questa inattività, la cache Codex potrebbe non essere disponibile. La durata esatta è sconosciuta.',
+  'chat.cacheWarning.body':
+    'Continuare potrebbe richiedere di elaborare il contesto conservato senza cache, aumentando consumo e attesa. Non significa addebitare di nuovo tutti i token accumulati.',
+  'chat.cacheWarning.tokens':
+    'Ultimo contesto noto: circa {n} token. La prossima richiesta può essere diversa.',
+  'chat.cacheWarning.send': 'Invia comunque',
   'app.welcome':
     'Chatta con agenti IA di programmazione nel browser, con file e anteprima dal vivo accanto.',
   'app.start': 'Avvia una sessione',

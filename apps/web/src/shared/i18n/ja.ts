@@ -1,6 +1,15 @@
 import type { Messages } from './en';
 
 export const ja: Messages = {
+  'chat.cacheWarning.title': 'キャッシュの再構築が必要な可能性',
+  'chat.cacheWarning.expired': 'プロバイダーが示したキャッシュ有効期間が経過しました。',
+  'chat.cacheWarning.possible':
+    'この無操作期間の後では、Codex のキャッシュが利用できない可能性があります。正確な有効期間は不明です。',
+  'chat.cacheWarning.body':
+    '続行すると、保持されたコンテキストをキャッシュなしで処理し、使用量や待ち時間が増える可能性があります。累積トークン全体が再課金されるという意味ではありません。',
+  'chat.cacheWarning.tokens':
+    '最後の既知のコンテキスト：約 {n} トークン。次のリクエストでは変わる可能性があります。',
+  'chat.cacheWarning.send': '送信する',
   'app.welcome':
     'ブラウザでAIコーディングエージェントとチャットできます。ファイルとライブプレビューも横に表示されます。',
   'app.start': 'セッションを開始',

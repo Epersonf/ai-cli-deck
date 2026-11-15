@@ -1,3 +1,4 @@
+import { useCacheSend } from './useCacheSend';
 import {
   useEffect,
   useRef,
@@ -35,6 +36,7 @@ interface Props {
 /** The message box: Enter sends (a phone's Enter is a new line), pictures and PDFs can be pasted or dropped. */
 export function Composer({ sessionId, busy, visible }: Props) {
   const [text, setText] = useDraftText(sessionId);
+  const cacheSend = useCacheSend(sessionId);
   const [over, setOver] = useState(false);
   const files = useAttachments();
   const area = useRef<HTMLTextAreaElement>(null);
@@ -73,17 +75,19 @@ export function Composer({ sessionId, busy, visible }: Props) {
       setText('');
       return;
     }
-    askNotifyPermission();
-    // While an answer is being written the server holds the message in the chat's queue.
-    sendChat(sessionId, { type: 'send', text: text.trim(), images: files.items, queue: true });
-    setText('');
-    files.clear();
-    requestAnimationFrame(fit);
+    cacheSend.request(() => {
+      askNotifyPermission();
+      // While an answer is being written the server holds the message in the chat's queue.
+      sendChat(sessionId, { type: 'send', text: text.trim(), images: files.items, queue: true });
+      setText('');
+      files.clear();
+      requestAnimationFrame(fit);
+    });
   };
   /** Words from the microphone: sent at once in a voice conversation, else added to the box. */
   const heard = (said: string): void => {
     if (useVoice.getState().conversation) {
-      return sendChat(sessionId, { type: 'send', text: said, images: [] });
+      return cacheSend.request(() => sendChat(sessionId, { type: 'send', text: said, images: [] }));
     }
     setText((now) => (now.trim() === '' ? said : `${now.trimEnd()} ${said}`));
     requestAnimationFrame(fit);
@@ -115,6 +119,7 @@ export function Composer({ sessionId, busy, visible }: Props) {
       onDrop={onDrop}
     >
       {suggest.open && <SuggestList items={suggest.items} index={suggest.index} onPick={pick} />}
+      {cacheSend.dialog}
       <QueueList sessionId={sessionId} items={queued} />
       {asking && (
         <StopQueueDialog sessionId={sessionId} items={queued} onDone={() => setAsking(false)} />

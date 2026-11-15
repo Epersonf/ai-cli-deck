@@ -23,6 +23,7 @@ describe('Codex exec arguments', () => {
     expect(args.slice(0, 3)).toEqual(['exec', '--json', '--skip-git-repo-check']);
     expect(args).toContain('sandbox_mode="read-only"');
     expect(args).toContain('approval_policy="never"');
+    expect(args).toContain('tool_output_token_limit=6000');
     expect(args).toContain('mcp_servers.deck.url="http://127.0.0.1:1/mcp/s"');
     expect(args).toContain('developer_instructions="say \\"hi\\"\\nplease"');
     expect(args).toContain('model_reasoning_effort="high"');

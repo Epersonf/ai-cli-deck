@@ -1,6 +1,15 @@
 import type { Messages } from './en';
 
 export const pt: Messages = {
+  'chat.cacheWarning.title': 'O cache pode precisar ser reconstruído',
+  'chat.cacheWarning.expired': 'O prazo de cache informado pelo provedor terminou.',
+  'chat.cacheWarning.possible':
+    'Após este tempo sem atividade, o cache do Codex pode não estar mais disponível. A validade exata é desconhecida.',
+  'chat.cacheWarning.body':
+    'Continuar pode exigir processar o contexto mantido sem reaproveitar o cache. Isso pode aumentar o consumo e a demora; não significa cobrar novamente todos os tokens acumulados da conversa.',
+  'chat.cacheWarning.tokens':
+    'Último contexto conhecido: cerca de {n} tokens. A próxima chamada pode ser diferente.',
+  'chat.cacheWarning.send': 'Enviar mesmo assim',
   'app.welcome':
     'Converse com agentes de IA de código no navegador, com arquivos e uma prévia ao vivo ao lado.',
   'app.start': 'Iniciar uma sessão',

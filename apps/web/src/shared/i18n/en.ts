@@ -1,5 +1,13 @@
 /** English is the source of truth: every other locale must define exactly these keys. */
 export const en = {
+  'chat.cacheWarning.title': 'Cache may need rebuilding',
+  'chat.cacheWarning.expired': 'The provider-reported cache lifetime has elapsed.',
+  'chat.cacheWarning.possible':
+    'After this idle period, the Codex cache may no longer be available. Its exact lifetime is unknown.',
+  'chat.cacheWarning.body':
+    'Continuing may require processing the retained context without cache reuse. This can increase usage and latency; it does not mean the full lifetime token total will be charged again.',
+  'chat.cacheWarning.tokens': 'Last known context: about {n} tokens. The next request may differ.',
+  'chat.cacheWarning.send': 'Send anyway',
   'app.welcome':
     'Chat with any AI coding agent in your browser, with files and a live preview beside it.',
   'app.start': 'Start a session',
