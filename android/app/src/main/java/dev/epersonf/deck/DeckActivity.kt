@@ -31,6 +31,7 @@ class DeckActivity : Activity() {
     private val bridge = DeckBridge(this)
     private val handler = Handler(Looper.getMainLooper())
     private var failed = false
+    private lateinit var back: DeckBack
 
     override fun attachBaseContext(base: Context) = super.attachBaseContext(Lang.wrap(base))
 
@@ -67,6 +68,7 @@ class DeckActivity : Activity() {
             })
         }
         setContentView(FrameLayout(this).apply { addView(web); addView(splash) })
+        back = DeckBack(this, web, handler)
         web.loadUrl(chatUrl(url, intent))
     }
 
@@ -148,7 +150,7 @@ class DeckActivity : Activity() {
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() { if (web.canGoBack()) web.goBack() else finish() }
+    override fun onBackPressed() = back.press()
 
     override fun onPause() { super.onPause(); web.onPause() }
     override fun onResume() { super.onResume(); web.onResume() }

@@ -1,3 +1,4 @@
+import { useAndroidBack } from './features/layout/useAndroidBack';
 import { useCallback, useEffect, useState } from 'react';
 import type { PublicConfig } from '@deck/shared';
 import { PaneTabs } from './PaneTabs';
@@ -75,6 +76,16 @@ export function App() {
     select,
   );
   useBackgroundPolling(locked);
+  useAndroidBack(() => {
+    if (locked || dialog === 'switcher') return false;
+    if (dialog !== null) {
+      setDialog(null);
+      return true;
+    }
+    if (activeId === null) return false;
+    setDialog('switcher');
+    return true;
+  });
 
   if (locked) return <LoginScreen onDone={reload} />;
 

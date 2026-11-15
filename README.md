@@ -182,6 +182,10 @@ query or queries; page opens and in-page finds are separate actions. When Codex 
 says they were not reported instead of displaying an invented empty query. This also clarifies old saved
 cards; missing telemetry does not establish that an empty search was sent.
 
+Inside the Android APK, Back opens the session drawer from the chat. Back while the drawer is open returns
+to the native status/log screen, including when the chat was opened from a notification. It does not stop
+the server or the task. If the web UI is unavailable, Back returns directly to the logs.
+
 ## Wait for usage limits and continue
 
 When a task is interrupted by a temporary provider limit, the chat offers **Wait and continue**,
