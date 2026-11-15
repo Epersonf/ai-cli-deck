@@ -47,6 +47,7 @@ const PRIMARY = [
   'pattern',
   'url',
   'query',
+  'queries',
   'description',
   'prompt',
 ] as const;

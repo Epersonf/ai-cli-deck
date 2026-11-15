@@ -1,6 +1,7 @@
 import type { Messages } from './en';
 
 export const ru: Messages = {
+  'chat.tool.webUnknown': 'Codex не сообщил поисковые запросы',
   'chat.cacheWarning.title': 'Возможно, кеш нужно создать заново',
   'chat.cacheWarning.expired': 'Срок кеша, указанный провайдером, истёк.',
   'chat.cacheWarning.possible':

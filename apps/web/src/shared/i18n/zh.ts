@@ -1,6 +1,7 @@
 import type { Messages } from './en';
 
 export const zh: Messages = {
+  'chat.tool.webUnknown': 'Codex 未提供搜索词',
   'chat.cacheWarning.title': '可能需要重建缓存',
   'chat.cacheWarning.expired': '提供商报告的缓存有效期已过。',
   'chat.cacheWarning.possible': '闲置这么久后，Codex 缓存可能已不可用。确切有效期未知。',

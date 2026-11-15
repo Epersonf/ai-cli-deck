@@ -1,6 +1,7 @@
 import type { Messages } from './en';
 
 export const it: Messages = {
+  'chat.tool.webUnknown': 'Termini di ricerca non comunicati da Codex',
   'chat.cacheWarning.title': 'Potrebbe essere necessario ricreare la cache',
   'chat.cacheWarning.expired': 'La durata della cache indicata dal fornitore è scaduta.',
   'chat.cacheWarning.possible':

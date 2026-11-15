@@ -1,6 +1,7 @@
 import type { Messages } from './en';
 
 export const ja: Messages = {
+  'chat.tool.webUnknown': 'Codex が検索語を報告していません',
   'chat.cacheWarning.title': 'キャッシュの再構築が必要な可能性',
   'chat.cacheWarning.expired': 'プロバイダーが示したキャッシュ有効期間が経過しました。',
   'chat.cacheWarning.possible':

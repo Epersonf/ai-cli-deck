@@ -1,5 +1,6 @@
 /** English is the source of truth: every other locale must define exactly these keys. */
 export const en = {
+  'chat.tool.webUnknown': 'Search terms not reported by Codex',
   'chat.cacheWarning.title': 'Cache may need rebuilding',
   'chat.cacheWarning.expired': 'The provider-reported cache lifetime has elapsed.',
   'chat.cacheWarning.possible':

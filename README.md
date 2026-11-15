@@ -177,6 +177,11 @@ not cumulative input or a billing estimate. Cancel preserves the draft and attac
 controlled by the provider; resuming a thread does not guarantee a cache hit, and compaction itself may
 consume tokens and change the cache prefix.
 
+Web activity cards update when Codex supplies details after the start event. Searches show the reported
+query or queries; page opens and in-page finds are separate actions. When Codex omits the terms, the card
+says they were not reported instead of displaying an invented empty query. This also clarifies old saved
+cards; missing telemetry does not establish that an empty search was sent.
+
 ## Wait for usage limits and continue
 
 When a task is interrupted by a temporary provider limit, the chat offers **Wait and continue**,

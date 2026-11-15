@@ -29,6 +29,8 @@ export function ToolCard({ block }: { block: Tool }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const { icon, title } = summarize(block.name, block.input);
+  const missingWebDetails = block.name === 'web_search' && title === '';
+  const shownTitle = missingWebDetails ? t('chat.tool.webUnknown') : title;
   const state = block.result === null ? 'running' : block.result.isError ? 'error' : 'done';
   const output = block.result?.output ?? '';
   const isEdit = editParts(block.name, block.input).length > 0;
@@ -44,7 +46,7 @@ export function ToolCard({ block }: { block: Tool }) {
           <ToolGlyph kind={icon} />
         </span>
         <strong>{block.name}</strong>
-        <span className="tool-title">{title}</span>
+        <span className="tool-title">{shownTitle}</span>
         <span className="tool-state">{t(`chat.tool.${state}`)}</span>
       </button>
       {open && (
@@ -52,7 +54,9 @@ export function ToolCard({ block }: { block: Tool }) {
           {isEdit ? (
             <EditView name={block.name} input={block.input} />
           ) : (
-            <pre className="tool-pre">{inputText(block.input)}</pre>
+            <pre className="tool-pre">
+              {missingWebDetails ? t('chat.tool.webUnknown') : inputText(block.input)}
+            </pre>
           )}
           {output !== '' && (
             <pre className={`tool-pre out${state === 'error' ? ' err' : ''}`}>

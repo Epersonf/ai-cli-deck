@@ -1,3 +1,4 @@
+import { codexWebEvents } from './codexWeb.js';
 import { codexTurnUsage } from './codexTurnUsage.js';
 import { providerRetry } from '../../domain/providerRetry.js';
 import type { ChatEvent } from '@deck/shared';
@@ -29,7 +30,7 @@ function toolOf(item: Json): { name: string; input: unknown } {
         input: item['arguments'] ?? {},
       };
     default:
-      return { name: 'web_search', input: { query: str(item['query']) } };
+      return { name: str(item['type']), input: {} };
   }
 }
 
@@ -73,6 +74,7 @@ function itemEvents(type: string, item: Json, state: CodexState): ChatEvent[] {
     const text = str(item['message']);
     return RETRY_NOISE.test(text) ? [] : [{ t: 'notice', level: 'error', text }];
   }
+  if (kind === 'web_search') return codexWebEvents(type, item, id, state);
   if (!TOOL_TYPES.has(kind)) return [];
   const out: ChatEvent[] = [];
   if (!state.started.has(id)) {
