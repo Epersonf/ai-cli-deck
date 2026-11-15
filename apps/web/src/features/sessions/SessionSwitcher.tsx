@@ -1,3 +1,4 @@
+import { useAndroidBack } from '../layout/useAndroidBack';
 import { useMemo, useState } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { usePolling } from '../../shared/ui/usePolling';
@@ -33,6 +34,11 @@ export function SessionSwitcher({ onNew, onProfile, onClose }: Props) {
   });
   // A profile that was deleted while open drops back to the list.
   const open = groups.find((g) => g.id === openId) ?? null;
+  useAndroidBack(() => {
+    if (!open) return false;
+    setOpenId(null);
+    return true;
+  }, 1);
   const newIn = (id: string): void => (onClose(), onNew(id));
   const pick = (id: string): void => (select(id), onClose());
 

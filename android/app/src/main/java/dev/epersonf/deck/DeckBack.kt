@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.webkit.WebView
 
-/** Chat -> session drawer -> native logs. Never use WebView history as the app navigation stack. */
+/** Chat -> sessions -> profiles -> native logs. Never use WebView history as the app navigation stack. */
 class DeckBack(private val activity: Activity, private val web: WebView, private val handler: Handler) {
     private var pending = false
     private val fallback = Runnable { if (pending) logs() }
