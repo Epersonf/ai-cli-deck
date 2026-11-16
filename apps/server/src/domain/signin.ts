@@ -8,7 +8,7 @@ export interface LoginChild {
   kill(): void;
 }
 
-export type LoginKind = 'claude-account' | 'claude-console' | 'codex-chatgpt';
+export type LoginKind = string;
 
 /** The agents' own sign-in commands, run without a terminal. */
 export interface AuthCli {

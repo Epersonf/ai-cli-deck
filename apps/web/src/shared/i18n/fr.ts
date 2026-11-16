@@ -175,6 +175,10 @@ export const fr: Messages = {
   'fork.end': 'Terminer ce chat ensuite (déplacer)',
   'fork.go': 'Dupliquer',
   'fork.move': 'Déplacer',
+  'plugins.import': 'Importer un plugin de fournisseur',
+  'plugins.tests': 'Exécuter les tests du plugin',
+  'plugins.warning':
+    'Ce plugin contient du code exécutable et peut installer des outils, se connecter et lancer des commandes. Importez uniquement des plugins de confiance.',
   'templates.title': 'Modèles de profil',
   'templates.open': 'Gérer les modèles',
   'templates.settingsHint':
@@ -378,6 +382,15 @@ export const fr: Messages = {
   'voice.stop': 'Arrêter et envoyer',
   'voice.readAloud': 'Lire les réponses à voix haute',
   'voice.conversation': 'Conversation vocale',
+  'signin.install': 'Installer le CLI du fournisseur',
+  'signin.installing': 'Installation…',
+  'signin.installMissing': 'Installez le CLI de {name} pour continuer.',
+  'signin.step.open.plugin': 'Connectez-vous sur la page, puis collez ici son code d’autorisation.',
+  'signin.antigravityMachine': 'Connexion Antigravity sur cette machine',
+  'signin.antigravityMachine.sub':
+    'Utilisez le compte Google déjà connecté à Antigravity sur cette machine.',
+  'signin.antigravityKey': 'Clé API Gemini',
+  'signin.antigravityKey.sub': 'Utilisez une clé API Gemini de Google AI Studio.',
   'signin.title': 'Se connecter',
   'signin.menu': 'Connexion / compte',
   'signin.banner': 'Ce profil n’est pas connecté : l’agent ne peut pas encore répondre.',

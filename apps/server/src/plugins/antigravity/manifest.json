@@ -1,0 +1,86 @@
+{
+  "plugin": 1,
+  "version": "1.0.0",
+  "entry": "index.ts",
+  "template": {
+    "schema": 1,
+    "id": "antigravity",
+    "label": "Antigravity",
+    "description": "Google’s official Antigravity CLI (agy 1.5+). Sign in with agy on this machine, or paste a Gemini API key.",
+    "agent": "antigravity",
+    "model": null,
+    "env": {},
+    "home": null,
+    "fields": [],
+    "apiKey": {
+      "env": "GEMINI_API_KEY",
+      "label": "Gemini API key (empty = this machine’s Antigravity login)",
+      "required": false
+    },
+    "install": "antigravity"
+  },
+  "authMethods": [
+    {
+      "id": "antigravity-google",
+      "label": "Google account",
+      "flow": "code",
+      "description": "Open the sign-in page and paste its authorization code here.",
+      "translations": {
+        "en": {
+          "label": "Google account",
+          "description": "Open the sign-in page, then paste its authorization code here."
+        },
+        "pt": {
+          "label": "Conta Google",
+          "description": "Abra a página de login e cole aqui o código de autorização."
+        },
+        "es": {
+          "label": "Cuenta de Google",
+          "description": "Abre la página de inicio de sesión y pega aquí el código de autorización."
+        },
+        "fr": {
+          "label": "Compte Google",
+          "description": "Ouvrez la page de connexion, puis collez ici le code d’autorisation."
+        },
+        "it": {
+          "label": "Account Google",
+          "description": "Apri la pagina di accesso e incolla qui il codice di autorizzazione."
+        },
+        "ja": {
+          "label": "Google アカウント",
+          "description": "ログインページを開き、認証コードをここに貼り付けてください。"
+        },
+        "ru": {
+          "label": "Аккаунт Google",
+          "description": "Откройте страницу входа и вставьте сюда код авторизации."
+        },
+        "zh": {
+          "label": "Google 账号",
+          "description": "打开登录页面，然后在此处粘贴授权码。"
+        }
+      }
+    },
+    {
+      "id": "key",
+      "label": "Gemini API key",
+      "flow": "key",
+      "description": "Paste your API key; it stays in this profile’s private key file."
+    },
+    {
+      "id": "machine",
+      "label": "Use this machine’s login",
+      "flow": "machine",
+      "description": "Uses credentials already on this machine."
+    }
+  ],
+  "order": 4,
+  "machine": false,
+  "tests": ["**/*.test.ts"],
+  "features": {
+    "modes": ["default", "acceptEdits", "plan"],
+    "efforts": ["low", "medium", "high", "xhigh", "max"],
+    "compaction": "none",
+    "autoCompactThreshold": false,
+    "cacheIdleRiskMs": null
+  }
+}

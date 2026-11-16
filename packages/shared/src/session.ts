@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { AgentKindSchema } from './agent.js';
+import { PluginAuthMethodSchema } from './plugin.js';
 
 /** `idle`: waiting for the next message; `working`: the agent is answering. */
 export const SessionStatusSchema = z.enum(['idle', 'working']);
@@ -66,11 +68,12 @@ export const ProviderInfoSchema = z.object({
   /** True for user-made profiles, which can be renamed. Built-in entries cannot. */
   profile: z.boolean().default(false),
   /** Which agent engine runs it. */
-  agent: z.enum(['claude', 'codex']).default('claude'),
+  agent: AgentKindSchema.default('claude'),
   /** `missing`: its template asks for an API key and none is saved yet (the chat cannot answer). */
   keyState: z.enum(['none', 'set', 'missing']).default('none'),
   /** `key`: only an API key signs it in (custom endpoint, DeepSeek); `account`: the CLI's own sign-in methods apply. */
   signIn: z.enum(['account', 'key']).default('account'),
+  authMethods: z.array(PluginAuthMethodSchema).optional(),
 });
 export type ProviderInfo = z.infer<typeof ProviderInfoSchema>;
 

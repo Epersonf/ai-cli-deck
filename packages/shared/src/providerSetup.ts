@@ -13,6 +13,7 @@ export interface SetupSpec {
 const CLAUDE_INSTALL = ['npm', 'install', '-g', '@anthropic-ai/claude-code'] as const;
 
 export const SETUP_SPECS: readonly SetupSpec[] = [
+  { id: 'antigravity', label: 'Antigravity CLI', binary: 'agy', install: null },
   { id: 'claude', label: 'Claude Code', binary: 'claude', install: CLAUDE_INSTALL },
   {
     id: 'codex',

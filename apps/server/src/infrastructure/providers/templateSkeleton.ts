@@ -18,7 +18,7 @@ export const TEMPLATE_SKELETON = `{
   // One line about it (optional).
   "description": "Example template: Claude Code against a company gateway.",
 
-  // The engine that runs the chat: "claude" (Claude Code, any Anthropic-compatible endpoint) or "codex".
+  // The engine that runs the chat: "claude" (Claude Code, any Anthropic-compatible endpoint), "codex", or "antigravity" (official agy CLI, ACP v1).
   "agent": "claude",
 
   // The model the chat starts with, or null for the agent's own default (changeable in the chat).
@@ -52,7 +52,7 @@ export const TEMPLATE_SKELETON = `{
   // Use null if the agent needs no key.
   "apiKey": { "env": "ANTHROPIC_AUTH_TOKEN", "label": "API key for {field.apiUrl.host}", "required": true },
 
-  // "claude" or "codex" if "clideck setup" can download the agent's CLI by installing one of those; else null.
+  // CLI checked by "clideck setup": "claude", "codex", or "antigravity"; else null. Antigravity is installed externally.
   "install": "claude"
 
   // Placeholders usable in env values and apiKey.label:

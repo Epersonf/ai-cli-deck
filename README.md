@@ -5,7 +5,7 @@ changes review, a per-session preview and a small bridge back to the machine. Th
 every session is a conversation (history, tool cards, permission prompts) driven by a headless
 agent, so typing is instant even over a slow link.
 
-Agents: **Claude Code** (Claude Agent SDK), **Codex** (`codex exec --json`), and Claude Code against
+Agents: **Claude Code** (Claude Agent SDK), **Codex** (`codex exec --json`), **Antigravity** (official `agy acp` CLI), and Claude Code against
 a **custom Anthropic-compatible endpoint** or **DeepSeek**, as profiles with their own key.
 
 Built for an Android phone (Termux > Ubuntu via proot-distro) and a phone browser, but it works
@@ -107,14 +107,28 @@ so a profile takes an **API key or token** (kept in its own folder, never sent b
   use the Claude Code login already on this machine.
 - Custom endpoint and DeepSeek: the key of that API.
 - Codex: an OpenAI API key, or empty to use `codex login` done on this machine.
+- Antigravity: create a profile from its built-in plugin. The sign-in dialog installs the official
+  `agy` CLI when needed, then offers Google account sign-in, a Gemini API key, or the existing machine login.
+
+Antigravity uses [ACP v1](https://antigravity.google/docs/ide/extensions/acp), with streamed replies,
+tool results, per-action permissions, images, model/thinking-level selection and saved-session resume.
+Its modes are default, accept edits and plan. Each session connects to the Deck's MCP server without
+modifying global Antigravity settings. API keys stay in the profile's private key file; profiles without
+a key share this machine's Antigravity account and settings. Existing conversations created outside the
+Deck are not imported. Native forks, file rollback, manual compaction, PDF attachments and account usage
+gauges are not currently supported for this agent; edits and side chats use the Deck's transcript fallback.
 
 Codex cannot ask for permission one action at a time when run headless, so the chat's permission mode
 selects its sandbox instead: ask first / accept edits = workspace write, plan = read only, bypass = full access.
 
 ## Profiles
 
+All bundled providers are complete, versioned plugins with their own installation, authentication,
+execution and tests. Settings can import/export `.deck-plugin.zip` packages and run their internal tests.
+See [Provider plugins](docs/provider-plugins.md). Legacy JSON templates remain supported.
+
 A profile is a **named, clean agent** built on a base: Claude Code, Claude Code (custom endpoint),
-Claude Code (DeepSeek) or Codex. It has its own config folder (`CLAUDE_CONFIG_DIR` / `CODEX_HOME`
+Claude Code (DeepSeek), Codex or Antigravity. Claude and Codex have their own config folder (`CLAUDE_CONFIG_DIR` / `CODEX_HOME`
 under `~/.config/ai-cli-deck/profiles/<id>`), its own key and endpoint, and its own chats.
 
 **Custom endpoint and DeepSeek.** _Claude Code (custom endpoint)_ talks to an Anthropic-compatible API at

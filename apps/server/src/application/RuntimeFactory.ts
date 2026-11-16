@@ -57,6 +57,7 @@ export class RuntimeFactory {
       busy: (busy) => reg.update(id, { status: busy ? 'working' : 'idle' }),
       info: {
         agent: provider?.agent ?? 'claude',
+        ...(provider?.features ? { features: provider.features } : {}),
         models: modelSource(session.provider, this.d.models, this.d.catalog),
         label: provider?.label ?? session.provider,
       },

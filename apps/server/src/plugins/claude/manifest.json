@@ -1,0 +1,60 @@
+{
+  "plugin": 1,
+  "version": "1.0.0",
+  "entry": "index.ts",
+  "template": {
+    "schema": 1,
+    "id": "claude",
+    "label": "Claude Code",
+    "description": "Anthropic’s Claude Code. Paste a token or key, or use this machine’s login.",
+    "agent": "claude",
+    "model": null,
+    "env": {},
+    "home": {
+      "env": "CLAUDE_CONFIG_DIR"
+    },
+    "fields": [],
+    "apiKey": {
+      "env": "ANTHROPIC_API_KEY",
+      "label": "Claude Code token or API key (empty = this machine’s Claude login)",
+      "required": false
+    },
+    "install": "claude"
+  },
+  "authMethods": [
+    {
+      "id": "claude-account",
+      "label": "Claude account",
+      "flow": "code",
+      "description": "Open the sign-in page and paste its authorization code here."
+    },
+    {
+      "id": "claude-console",
+      "label": "Anthropic Console",
+      "flow": "code",
+      "description": "Open the sign-in page and paste its authorization code here."
+    },
+    {
+      "id": "key",
+      "label": "API key or token",
+      "flow": "key",
+      "description": "Paste your API key; it stays in this profile’s private key file."
+    },
+    {
+      "id": "machine",
+      "label": "Use this machine’s login",
+      "flow": "machine",
+      "description": "Uses credentials already on this machine."
+    }
+  ],
+  "order": 0,
+  "machine": true,
+  "tests": ["**/*.test.ts"],
+  "features": {
+    "modes": ["default", "acceptEdits", "auto", "dontAsk", "plan", "bypassPermissions"],
+    "efforts": ["low", "medium", "high", "xhigh", "max"],
+    "compaction": "message",
+    "autoCompactThreshold": true,
+    "cacheIdleRiskMs": null
+  }
+}

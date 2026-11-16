@@ -2,8 +2,8 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { claudeChats, claudeProjectDir } from './claudeChats.js';
-import { codexChats } from './codexChats.js';
+import { claudeChats, claudeProjectDir } from '../../plugins/claude/chats.js';
+import { codexChats } from '../../plugins/codex/chats.js';
 
 const lines = (...items: unknown[]): string =>
   items.map((i) => JSON.stringify(i)).join('\n') + '\n';

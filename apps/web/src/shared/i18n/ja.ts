@@ -171,6 +171,10 @@ export const ja: Messages = {
   'fork.end': '完了後にこのチャットを終了(移動)',
   'fork.go': 'フォーク',
   'fork.move': '移動',
+  'plugins.import': 'プロバイダープラグインをインポート',
+  'plugins.tests': 'プラグインのテストを実行',
+  'plugins.warning':
+    'このプラグインは実行可能なコードを含み、ツールのインストール、ログイン、コマンドの実行が可能です。信頼できる提供元のものだけをインポートしてください。',
   'templates.title': 'プロファイルテンプレート',
   'templates.open': 'テンプレートを管理',
   'templates.settingsHint':
@@ -375,6 +379,15 @@ export const ja: Messages = {
   'voice.stop': '停止して送信',
   'voice.readAloud': '回答を読み上げる',
   'voice.conversation': '音声会話',
+  'signin.install': 'プロバイダー CLI をインストール',
+  'signin.installing': 'インストール中…',
+  'signin.installMissing': '続行するには {name} の CLI をインストールしてください。',
+  'signin.step.open.plugin': 'ページでログインし、表示された認証コードをここに貼り付けてください。',
+  'signin.antigravityMachine': 'このマシンの Antigravity ログイン',
+  'signin.antigravityMachine.sub':
+    'このマシンの Antigravity にログイン済みの Google アカウントを使用します。',
+  'signin.antigravityKey': 'Gemini API キー',
+  'signin.antigravityKey.sub': 'Google AI Studio の Gemini API キーを使用します。',
   'signin.title': 'サインイン',
   'signin.menu': 'サインイン / アカウント',
   'signin.banner': 'このプロファイルはサインインしていないため、エージェントはまだ応答できません。',

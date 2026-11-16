@@ -6,7 +6,6 @@ import type { RunState } from './ChatSettings.js';
 import { invalid } from '../domain/errors.js';
 import type { ProviderContext, ProviderRegistry } from '../domain/provider.js';
 import { prependToPath } from '../infrastructure/config/platform.js';
-import { codexGuide } from '../infrastructure/providers/codexGuide.js';
 import { agentGuide } from '../infrastructure/providers/agentGuide.js';
 import { parseAutoCompact } from './autoCompact.js';
 import { utf8Locale } from './utf8Env.js';
@@ -56,7 +55,7 @@ export class AgentLauncher {
   private briefing(session: Session, fresh: boolean): string {
     return this.briefings.get(session, fresh, () =>
       [
-        (this.provider(session.provider).agent === 'codex' ? codexGuide : agentGuide)({
+        (this.provider(session.provider).guide ?? agentGuide)({
           phone: this.deps.phoneEnabled?.() ?? false,
           devices: [...(this.deps.pairedDevices?.() ?? [])].sort(),
         }),
@@ -102,7 +101,9 @@ export class AgentLauncher {
     const provider = this.provider(session.provider);
     const mode = session.meta['mode'];
     const effort =
-      AGENT_EFFORTS[provider.agent].find((value) => value === session.meta['effort']) ?? null;
+      (provider.features?.efforts ?? AGENT_EFFORTS[provider.agent] ?? []).find(
+        (value) => value === session.meta['effort'],
+      ) ?? null;
     return {
       model: session.meta['model'] || null,
       mode: (mode ?? this.deps.defaultMode?.(session.provider) ?? 'default') as PermissionMode,
@@ -116,6 +117,7 @@ export class AgentLauncher {
     const setup = this.provider(session.provider).buildAgent(ctx);
     return {
       kind: setup.kind,
+      ...(this.provider(session.provider).driver ? { providerId: session.provider } : {}),
       cwd: session.cwd,
       env: this.env(session, ctx, setup.env),
       ...state.config,

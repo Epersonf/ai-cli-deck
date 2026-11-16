@@ -44,7 +44,9 @@ export class ChatService {
   }
 
   reader(provider: string): ChatReader | null {
-    const format = this.deps.providers.get(provider)?.chat?.format;
+    const plugin = this.deps.providers.get(provider);
+    if (plugin?.history) return plugin.history;
+    const format = plugin?.chat?.format;
     return (format && this.deps.readers[format]) || null;
   }
 

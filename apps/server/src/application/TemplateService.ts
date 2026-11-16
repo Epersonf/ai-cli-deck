@@ -7,11 +7,13 @@ import {
 } from '@deck/shared';
 import { conflict, invalid, notFound } from '../domain/errors.js';
 import { exportTemplate } from './templateExport.js';
+import type { ProviderPlugins } from '../infrastructure/plugins/registry.js';
 import type { TemplateStorePort } from '../domain/ports.js';
 
 export interface TemplateServiceDeps {
   store: TemplateStorePort;
   builtin: readonly ProfileTemplate[];
+  plugins?: ProviderPlugins;
   /** True while any profile is made from this template. */
   inUse(id: string): boolean;
 }
@@ -28,14 +30,24 @@ export class TemplateService {
   }
 
   list(): TemplateInfo[] {
+    const plugins = this.deps.plugins?.list() ?? [];
+    const ids = new Set(plugins.map((plugin) => plugin.id));
     return [
-      ...this.deps.builtin.map((t) => ({ ...t, builtin: true })),
-      ...this.installed.map((t) => ({ ...t, builtin: false })),
+      ...plugins,
+      ...this.deps.builtin
+        .filter((template) => !ids.has(template.id))
+        .map((t) => ({ ...t, builtin: true })),
+      ...this.installed
+        .filter((template) => !ids.has(template.id))
+        .map((t) => ({ ...t, builtin: false })),
     ];
   }
 
   get(id: string): ProfileTemplate | undefined {
-    return [...this.deps.builtin, ...this.installed].find((t) => t.id === id);
+    return (
+      this.deps.plugins?.get(id)?.manifest.template ??
+      [...this.deps.builtin, ...this.installed].find((t) => t.id === id)
+    );
   }
 
   /** A template as commented JSON, to use as an example or edit. */
@@ -61,6 +73,10 @@ export class TemplateService {
       );
     }
     const template = parsed.data;
+    if (this.deps.plugins?.get(template.id))
+      throw conflict(
+        'A provider plugin already owns this id; import a plugin package to replace it',
+      );
     const problems = templateProblems(template);
     if (problems.length > 0) throw invalid(`Template problem: ${problems.join('; ')}`);
     if (this.deps.builtin.some((t) => t.id === template.id))

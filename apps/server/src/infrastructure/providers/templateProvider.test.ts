@@ -19,6 +19,17 @@ async function make(base: string, values: Record<string, string> = {}, secret?: 
 }
 
 describe('agent profiles from templates', () => {
+  it('Antigravity uses official agy with the machine account or a private Gemini key', async () => {
+    const none = await make('antigravity');
+    expect(none.provider.buildAgent(ctx)).toEqual({ kind: 'antigravity', env: {}, model: null });
+    expect(none.provider.chat).toBeNull();
+    expect(none.provider.login).toBeUndefined();
+    expect(none.provider.keyState?.()).toBe('none');
+    const keyed = await make('antigravity', {}, 'gemini-secret');
+    expect(keyed.provider.buildAgent(ctx).env).toEqual({ GEMINI_API_KEY: 'gemini-secret' });
+    expect(keyed.provider.keyState?.()).toBe('set');
+    expect(await keyed.provider.discoverLimits?.()).toEqual([]);
+  });
   it('Claude with no key uses the machine login: no config folder of its own', async () => {
     const { provider } = await make('claude');
     expect(provider.agent).toBe('claude');

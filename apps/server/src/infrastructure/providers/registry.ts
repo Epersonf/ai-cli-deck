@@ -1,9 +1,13 @@
 import type { Provider, ProviderRegistry } from '../../domain/provider.js';
-import { claude } from './claude.js';
-import { codex } from './codex.js';
+import { createBuiltin } from './claude.js';
+import { bundledManifests } from '../plugins/manifests.js';
 
 /** The built-in agents, on this machine's own sign-in. Profiles (from templates) are added at runtime. */
-export const PROVIDERS: readonly Provider[] = [claude, codex];
+export const PROVIDERS: readonly Provider[] = bundledManifests()
+  .filter(({ manifest }) => manifest.machine)
+  .map(({ manifest }) =>
+    createBuiltin(manifest.template.id, manifest.template.label, manifest.template.agent),
+  );
 
 export function createProviderRegistry(
   providers: readonly Provider[] = PROVIDERS,

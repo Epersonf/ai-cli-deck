@@ -12,12 +12,19 @@ export function cacheWarning(
   agent: string | undefined,
   busy: boolean,
   now = Date.now(),
+  estimatedIdleRiskMs?: number | null,
 ): CacheWarning | null {
   if (busy || !usage?.cache) return null;
   const cache = usage.cache;
   const at = Date.parse(cache.at);
   if (!Number.isFinite(at) || at > now) return null;
-  const ttl = cache.ttlMs ?? (agent === 'codex' ? CODEX_IDLE_RISK_MS : null);
+  const estimate =
+    estimatedIdleRiskMs !== undefined
+      ? estimatedIdleRiskMs
+      : agent === 'codex'
+        ? CODEX_IDLE_RISK_MS
+        : null;
+  const ttl = cache.ttlMs ?? estimate;
   if (ttl === null || now - at < ttl) return null;
   return {
     estimated: cache.ttlMs === null,

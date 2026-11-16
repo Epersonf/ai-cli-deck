@@ -170,6 +170,10 @@ export const ru: Messages = {
   'fork.end': 'Завершить этот чат после (перенести)',
   'fork.go': 'Ответвить',
   'fork.move': 'Перенести',
+  'plugins.import': 'Импорт плагина провайдера',
+  'plugins.tests': 'Запустить тесты плагина',
+  'plugins.warning':
+    'Плагин содержит исполняемый код и может устанавливать инструменты, входить в аккаунты и выполнять команды. Импортируйте плагины только из доверенных источников.',
   'templates.title': 'Шаблоны профилей',
   'templates.open': 'Управление шаблонами',
   'templates.settingsHint':
@@ -371,6 +375,15 @@ export const ru: Messages = {
   'voice.stop': 'Стоп и отправить',
   'voice.readAloud': 'Читать ответы вслух',
   'voice.conversation': 'Голосовой разговор',
+  'signin.install': 'Установить CLI провайдера',
+  'signin.installing': 'Установка…',
+  'signin.installMissing': 'Установите CLI {name}, чтобы продолжить.',
+  'signin.step.open.plugin': 'Войдите на странице и вставьте сюда код авторизации.',
+  'signin.antigravityMachine': 'Вход в Antigravity на этой машине',
+  'signin.antigravityMachine.sub':
+    'Используйте аккаунт Google, уже подключённый к Antigravity на этой машине.',
+  'signin.antigravityKey': 'API-ключ Gemini',
+  'signin.antigravityKey.sub': 'Используйте API-ключ Gemini из Google AI Studio.',
   'signin.title': 'Вход',
   'signin.menu': 'Вход / аккаунт',
   'signin.banner': 'Профиль не выполнил вход, поэтому агент пока не может отвечать.',

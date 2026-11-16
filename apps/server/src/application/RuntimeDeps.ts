@@ -1,5 +1,5 @@
 import type { RetryPersistence } from './RetryDeps.js';
-import type { ChatConfig } from '@deck/shared';
+import type { AgentFeatures, ChatConfig } from '@deck/shared';
 import type { AgentConfig, AgentPort, AgentSpec } from '../domain/agent.js';
 import type { EventBus } from '../domain/events.js';
 import type { ChatLogPort } from '../domain/ports.js';
@@ -19,6 +19,11 @@ export interface RuntimeDeps {
   spec(state: RunState): AgentSpec;
   remember(patch: { chatId?: string; config?: AgentConfig }): void;
   busy(busy: boolean): void;
-  info: { agent: ChatConfig['agent']; models: ModelSource; label: string };
+  info: {
+    features?: AgentFeatures;
+    agent: ChatConfig['agent'];
+    models: ModelSource;
+    label: string;
+  };
   initial: { config: AgentConfig; chatId: string | null; fork: boolean };
 }

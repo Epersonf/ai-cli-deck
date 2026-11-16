@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { mapClaudeMessage, newMapState, type SdkMessage } from './claudeMap.js';
+import {
+  mapClaudeMessage,
+  newMapState,
+  type SdkMessage,
+} from '../../plugins/claude/engine/claudeMap.js';
 import { sink } from './fakeClaude.js';
-import { friendlyError } from './codexState.js';
-import { run } from './codexTestKit.js';
+import { friendlyError } from '../../plugins/codex/engine/codexState.js';
+import { run } from '../../plugins/codex/engine/codexTestKit.js';
 
 function claude(messages: SdkMessage[]) {
   const { s, events } = sink();

@@ -1,12 +1,13 @@
 import type { AuthInfo, SignInMethod } from '@deck/shared';
 import { useEffect, useState } from 'react';
 import { signinApi } from '../../shared/api/signinApi';
-import { useT } from '../../shared/i18n/store';
+import { useLocale, useT } from '../../shared/i18n/store';
 import { ChoiceSheet } from '../../shared/ui/ChoiceSheet';
 import { DialogActions, Disclosure } from '../../shared/ui/DialogParts';
 import { ModalTitle } from '../../shared/ui/ModalTitle';
 import { useProfiles } from '../sessions/profilesStore';
 import { FlowStepper } from './FlowStepper';
+import { ProviderInstall } from './ProviderInstall';
 import { KeyForm } from './KeyForm';
 import { methodsFor } from './methods';
 import { useSignIn } from './signInStore';
@@ -22,9 +23,18 @@ function SignInDialog({ provider }: { provider: string }) {
   const t = useT();
   const close = useSignIn((s) => s.close);
   const info = useProfiles((s) => s.providers.find((p) => p.id === provider));
-  const methods = methodsFor(info?.agent ?? 'claude', info?.signIn === 'key');
+  const locale = useLocale((state) => state.locale);
+  const methods = methodsFor(
+    info?.agent ?? 'claude',
+    info?.signIn === 'key',
+    info?.authMethods,
+    locale,
+  );
   const [auth, setAuth] = useState<AuthInfo | null>(null);
-  const [method, setMethod] = useState<SignInMethod>(methods[0]?.id ?? 'key');
+  const [selected, setMethod] = useState<SignInMethod>(methods[0]?.id ?? 'key');
+  const method = methods.some((choice) => choice.id === selected)
+    ? selected
+    : (methods[0]?.id ?? 'key');
   const [saved, setSaved] = useState(false);
 
   const refresh = (): void => {
@@ -77,10 +87,16 @@ function SignInDialog({ provider }: { provider: string }) {
         <ChoiceSheet
           label={t('signin.method')}
           value={method}
-          choices={methods.map((m) => ({ id: m.id, title: t(m.title), subtitle: t(m.subtitle) }))}
+          choices={methods.map((m) => ({
+            id: m.id,
+            title: m.label ?? t(m.title),
+            subtitle: m.description ?? t(m.subtitle),
+          }))}
           onChange={choose}
         />
-        {saved ? (
+        {info?.status === 'missing' ? (
+          <ProviderInstall info={info} onInstalled={refresh} />
+        ) : saved ? (
           <>
             <p className="notice signin-ok">{t('signin.done')}</p>
             <DialogActions>
@@ -115,6 +131,7 @@ function SignInDialog({ provider }: { provider: string }) {
               <FlowStepper
                 key={method}
                 method={method}
+                flowType={current?.flow}
                 flow={flow}
                 busy={login.busy}
                 onStart={start}

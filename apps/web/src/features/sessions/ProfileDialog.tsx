@@ -32,9 +32,10 @@ export function ProfileDialog({ onDone, onClose }: Props) {
   );
 
   const template = templates.find((x) => x.id === baseId) ?? templates[0];
-  /** Claude Code and Codex sign in with their own dialog (once the profile exists), not with a key typed here. */
+  /** Account-based agents use the sign-in dialog once the profile exists. */
   const accountBase =
-    template?.builtin === true && (template.id === 'claude' || template.id === 'codex');
+    Boolean(template?.plugin) ||
+    (template?.builtin === true && ['claude', 'codex', 'antigravity'].includes(template.id));
   const keyRule = accountBase ? null : (template?.apiKey ?? null);
   const invalid =
     !template ||

@@ -62,6 +62,11 @@ export class ProviderStatusResolver {
     private readonly deps: StatusDeps,
   ) {}
 
+  private readonly plugins = new Map<string, { installed(): Promise<boolean> }>();
+  registerPlugin(id: string, setup: { installed(): Promise<boolean> }): void {
+    this.plugins.set(id, setup);
+  }
+
   private readonly aliases = new Map<string, string>();
 
   /** Profiles of a built-in CLI are installed/missing exactly like that CLI. */
@@ -71,9 +76,20 @@ export class ProviderStatusResolver {
 
   unregister(id: string): void {
     this.aliases.delete(id);
+    this.plugins.delete(id);
   }
 
   async resolve(id: string): Promise<ProviderStatusInfo> {
+    const plugin = this.plugins.get(id);
+    if (plugin)
+      return (await plugin.installed())
+        ? READY
+        : {
+            status: 'missing',
+            hint: 'The provider CLI is not installed',
+            canInstall: true,
+            setupId: id,
+          };
     const spec = this.specs.find((s) => s.id === (this.aliases.get(id) ?? id));
     if (!spec) return READY;
     if (spec.id === 'claude' && this.deps.sdkBinary()) return READY;

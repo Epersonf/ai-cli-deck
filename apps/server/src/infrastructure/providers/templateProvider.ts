@@ -1,12 +1,9 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fieldVars, fillText, type Profile, type ProfileTemplate } from '@deck/shared';
 import type { Provider, ProviderContext } from '../../domain/provider.js';
 import { chatSupport } from '../chats/chatSupport.js';
 import { readLegacyKey, readSecret } from './profileSecret.js';
-import { discoverLimits } from './limitDiscovery.js';
-import { discoverModels } from './modelDiscovery.js';
 
 /** Everything a template may refer to with `{name}`, for one launch. */
 function varsFor(
@@ -67,33 +64,29 @@ export function createTemplateProvider(
     id: profile.id,
     label: profile.label,
     agent: template.agent,
-    discoverModels: () =>
-      discoverModels(
-        template.agent,
-        envFor({ sessionId: '', cwd: homedir(), port: 0, mcpUrl: '', guide: '' }),
-      ),
-    discoverLimits: () =>
-      discoverLimits(
-        template.agent,
-        envFor({ sessionId: '', cwd: homedir(), port: 0, mcpUrl: '', guide: '' }),
-      ),
+    discoverModels: () => Promise.resolve({ choices: [], current: null }),
+    discoverLimits: () => Promise.resolve([]),
     buildAgent: (ctx) => ({ kind: template.agent, env: envFor(ctx), model: template.model }),
     shellEnv: envFor,
     chat: chatSupport(template.agent, template.home && ownHome() ? home : null),
-    login: {
-      env: () => {
-        if (!template.home) return {};
-        mkdirSync(home, { recursive: true });
-        return { [template.home.env]: home };
-      },
-      own: ownHome,
-      setOwn: (on) => {
-        if (on) {
-          mkdirSync(home, { recursive: true });
-          writeFileSync(marker, 'signed in from the deck');
-        } else rmSync(marker, { force: true });
-      },
-    },
+    ...(template.agent === 'antigravity'
+      ? {}
+      : {
+          login: {
+            env: () => {
+              if (!template.home) return {};
+              mkdirSync(home, { recursive: true });
+              return { [template.home.env]: home };
+            },
+            own: ownHome,
+            setOwn: (on: boolean) => {
+              if (on) {
+                mkdirSync(home, { recursive: true });
+                writeFileSync(marker, 'signed in from the deck');
+              } else rmSync(marker, { force: true });
+            },
+          },
+        }),
     signIn: template.apiKey?.required ? 'key' : 'account',
     keyState: () => {
       if (!template.apiKey) return 'none';

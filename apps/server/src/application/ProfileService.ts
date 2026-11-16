@@ -6,6 +6,7 @@ import {
   type ProfileTemplate,
 } from '@deck/shared';
 import { invalid, notFound } from '../domain/errors.js';
+import { registerNewProfile } from './profileRegistration.js';
 import type { ProfileStorePort } from '../domain/ports.js';
 
 export interface ProfileServiceDeps {
@@ -84,10 +85,9 @@ export class ProfileService {
       };
       // A new profile always starts empty, even if an old folder with this id was left behind.
       await this.deps.wipeData(profile.id);
-      this.profiles = [...this.profiles, profile];
-      if (body.secret) await this.deps.saveSecret(profile.id, body.secret);
-      await this.deps.store.save(this.profiles);
-      this.deps.register(profile);
+      const next = [...this.profiles, profile];
+      await registerNewProfile(this.deps, profile, next, body);
+      this.profiles = next;
       return profile;
     });
   }

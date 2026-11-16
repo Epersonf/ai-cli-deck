@@ -7,6 +7,7 @@ import type { ChatSettings } from './ChatSettings.js';
 interface Deps {
   agent: AgentPort;
   kind: AgentKind;
+  strategy?: 'none' | 'message' | 'native';
   settings: ChatSettings;
   book: ChatBook;
   ready(): Promise<void>;
@@ -29,7 +30,7 @@ export class ChatCompaction {
   private generation = 0;
 
   constructor(private readonly d: Deps) {
-    this.canCompact = d.kind === 'claude';
+    this.canCompact = d.strategy === 'message' || (!d.strategy && d.kind === 'claude');
   }
   get active(): boolean {
     return this.controller !== null;
@@ -61,7 +62,7 @@ export class ChatCompaction {
       throw invalid('This agent version does not support manual compaction');
     this.checkIdle();
     if (generation !== this.generation) throw invalid('The conversation changed before compaction');
-    if (this.d.kind === 'claude') {
+    if (this.d.strategy === 'message' || (!this.d.strategy && this.d.kind === 'claude')) {
       this.d.submit();
       return;
     }

@@ -25,3 +25,5 @@ export * from './network.js';
 export * from './machine.js';
 export * from './pushProtocol.js';
 export * from './retry.js';
+export * from './plugin.js';
+export * from './agentDefaults.js';

@@ -1,6 +1,8 @@
-import type { AgentKind, ModelChoice } from '@deck/shared';
+import type { AgentFeatures, AgentKind, ModelChoice } from '@deck/shared';
 import type { AccountLimit } from './agent.js';
-import type { ChatSupport } from './chat.js';
+import type { ChatReader, ChatSupport } from './chat.js';
+import type { PluginAuthentication, PluginHooks } from './providerPlugin.js';
+import type { AgentPort } from './agent.js';
 import type { LoginSupport } from './signin.js';
 
 export interface ProviderContext {
@@ -31,6 +33,12 @@ export interface Provider {
   readonly id: string;
   readonly label: string;
   readonly agent: AgentKind;
+  readonly features?: AgentFeatures;
+  readonly authentication?: PluginAuthentication;
+  readonly setup?: Pick<PluginHooks, 'installed' | 'install'>;
+  readonly driver?: AgentPort;
+  readonly compactTools?: boolean;
+  guide?(options: { phone: boolean; devices: readonly string[] }): string;
   buildAgent(ctx: ProviderContext): AgentSetup;
   /**
    * The same environment for plain commands run for this profile (background tasks), so tools see
@@ -43,6 +51,7 @@ export interface Provider {
   discoverLimits?(): Promise<AccountLimit[]>;
   /** Where its saved chats are read from, for the chat list; absent: the deck cannot list them. */
   readonly chat?: ChatSupport | null;
+  readonly history?: ChatReader;
   /** Signing in with the agent's own login; absent: the provider cannot. */
   readonly login?: LoginSupport;
   /** How the person signs in: with the vendor's account (default) or with a key for another endpoint. */

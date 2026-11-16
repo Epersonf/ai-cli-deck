@@ -9,13 +9,10 @@ import { z } from 'zod';
  *  - key: paste an API key or token (Claude: `claude setup-token` token `sk-ant-oat…` or API key; Codex/endpoints: API key)
  *  - machine: use the login this machine's CLI already has (no setup)
  */
-export const SignInMethodSchema = z.enum([
-  'claude-account',
-  'claude-console',
-  'codex-chatgpt',
-  'key',
-  'machine',
-]);
+export const SignInMethodSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9-]*$/)
+  .max(80);
 export type SignInMethod = z.infer<typeof SignInMethodSchema>;
 
 /** Whether a provider can answer right now, and with what. */
@@ -63,4 +60,6 @@ export const FsDirsSchema = z.object({
 export type FsDirs = z.infer<typeof FsDirsSchema>;
 
 /** Sets (or clears, with null) the model new chats of a provider/profile start with. */
-export const SetDefaultModelBodySchema = z.object({ model: z.string().trim().min(1).max(200).nullable() });
+export const SetDefaultModelBodySchema = z.object({
+  model: z.string().trim().min(1).max(200).nullable(),
+});

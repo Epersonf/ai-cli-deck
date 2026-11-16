@@ -28,7 +28,7 @@ export const ProfileTemplateSchema = z.object({
     .max(40),
   label: z.string().trim().min(1).max(60),
   description: z.string().max(300).default(''),
-  /** The engine that runs the chat: Claude Code's SDK or the Codex CLI. */
+  /** The engine that runs the chat: Claude Code's SDK, Codex CLI, or Antigravity CLI. */
   agent: AgentKindSchema,
   /** Model the chat starts with (the person can change it in the chat). */
   model: z.string().max(100).nullable().default(null),
@@ -56,12 +56,15 @@ export const ProfileTemplateSchema = z.object({
     .nullable()
     .default(null),
   /** Built-in CLI that `clideck setup` can download for this template (so the profile shows "install"). */
-  install: z.enum(['claude', 'codex']).nullable().default(null),
+  install: z.enum(['claude', 'codex', 'antigravity']).nullable().default(null),
 });
 export type ProfileTemplate = z.infer<typeof ProfileTemplateSchema>;
 
 /** A template as the UI sees it. */
-export const TemplateInfoSchema = ProfileTemplateSchema.extend({ builtin: z.boolean() });
+export const TemplateInfoSchema = ProfileTemplateSchema.extend({
+  builtin: z.boolean(),
+  plugin: z.object({ version: z.string(), hasTests: z.boolean().default(false) }).optional(),
+});
 export type TemplateInfo = z.infer<typeof TemplateInfoSchema>;
 
 export const ImportTemplateBodySchema = z.object({ text: z.string().min(2).max(100_000) });

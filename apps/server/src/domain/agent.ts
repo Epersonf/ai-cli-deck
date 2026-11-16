@@ -20,6 +20,7 @@ export interface AgentConfig {
 /** Everything an agent needs to run one conversation. */
 export interface AgentSpec extends AgentConfig {
   kind: AgentKind;
+  providerId?: string;
   cwd: string;
   /** The full environment of the agent process (deck variables, the profile's folder, endpoint, key...). */
   env: Record<string, string>;

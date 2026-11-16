@@ -36,5 +36,12 @@ export function readLoginOutput(raw: string): LoginProgress {
     }
   });
   const code = /\b([A-Z0-9]{4}-[A-Z0-9]{4,6})\b/.exec(text)?.[1] ?? null;
-  return { url, code, needsCode: /paste code here/i.test(text) };
+  return {
+    url,
+    code,
+    needsCode:
+      /paste code here|(?:enter|paste|authorization)[^\n]{0,40}(?:authorization |auth )?code[^\n]{0,10}[:>]/i.test(
+        text,
+      ),
+  };
 }

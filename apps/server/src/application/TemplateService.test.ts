@@ -29,6 +29,7 @@ describe('TemplateService', () => {
       'claude-endpoint',
       'claude-deepseek',
       'codex',
+      'antigravity',
     ]);
     expect(list.every((t) => t.builtin)).toBe(true);
   });

@@ -6,7 +6,7 @@ export const AUTH_MARKER = 'AUTH: ';
 
 /** Words of a failure that is about credentials (Claude's "Not logged in", a 401, a rejected key...). */
 const AUTH_FAILURE =
-  /not logged in|not signed in|could not sign in|please run \/login|invalid api key|missing api key|api key (?:is )?(?:missing|not set)|missing bearer|authentication[_ ]?(failed|error)|\b401\b|unauthori[sz]ed|oauth token .*(expired|revoked)/i;
+  /not logged in|not signed in|could not sign in|please run \/login|invalid api key|missing api key|api key (?:is )?(?:missing|not set)|missing bearer|authentication[_ ]?(failed|error|required)|\b401\b|unauthori[sz]ed|oauth token .*(expired|revoked)/i;
 
 /** The CLI's own sign-in message shown as an assistant answer: one short line that points at /login. */
 const AUTH_LINE =

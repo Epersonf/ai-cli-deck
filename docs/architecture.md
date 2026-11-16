@@ -10,18 +10,33 @@
   TypeScript source (`exports` points at `src/index.ts`). Fewer moving parts on a phone.
 - **Type-checked ESLint is off.** `typescript-eslint` strict (syntactic) only, to keep lint fast and
   light on RAM. `tsc --strict` already covers type errors.
-- **Providers are data.** The built-ins are `claude` and `codex` (one file each, on the machine's own sign-in);
-  everything else is a profile made from a template: JSON that names the engine (`agent`), environment,
-  fields to ask, and an optional API key. The built-in templates are Claude Code, Claude Code (custom
-  provider), Claude Code (DeepSeek) and Codex.
+- **Providers are complete plugins.** Each bundled provider lives in `src/plugins/<id>` with a versioned
+  manifest, installation/authentication hooks, execution driver, model discovery and internal tests.
+  Native profile bases are read from these manifests; old JSON templates remain compatible as engine
+  configurations. The generic loader registers each plugin's driver and lifecycle on its provider.
+  Permission/effort choices, compaction strategy and cache-idle estimates come from plugin metadata.
+  Import/export uses `.deck-plugin.zip` with modules, tests and fixtures; metadata inspection precedes
+  explicit code import. See [Provider plugins](provider-plugins.md).
 - **No terminal: every session is a chat driven by a headless agent.** The server runs the agent itself and
   shows its conversation in the browser, so there is no pty, no tmux and no terminal emulation (their latency
-  made typing into an agent unpleasant). Two engines, behind `AgentPort`: `claudeDriver` uses the Claude Agent
+  made typing into an agent unpleasant). The Claude and Codex engines are behind `AgentPort`: `claudeDriver` uses the Claude Agent
   SDK (`query()` with a streaming input channel, `canUseTool` for permissions, `resume`/`forkSession`), which
   also covers any Anthropic-compatible endpoint (custom provider, DeepSeek) through environment variables;
   `codexDriver` runs `codex exec --json` once per message (`exec resume <thread>` afterwards) and maps its
   sandbox to the permission mode (it cannot ask in this mode). Both turn their events into the same
   `ChatEvent`s (`claudeMap`, `codexMap` are pure and unit tested).
+- **Antigravity is a complete provider plugin.** Profiles run the official `agy acp --process-per-session` (CLI 1.5+) over ACP v1 JSON-RPC stdio. Initialization negotiates HTTP MCP,
+  images and session restoration; `session/resume` avoids replay, with `session/load` and suppressed
+  history updates as fallback. Each session receives the Deck MCP endpoint without changing global
+  configuration. The briefing uses ACP system-prompt append when advertised, otherwise a text block
+  in the first prompt. Model/thinking choices use session configuration options; the picker catalog
+  comes from `agy models`. Requests for permission retain the CLI's option ids; cancellation returns
+  cancelled permission outcomes and kills an unresponsive process after three seconds. This template
+  stores only an optional `GEMINI_API_KEY`, uses the machine's official CLI sign-in/settings, and
+  advertises no config-folder override or account credential export. The common sign-in dialog invokes the official installer and `agy acp --login`, displays the
+  Google authorization link and forwards the pasted code. Status is verified through ACP without a
+  model prompt; a saved key uses the private-key flow. There is no external-history reader, native fork, file rollback, custom auto-compaction
+  threshold or manual compaction; transcript handover covers edits and side chats.
 - **The conversation is ours to show, the agent's to continue.** `ChatRuntime` keeps a session's steps
   (`ChatBook`: memory + `<state>/chats/<id>.jsonl`, repaired after a restart), the answer being written
   (`partials`), a queue of messages sent while it answers, and the settings (model, mode, effort) which are

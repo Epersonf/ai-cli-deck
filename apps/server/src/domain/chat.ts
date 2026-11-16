@@ -1,12 +1,10 @@
-import type { ChatFormat } from '@deck/shared';
-
 /** How the first message of a conversation handed over from another AI starts (see ChatActions). */
 export const HANDOVER_START = '[deck] This chat continues a conversation the user had with ';
 
 /** Where an agent keeps its saved chats, so the deck can list and read them. */
 export interface ChatSupport {
   /** Reader of its chat files. */
-  format: ChatFormat;
+  format: string;
   /** Its config folder, where the reader finds the chats. */
   home: string;
 }

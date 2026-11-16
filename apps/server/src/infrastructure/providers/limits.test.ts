@@ -2,9 +2,9 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { codexLimits, parseRateLimits } from '../agents/codexLimits.js';
+import { codexLimits, parseRateLimits } from '../../plugins/codex/engine/codexLimits.js';
 import { fakeQuery } from '../agents/fakeClaude.js';
-import { claudeLimits } from './claudeLimits.js';
+import { claudeLimits } from '../../plugins/claude/claudeLimits.js';
 
 describe('Claude plan limits', () => {
   it('are the windows /usage lists, as fractions with their reset time', async () => {

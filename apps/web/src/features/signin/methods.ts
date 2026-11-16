@@ -1,8 +1,12 @@
-import type { SignInMethod } from '@deck/shared';
+import type { AgentKind, PluginAuthMethod, SignInMethod } from '@deck/shared';
 import type { MessageKey } from '../../shared/i18n/en';
 
 export interface MethodInfo {
   id: SignInMethod;
+  label?: string;
+  description?: string;
+  helpText?: string;
+  flow?: PluginAuthMethod['flow'];
   title: MessageKey;
   /** One short line shown under the title in the method list. */
   subtitle: MessageKey;
@@ -43,7 +47,48 @@ const KEY_ONLY: MethodInfo = {
 };
 
 /** The ways to sign in to a provider; a profile that is only a key (endpoint, DeepSeek) has just the key. */
-export function methodsFor(agent: 'claude' | 'codex', keyOnly: boolean): MethodInfo[] {
+export function methodsFor(
+  agent: AgentKind,
+  keyOnly: boolean,
+  plugin?: readonly PluginAuthMethod[],
+  locale = 'en',
+): MethodInfo[] {
+  if (plugin) {
+    const legacy = methodsFor(agent, keyOnly);
+    return plugin.map((method) => {
+      const translated = method.translations?.[locale];
+      const known = legacy.find((item) => item.id === method.id);
+      return {
+        ...(known ?? {
+          id: method.id,
+          title: 'signin.method' as const,
+          subtitle: 'signin.method' as const,
+          label: method.label,
+          description: method.description,
+        }),
+        ...(translated
+          ? { label: translated.label, description: translated.description ?? method.description }
+          : {}),
+        flow: method.flow,
+        ...(translated?.help || method.help ? { helpText: translated?.help || method.help } : {}),
+        ...(method.url ? { link: { href: method.url, label: new URL(method.url).host } } : {}),
+      };
+    });
+  }
+  if (agent === 'antigravity')
+    return [
+      {
+        id: 'machine',
+        title: 'signin.antigravityMachine',
+        subtitle: 'signin.antigravityMachine.sub',
+      },
+      {
+        id: 'key',
+        title: 'signin.antigravityKey',
+        subtitle: 'signin.antigravityKey.sub',
+        link: { href: 'https://aistudio.google.com/api-keys', label: 'aistudio.google.com' },
+      },
+    ];
   if (keyOnly) return [KEY_ONLY];
   return agent === 'codex' ? CODEX : CLAUDE;
 }

@@ -1,3 +1,4 @@
+import type { ProviderPlugins } from '../infrastructure/plugins/registry.js';
 import type { PublicConfig } from '@deck/shared';
 import type { AgentMemoryDeps } from '../application/AgentMemory.js';
 import type { MemoryService } from '../application/MemoryService.js';
@@ -72,6 +73,7 @@ export interface Container {
   providerStatus(id: string): Promise<ProviderStatusInfo>;
   profiles: ProfileService;
   templates: TemplateService;
+  providerPlugins?: ProviderPlugins;
   /** Profiles packed to move to another device, and unpacked from one. */
   profileBundles: ProfileBundles;
   tasks: TaskService;

@@ -73,4 +73,17 @@ describe('ProviderStatusResolver', () => {
   it('trusts anything it has no installer for', async () => {
     expect((await resolver(deps([])).resolve('whatever')).status).toBe('ready');
   });
+
+  it('checks the official agy binary for Antigravity profiles without offering npm installation', async () => {
+    const missing = resolver(deps([]));
+    missing.alias('google-profile', 'antigravity');
+    expect(await missing.resolve('google-profile')).toMatchObject({
+      status: 'missing',
+      canInstall: false,
+      setupId: 'antigravity',
+    });
+    const installed = resolver(deps(['/usr/bin/agy']));
+    installed.alias('google-profile', 'antigravity');
+    expect((await installed.resolve('google-profile')).status).toBe('ready');
+  });
 });

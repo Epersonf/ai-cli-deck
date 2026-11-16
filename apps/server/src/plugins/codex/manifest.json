@@ -1,0 +1,54 @@
+{
+  "plugin": 1,
+  "version": "1.0.0",
+  "entry": "index.ts",
+  "template": {
+    "schema": 1,
+    "id": "codex",
+    "label": "Codex",
+    "description": "OpenAI’s Codex CLI. Paste an API key, or use this machine’s `codex login`.",
+    "agent": "codex",
+    "model": null,
+    "env": {},
+    "home": {
+      "env": "CODEX_HOME"
+    },
+    "fields": [],
+    "apiKey": {
+      "env": "OPENAI_API_KEY",
+      "label": "OpenAI API key (empty = this machine’s Codex login)",
+      "required": false
+    },
+    "install": "codex"
+  },
+  "authMethods": [
+    {
+      "id": "codex-chatgpt",
+      "label": "ChatGPT account",
+      "flow": "device",
+      "description": "Open the sign-in page and enter the device code."
+    },
+    {
+      "id": "key",
+      "label": "OpenAI API key",
+      "flow": "key",
+      "description": "Paste your API key; it stays in this profile’s private key file."
+    },
+    {
+      "id": "machine",
+      "label": "Use this machine’s login",
+      "flow": "machine",
+      "description": "Uses credentials already on this machine."
+    }
+  ],
+  "order": 3,
+  "machine": true,
+  "tests": ["**/*.test.ts"],
+  "features": {
+    "modes": ["plan", "default", "bypassPermissions"],
+    "efforts": ["low", "medium", "high", "xhigh"],
+    "compaction": "native",
+    "autoCompactThreshold": true,
+    "cacheIdleRiskMs": 3600000
+  }
+}

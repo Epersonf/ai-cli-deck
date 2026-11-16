@@ -1,7 +1,11 @@
 import type { ChatEvent } from '@deck/shared';
 import type { AgentSink, UsageReading } from '../../domain/agent.js';
-import type { ClaudeUsageAnswer, QueryFn, QueryLike } from './claudeDriver.js';
-import type { SdkMessage } from './claudeMap.js';
+import type {
+  ClaudeUsageAnswer,
+  QueryFn,
+  QueryLike,
+} from '../../plugins/claude/engine/claudeDriver.js';
+import type { SdkMessage } from '../../plugins/claude/engine/claudeMap.js';
 
 /** A fake SDK: yields what the test pushes, and records the options and what the user sent. */
 export function fakeQuery() {

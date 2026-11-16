@@ -25,6 +25,7 @@ export function runtimeControls(
   const compaction = new ChatCompaction({
     agent: deps.agent,
     kind: deps.info.agent,
+    ...(deps.info.features ? { strategy: deps.info.features.compaction } : {}),
     settings,
     book,
     ready: c.ready,

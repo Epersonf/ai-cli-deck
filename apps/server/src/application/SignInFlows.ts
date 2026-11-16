@@ -11,6 +11,7 @@ interface Active {
   flow: SignInFlow;
   child: LoginChild | null;
   raw: string;
+  deviceAuth: boolean;
 }
 
 /** The logins in progress, one per provider, in memory only. */
@@ -21,7 +22,7 @@ export class SignInFlows {
     private readonly cli: AuthCli,
     /** Asks the agent whether it is signed in now; called when the login process ends well. */
     private readonly confirm: (id: string) => Promise<boolean>,
-    private readonly finished: (id: string) => void,
+    private readonly finished: (id: string) => void | Promise<void>,
   ) {}
 
   current(id: string): SignInFlow | null {
@@ -29,7 +30,14 @@ export class SignInFlows {
   }
 
   /** Starts a login (ending one already running for this provider). */
-  start(id: string, method: SignInFlow['method'], kind: LoginKind, env: Record<string, string>) {
+  start(
+    id: string,
+    method: SignInFlow['method'],
+    kind: LoginKind,
+    env: Record<string, string>,
+    startChild?: () => LoginChild,
+    deviceAuth = kind === 'codex-chatgpt',
+  ) {
     this.cancel(id);
     const flow: SignInFlow = {
       method,
@@ -40,9 +48,9 @@ export class SignInFlows {
       output: '',
       error: null,
     };
-    const entry: Active = { flow, child: null, raw: '' };
+    const entry: Active = { flow, child: null, raw: '', deviceAuth };
     this.active.set(id, entry);
-    const child = this.cli.login(kind, env);
+    const child = startChild ? startChild() : this.cli.login(kind, env);
     entry.child = child;
     const timer = setTimeout(() => this.cancel(id), LOGIN_TIMEOUT_MS);
     timer.unref();
@@ -57,12 +65,11 @@ export class SignInFlows {
   private take(entry: Active, text: string): void {
     entry.raw = (entry.raw + text).slice(-MAX_OUTPUT);
     const progress = readLoginOutput(entry.raw);
-    const kind = entry.flow.method;
     entry.flow = {
       ...entry.flow,
       output: cleanOutput(entry.raw).trim(),
       url: progress.url,
-      code: kind === 'codex-chatgpt' ? progress.code : null,
+      code: entry.deviceAuth ? progress.code : null,
       needsCode: progress.needsCode && entry.flow.state === 'running',
     };
   }
@@ -72,6 +79,8 @@ export class SignInFlows {
     const lines = entry.flow.output.split('\n').filter((l) => l.trim() !== '');
     const ok = code === 0 && (await this.confirm(id).catch(() => false));
     if (entry.flow.state !== 'running') return;
+    if (ok) await this.finished(id);
+    if (entry.flow.state !== 'running') return;
     entry.flow = {
       ...entry.flow,
       state: ok ? 'done' : 'failed',
@@ -79,7 +88,6 @@ export class SignInFlows {
       error: ok ? null : (lines.at(-1) ?? `The login stopped (code ${code ?? 'none'})`),
     };
     entry.child = null;
-    if (ok) this.finished(id);
   }
 
   /** Sends the code the person pasted to the CLI that waits for it. */

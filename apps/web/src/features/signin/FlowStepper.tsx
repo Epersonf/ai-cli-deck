@@ -2,13 +2,14 @@ import type { SignInFlow, SignInMethod } from '@deck/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useT } from '../../shared/i18n/store';
 import { InlineField } from '../../shared/ui/DialogParts';
-import { Gear } from '../../shared/ui/Gear';
+import { LoginStartButton } from './LoginStartButton';
 import { Stepper, type Step } from '../../shared/ui/Stepper';
 import { toast } from '../../shared/ui/toast';
 import { copyText } from '../settings/templateFile';
 
 interface Props {
   method: SignInMethod;
+  flowType?: 'code' | 'device' | 'key' | 'machine' | undefined;
   /** The login the server runs; null before it starts. */
   flow: SignInFlow | null;
   busy: boolean;
@@ -21,12 +22,21 @@ interface Props {
 const WRONG_CODE_AFTER_MS = 20_000;
 
 /** The steps of one login: only the current one is open, with one clear action; the rest is quiet. */
-export function FlowStepper({ method, flow, busy, onStart, onCode, onCancel, onRestart }: Props) {
+export function FlowStepper({
+  method,
+  flowType,
+  flow,
+  busy,
+  onStart,
+  onCode,
+  onCancel,
+  onRestart,
+}: Props) {
   const t = useT();
   const [code, setCode] = useState('');
   const [opened, setOpened] = useState(false);
   const [slow, setSlow] = useState(false);
-  const device = method === 'codex-chatgpt';
+  const device = flowType === 'device' || method === 'codex-chatgpt';
   const running = flow?.state === 'running';
   const waiting = running && opened;
   useEffect(() => {
@@ -51,24 +61,22 @@ export function FlowStepper({ method, flow, busy, onStart, onCode, onCancel, onR
   const start: Step = {
     id: 'start',
     title: t('signin.step.start'),
-    body: (
-      <button type="button" className="primary" disabled={busy || running} onClick={onStart}>
-        {running ? (
-          <>
-            <Gear size={16} teeth={8} className="spin" /> {t('signin.starting')}
-          </>
-        ) : (
-          t('signin.begin')
-        )}
-      </button>
-    ),
+    body: <LoginStartButton busy={busy} running={running} onStart={onStart} />,
   };
   const open: Step = {
     id: 'open',
     title: device ? t('signin.step.type') : t('signin.step.open'),
     body: (
       <>
-        <p className="hint">{t(device ? 'signin.step.open.codex' : 'signin.step.open.claude')}</p>
+        <p className="hint">
+          {t(
+            device
+              ? 'signin.step.open.codex'
+              : method.startsWith('claude-')
+                ? 'signin.step.open.claude'
+                : 'signin.step.open.plugin',
+          )}
+        </p>
         {device && deviceCode !== null && (
           <div className="signin-code">
             <strong>{deviceCode}</strong>

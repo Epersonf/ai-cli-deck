@@ -5,8 +5,6 @@ import type { SessionManager } from '../application/SessionManager.js';
 import type { SystemPort } from '../domain/ports.js';
 import type { ProviderRegistry } from '../domain/provider.js';
 import { ChatFiles } from './chats/ChatFiles.js';
-import { claudeChats } from './chats/claudeChats.js';
-import { codexChats } from './chats/codexChats.js';
 import { runGit } from './git/gitRun.js';
 
 interface Deps {
@@ -20,7 +18,7 @@ export function chatServices({ sessions, providers, system }: Deps) {
   const chats = new ChatService({
     sessions,
     providers,
-    readers: { claude: claudeChats, codex: codexChats },
+    readers: {},
   });
   const chatActions = new ChatActions({
     chats,

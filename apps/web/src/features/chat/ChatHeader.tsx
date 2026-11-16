@@ -59,7 +59,7 @@ export function ChatHeader({ session, blocks, online, tasks, usage }: Props) {
         usage={usage}
         sessionId={session.id}
         canCompact={Boolean(config?.chatId) && (config?.canCompact ?? config?.agent === 'claude')}
-        nativeCompact={config?.agent === 'codex'}
+        nativeCompact={config?.features?.compaction === 'native' || config?.agent === 'codex'}
         busy={busy || !online}
         compacting={config?.compacting ?? false}
       />

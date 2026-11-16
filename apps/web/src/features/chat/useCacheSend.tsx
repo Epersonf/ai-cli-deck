@@ -20,7 +20,13 @@ export function useCacheSend(sessionId: string) {
     const chat = useChats.getState().byId[sessionId];
     const agent = chat?.config?.agent;
     if (chat?.config?.chatId === null) return send();
-    const warning = cacheWarning(chat?.usage ?? null, agent, chat?.busy ?? false);
+    const warning = cacheWarning(
+      chat?.usage ?? null,
+      agent,
+      chat?.busy ?? false,
+      Date.now(),
+      chat?.config?.features?.cacheIdleRiskMs,
+    );
     if (warning) setPending({ sessionId, thread: chat?.config?.chatId ?? null, warning, send });
     else send();
   };

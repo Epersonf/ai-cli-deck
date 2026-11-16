@@ -30,6 +30,7 @@ import { memoryRoutes } from './routes/memory.js';
 import { agentMemoryRoutes } from './routes/agentMemory.js';
 import { modelRoutes } from './routes/models.js';
 import { taskRoutes } from './routes/tasks.js';
+import { pluginRoutes } from './routes/plugins.js';
 import { templateRoutes } from './routes/templates.js';
 import { fsDirRoutes } from './routes/fsDirs.js';
 import { signInRoutes } from './routes/signin.js';
@@ -71,6 +72,7 @@ export async function createApp(c: Container): Promise<FastifyInstance> {
   signInRoutes(app, c);
   fsDirRoutes(app);
   templateRoutes(app, c);
+  pluginRoutes(app, c);
   taskRoutes(app, c);
   modelRoutes(app, c);
   memoryRoutes(app, c);

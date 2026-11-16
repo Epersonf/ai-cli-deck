@@ -75,7 +75,8 @@ export class ChatActions {
     const native =
       target === source.provider &&
       Boolean(chatId) &&
-      (providers.get(target)?.agent === 'claude' || (await sessions.supportsFork?.(id)) === true);
+      ((!providers.get(target)?.features && providers.get(target)?.agent === 'claude') ||
+        (await sessions.supportsFork?.(id)) === true);
     const created = await sessions.create(
       newBody(target, source.cwd),
       native && chatId
@@ -104,7 +105,8 @@ export class ChatActions {
     const chatId = source.meta[CHAT_META.chat];
     const native =
       Boolean(chatId) &&
-      (providers.get(source.provider)?.agent === 'claude' ||
+      ((!providers.get(source.provider)?.features &&
+        providers.get(source.provider)?.agent === 'claude') ||
         (await sessions.supportsFork?.(id)) === true);
     const meta = Object.fromEntries(
       SETTINGS.flatMap((key) => (source.meta[key] ? [[key, source.meta[key]]] : [])),

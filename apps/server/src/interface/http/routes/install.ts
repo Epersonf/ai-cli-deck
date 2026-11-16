@@ -13,6 +13,8 @@ const INSTALL_TIMEOUT_MS = 5 * 60_000;
 export function installRoutes(app: FastifyInstance, c: Container): void {
   app.post('/api/providers/:id/install', async (request) => {
     const { id } = parseWith(IdParams, request.params);
+    const plugin = c.providers.get(id)?.setup;
+    if (plugin) return { ...(await plugin.install()), status: await c.providerStatus(id) };
     const status = await c.providerStatus(id);
     const spec = setupSpecFor(status.setupId ?? id);
     if (!spec?.install) throw notFound(`Installer for ${id}`);

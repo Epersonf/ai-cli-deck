@@ -13,6 +13,8 @@ export function autoCompactOptions(
   defaultLabel: string,
   offLabel: string,
 ): { id: string; label: string }[] {
+  if (config.features?.autoCompactThreshold === false || config.agent === 'antigravity')
+    return [{ id: '', label: defaultLabel }];
   const current = typeof config.autoCompact === 'number' ? [config.autoCompact] : [];
   const steps = [...new Set([...STEPS, ...current])].sort((a, b) => a - b);
   return [

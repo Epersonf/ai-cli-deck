@@ -1,0 +1,62 @@
+{
+  "plugin": 1,
+  "version": "1.0.0",
+  "entry": "index.ts",
+  "template": {
+    "schema": 1,
+    "id": "claude-endpoint",
+    "label": "Claude Code (custom provider)",
+    "description": "Claude Code against any Anthropic-compatible API, such as a company gateway.",
+    "agent": "claude",
+    "model": null,
+    "env": {
+      "ANTHROPIC_BASE_URL": "{field.baseUrl}",
+      "ANTHROPIC_MODEL": "{field.model}"
+    },
+    "home": {
+      "env": "CLAUDE_CONFIG_DIR"
+    },
+    "fields": [
+      {
+        "key": "baseUrl",
+        "label": "API base URL",
+        "type": "url",
+        "required": true,
+        "hint": "Where Claude Code sends its requests.",
+        "placeholder": "https://llm.example.com/anthropic"
+      },
+      {
+        "key": "model",
+        "label": "Model (optional)",
+        "type": "text",
+        "required": false,
+        "hint": "Left empty, the gateway’s default is used. It can be changed in the chat.",
+        "placeholder": "my-model"
+      }
+    ],
+    "apiKey": {
+      "env": "ANTHROPIC_AUTH_TOKEN",
+      "label": "API key for {field.baseUrl.host}",
+      "required": true
+    },
+    "install": "claude"
+  },
+  "authMethods": [
+    {
+      "id": "key",
+      "label": "API key",
+      "flow": "key",
+      "description": "Paste your API key; it stays in this profile’s private key file."
+    }
+  ],
+  "order": 1,
+  "machine": false,
+  "tests": ["**/*.test.ts"],
+  "features": {
+    "modes": ["default", "acceptEdits", "auto", "dontAsk", "plan", "bypassPermissions"],
+    "efforts": ["low", "medium", "high", "xhigh", "max"],
+    "compaction": "message",
+    "autoCompactThreshold": true,
+    "cacheIdleRiskMs": null
+  }
+}

@@ -24,7 +24,7 @@ export function mcpRoutes(app: FastifyInstance, c: Container): void {
     if (!session) throw notFound(`Session ${sessionId}`);
     // Always offered: "here" lets an agent manage this deck's terminals, tasks and files too.
     const devices = { tools: createDeviceTools(c), cwd: session.cwd };
-    const compact = c.providers.get(session.provider)?.agent === 'codex';
+    const compact = c.providers.get(session.provider)?.compactTools === true;
     const server = buildMcpServer(createAgentTools(c, sessionId), devices, compact);
     const transport = new StreamableHTTPServerTransport({});
     reply.hijack();

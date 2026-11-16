@@ -28,7 +28,6 @@ import { FileChatLog } from './infrastructure/store/FileChatLog.js';
 import { createSignIn } from './infrastructure/signin/signInWiring.js';
 import { createVoice } from './infrastructure/voice/voiceWiring.js';
 import { createAgentPort } from './infrastructure/agents/agentPort.js';
-import { sdkQuery } from './infrastructure/agents/claudeQuery.js';
 import { FileUsageHistoryStore } from './infrastructure/store/FileUsageHistoryStore.js';
 import { FileBriefingStore } from './infrastructure/store/FileBriefingStore.js';
 import { JsonSessionStore } from './infrastructure/store/JsonSessionStore.js';
@@ -79,7 +78,7 @@ async function main(): Promise<void> {
     catalog: kept.catalog,
     launcher,
     usageHistoryStore: new FileUsageHistoryStore(join(paths.stateDir, 'usage')),
-    agent: createAgentPort(sdkQuery),
+    agent: createAgentPort(providers),
     providers,
     store: new JsonSessionStore(join(paths.stateDir, 'sessions.json')),
     log: new FileChatLog(join(paths.stateDir, 'chats')),

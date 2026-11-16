@@ -62,7 +62,9 @@ export const COMMANDS: readonly Command[] = [
     arg: '[mode]',
     desc: 'cmd.mode',
     run: (c, arg) => {
-      const modes: readonly string[] = c.config ? AGENT_MODES[c.config.agent] : [];
+      const modes: readonly string[] = c.config
+        ? (c.config.features?.modes ?? AGENT_MODES[c.config.agent] ?? [])
+        : [];
       if (arg === '' || !modes.includes(arg)) return c.toast(modes.join(', ') || '—');
       c.setConfig({ mode: arg as PermissionMode });
       c.toast(arg);
@@ -73,7 +75,9 @@ export const COMMANDS: readonly Command[] = [
     arg: '[level]',
     desc: 'cmd.effort',
     run: (c, arg) => {
-      const levels: readonly string[] = c.config ? AGENT_EFFORTS[c.config.agent] : [];
+      const levels: readonly string[] = c.config
+        ? (c.config.features?.efforts ?? AGENT_EFFORTS[c.config.agent] ?? [])
+        : [];
       if (arg === '' || !levels.includes(arg)) return c.toast(levels.join(', ') || '—');
       c.setConfig({ effort: arg as Effort });
       c.toast(arg);

@@ -51,9 +51,9 @@ export function KeyForm({ provider, method, onSaved }: Props) {
           </button>
         </InlineField>
       </FieldRow>
-      {method.help !== undefined && (
+      {(method.help !== undefined || Boolean(method.helpText) || Boolean(method.link)) && (
         <Disclosure summary={t('signin.where')}>
-          <p className="hint">{t(method.help)}</p>
+          <p className="hint">{method.helpText || (method.help ? t(method.help) : '')}</p>
           {method.link && (
             <a className="signin-link" href={method.link.href} target="_blank" rel="noreferrer">
               {method.link.label}

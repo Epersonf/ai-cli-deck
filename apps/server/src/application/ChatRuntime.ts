@@ -71,7 +71,12 @@ export class ChatRuntime {
     this.deps.bus.publish({ kind: 'usage', sessionId: this.deps.id, usage: this.usage() });
   async send(text: string, images: readonly ImageInput[] = [], prompt = text): Promise<void> {
     await this.ready();
-    if (this.deps.info.agent === 'codex' && text.trim() === '/compact' && images.length === 0)
+    if (
+      (this.deps.info.features?.compaction === 'native' ||
+        (!this.deps.info.features && this.deps.info.agent === 'codex')) &&
+      text.trim() === '/compact' &&
+      images.length === 0
+    )
       return this.compact();
     this.submit(text, images, prompt);
   }

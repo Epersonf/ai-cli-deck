@@ -27,6 +27,13 @@ export function sessionRoutes(app: FastifyInstance, c: Container): void {
         agent: provider.agent,
         keyState: provider.keyState?.() ?? 'none',
         signIn: provider.signIn ?? 'account',
+        ...(provider.authentication
+          ? {
+              authMethods: provider.authentication.methods.filter(
+                (method) => method.flow !== 'key' || c.profiles.has(provider.id),
+              ),
+            }
+          : {}),
         ...(await c.providerStatus(provider.id)),
       })),
     ),

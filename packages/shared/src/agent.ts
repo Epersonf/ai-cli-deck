@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import { ChatRetrySchema, RetryHintSchema } from './retry.js';
 
-/** Which agent engine drives a session. Both talk to the model themselves; the deck only renders the chat. */
-export const AgentKindSchema = z.enum(['claude', 'codex']);
+/** Which agent engine drives a session. They talk to the model themselves; the deck only renders the chat. */
+export const AgentKindSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9-]*$/)
+  .max(80);
 export type AgentKind = z.infer<typeof AgentKindSchema>;
-
 /** Claude's permission modes (auto: a classifier decides, dontAsk: deny what is not pre-approved); Codex maps them to its sandbox (plan: read-only, bypass: full access, the rest: workspace). */
 export const PermissionModeSchema = z.enum([
   'default',
@@ -18,17 +20,14 @@ export type PermissionMode = z.infer<typeof PermissionModeSchema>;
 
 export const EffortSchema = z.enum(['low', 'medium', 'high', 'xhigh', 'max']);
 export type Effort = z.infer<typeof EffortSchema>;
-
-/** What each agent offers: Codex only has a sandbox (read-only / workspace / full access) and no `max` effort. */
-export const AGENT_MODES: Record<AgentKind, readonly PermissionMode[]> = {
-  claude: PermissionModeSchema.options,
-  codex: ['plan', 'default', 'bypassPermissions'],
-};
-export const AGENT_EFFORTS: Record<AgentKind, readonly Effort[]> = {
-  claude: EffortSchema.options,
-  codex: ['low', 'medium', 'high', 'xhigh'],
-};
-
+export const AgentFeaturesSchema = z.object({
+  modes: z.array(PermissionModeSchema).min(1),
+  efforts: z.array(EffortSchema),
+  compaction: z.enum(['none', 'message', 'native']),
+  autoCompactThreshold: z.boolean(),
+  cacheIdleRiskMs: z.number().positive().nullable().default(null),
+});
+export type AgentFeatures = z.infer<typeof AgentFeaturesSchema>;
 /** An image or PDF the person attached to a message (sent as base64, never stored in the chat log). */
 export const ImageInputSchema = z.object({
   mediaType: z.string().max(100),
@@ -121,6 +120,7 @@ export type AutoCompact = z.infer<typeof AutoCompactSchema>;
 /** What the person may change about the running chat, and what is on offer. */
 export const ChatConfigSchema = z.object({
   agent: AgentKindSchema,
+  features: AgentFeaturesSchema.optional(),
   /** Detected on the server for the executable used by this profile. */
   canCompact: z.boolean().optional(),
   compacting: z.boolean().optional(),

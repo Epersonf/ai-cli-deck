@@ -1,4 +1,4 @@
-import type { ChatConfig, ModelChoice } from '@deck/shared';
+import type { AgentFeatures, ChatConfig, ModelChoice } from '@deck/shared';
 import type { AgentConfig } from '../domain/agent.js';
 
 /** What a chat knows about the models of its provider. */
@@ -35,7 +35,11 @@ export class ChatSettings {
 
   constructor(
     initial: { config: AgentConfig; chatId: string | null; fork: boolean },
-    private readonly info: { agent: ChatConfig['agent']; models: ModelSource },
+    private readonly info: {
+      features?: AgentFeatures;
+      agent: ChatConfig['agent'];
+      models: ModelSource;
+    },
   ) {
     ({ config: this.config, chatId: this.chatId, fork: this.fork } = initial);
   }
@@ -44,6 +48,7 @@ export class ChatSettings {
     const { info } = this;
     return {
       agent: info.agent,
+      ...(info.features ? { features: info.features } : {}),
       ...this.config,
       autoCompact: this.config.autoCompact ?? null,
       effectiveModel: this.effectiveModel(),

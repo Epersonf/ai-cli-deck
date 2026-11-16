@@ -27,11 +27,13 @@ export function ModeModelBar({ sessionId, config }: { sessionId: string; config:
       <Dropdown
         caption={t('chat.mode')}
         value={config.mode}
-        options={AGENT_MODES[config.agent].map((m) => ({
-          id: m,
-          label: t(`chat.mode.${m}`),
-          description: t(`chat.modeHint.${m}`),
-        }))}
+        options={(config.features?.modes ?? AGENT_MODES[config.agent] ?? ['default' as const]).map(
+          (m) => ({
+            id: m,
+            label: t(`chat.mode.${m}`),
+            description: t(`chat.modeHint.${m}`),
+          }),
+        )}
         onChange={(id) => {
           const next = PermissionModeSchema.safeParse(id);
           if (next.success) sendChat(sessionId, { type: 'config', mode: next.data });
@@ -43,7 +45,10 @@ export function ModeModelBar({ sessionId, config }: { sessionId: string; config:
         value={config.effort ?? ''}
         options={[
           { id: '', label: t('chat.effortDefault') },
-          ...AGENT_EFFORTS[config.agent].map((e) => ({ id: e, label: t(`chat.effort.${e}`) })),
+          ...(config.features?.efforts ?? AGENT_EFFORTS[config.agent] ?? []).map((e) => ({
+            id: e,
+            label: t(`chat.effort.${e}`),
+          })),
         ]}
         onChange={(id) => {
           const next = EffortSchema.safeParse(id);
