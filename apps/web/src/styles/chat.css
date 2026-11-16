@@ -59,6 +59,7 @@
   position: relative;
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
 }
 .chat-scroll {
@@ -68,6 +69,8 @@
   padding: 12px 10px 8px;
 }
 .chat-column {
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: flex;
   flex-direction: column;
   gap: 10px;

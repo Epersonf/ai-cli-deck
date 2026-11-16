@@ -266,6 +266,10 @@ npm run ci      # typecheck + lint + tests
 ./dev.sh        # a second, isolated instance on :7843 (own config and state)
 ```
 
+Chat wrapping tests measure actual layout in Chromium. Run `npx playwright-core install chromium`
+once to enable them; they are skipped when the browser is not installed. Run them with
+`npx vitest run apps/web/src/features/chat/chatWrap.test.ts`.
+
 Use `dev.sh` from a git worktree to hack on the deck while you keep working inside the stable one.
 
 Docs: [architecture](docs/architecture.md), [protocol](docs/protocol.md), [security](docs/security.md).
