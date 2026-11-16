@@ -20,12 +20,21 @@ The server itself is unchanged: `npm run start` on Termux, Linux, macOS or Windo
 Needs JDK 17, the Android SDK and Gradle 8.10 (no wrapper is checked in):
 
 ```bash
-npm ci && npm run build && android/scripts/prepare.sh   # embeds proot + the deck source
-cd android && gradle :app:assembleRelease                # app/build/outputs/apk/release/
+npm ci
+android/scripts/build-apk.sh
 ```
 
-Signing: export `ANDROID_KEYSTORE_FILE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`
-for a stable key (needed for in-place updates). Without them the debug key is used.
+The update identity is versioned in `signing/deck.keystore` (alias `androiddebugkey`, store/key
+password `android`), intentionally committed at the owner's request. Keep this exact key across
+machines and releases. Certificate SHA-256:
+`aaf81956135b6b459e13370732a0769a27af4c40315497d77d66afb26988b3ec`.
+Gradle refuses a missing or different certificate, ignores machine signing environment variables,
+and never falls back to a local debug key. The build script verifies the final APK signature too.
+This guarantees a stable signing identity, not byte-identical APKs or immunity to build failures.
+
+Set `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) to the Android SDK. Optional `GRADLE_BIN` and
+`APKSIGNER_BIN` select tool executables. Output: `app/build/outputs/apk/release/app-release.apk`.
+An installation signed with another key requires a one-time migration; uninstalling deletes app data.
 
 ## Notes
 

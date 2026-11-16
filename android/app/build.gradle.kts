@@ -1,6 +1,20 @@
+import java.security.KeyStore
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+// This repository owns one update identity; never fall back to a machine's debug key.
+val deckSigningKey = rootProject.file("signing/deck.keystore")
+check(deckSigningKey.isFile) { "Missing versioned signing/deck.keystore; refusing to change signing identity" }
+val deckKeyStore = KeyStore.getInstance(deckSigningKey, "android".toCharArray())
+val deckCertificate = deckKeyStore.getCertificate("androiddebugkey")
+val deckFingerprint = MessageDigest.getInstance("SHA-256")
+    .digest(deckCertificate.encoded).joinToString("") { "%02x".format(it) }
+check(deckFingerprint == "aaf81956135b6b459e13370732a0769a27af4c40315497d77d66afb26988b3ec") {
+    "Unexpected signing certificate: $deckFingerprint"
 }
 
 android {
@@ -18,22 +32,19 @@ android {
         ndk { abiFilters += "arm64-v8a" }
     }
 
-    val ks = System.getenv("ANDROID_KEYSTORE_FILE")
-    if (ks != null && file(ks).exists()) {
-        signingConfigs {
-            create("release") {
-                storeFile = file(ks)
-                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
-            }
+    signingConfigs {
+        create("release") {
+            storeFile = deckSigningKey
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
