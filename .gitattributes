@@ -6,3 +6,5 @@ android/scripts/*.sh text eol=lf
 apps/server/bin/clideck text eol=lf
 dev.sh text eol=lf
 *.sh text eol=lf
+# Signing identity must never be altered by line-ending conversion.
+android/signing/*.keystore binary

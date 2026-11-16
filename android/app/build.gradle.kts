@@ -27,8 +27,8 @@ android {
         // targetSdk 28 keeps exec() of files in app storage allowed (same choice as Termux).
         // The APK is sideloaded, not published on Google Play.
         targetSdk = 28
-        versionCode = (System.getenv("DECK_VERSION_CODE") ?: "1").toInt()
-        versionName = System.getenv("DECK_VERSION_NAME") ?: "0.1.0"
+        versionCode = (System.getenv("DECK_VERSION_CODE") ?: "2").toInt()
+        versionName = System.getenv("DECK_VERSION_NAME") ?: "0.1.1"
         ndk { abiFilters += "arm64-v8a" }
     }
 
