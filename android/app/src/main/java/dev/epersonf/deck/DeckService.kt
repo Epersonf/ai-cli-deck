@@ -24,6 +24,7 @@ class DeckService : Service() {
     @Volatile private var generation = 0
     private val locks by lazy { DeckLocks(this) }
     @Volatile private var proc: Process? = null
+    @Volatile private var installer: Installer? = null
     /** Lets the agents reach the phone; only exists while "Phone access" is on. */
     @Volatile private var phone: PhoneBridge? = null
 
@@ -64,7 +65,7 @@ class DeckService : Service() {
 
     private fun loop(gen: Int) {
         var fails = 0
-        val installer = Installer(this, env, ::log)
+        val installer = Installer(this, env, ::log).also { this.installer = it }
         DeckDiagnostics.header(ui, env, ::log)
         while (alive(gen)) {
             try {
@@ -121,6 +122,7 @@ class DeckService : Service() {
         running = false
         generation++
         proc?.let { killHard(it) }
+        installer?.cancel()
         phone?.stop(); phone = null
         worker?.interrupt()
         worker = null
@@ -141,6 +143,7 @@ class DeckService : Service() {
         running = false
         generation++
         proc?.let { killHard(it) }
+        installer?.cancel()
         phone?.stop(); phone = null
         locks.release()
         super.onDestroy()

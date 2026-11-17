@@ -21,6 +21,28 @@ class Installer(private val ctx: Context, private val env: Env, private val log:
 
     private val marker = File(env.rootfs, "opt/.deck-installed")
 
+    /** The running bootstrap, so Stop can kill it: a second one would fight it for the apt/dpkg lock. */
+    @Volatile private var proc: Process? = null
+
+    fun cancel() { proc?.destroyForcibly() }
+
+    /** Kills proot processes of this app left by an earlier run (an orphaned bootstrap still holds the dpkg lock). */
+    private fun killStaleProot() {
+        val me = android.os.Process.myPid()
+        val uid = android.os.Process.myUid()
+        fun stale() = (File("/proc").list() ?: emptyArray()).mapNotNull { it.toIntOrNull() }.filter { pid ->
+            pid != me && runCatching {
+                Os.stat("/proc/$pid").st_uid == uid &&
+                    File("/proc/$pid/cmdline").readText().substringBefore(Char(0)).endsWith("libproot.so")
+            }.getOrDefault(false)
+        }
+        val pids = stale()
+        if (pids.isEmpty()) return
+        log("[info] killing ${pids.size} leftover proot process(es) from an earlier run")
+        pids.forEach { runCatching { Os.kill(it, 9) } }
+        repeat(20) { if (stale().isNotEmpty()) Thread.sleep(500) }
+    }
+
     private fun assetVersion(): String =
         ctx.assets.open("deck-version.txt").use { it.readBytes().decodeToString().trim() }
 
@@ -36,10 +58,13 @@ class Installer(private val ctx: Context, private val env: Env, private val log:
         log("[info] install check: installed=$installed bundled=${assetVersion()} current=${isCurrent()}")
         if (isCurrent()) return true
         log(env.en.getString(R.string.log_installing))
+        killStaleProot()
         installAssets()
         val p = env.prootCommand("bash /opt/bootstrap.sh").start()
+        proc = p
         p.inputStream.bufferedReader().forEachLine { log(it) }
         val rc = p.waitFor()
+        proc = null
         if (rc != 0) {
             log(env.en.getString(R.string.log_bootstrap_failed, rc))
             return false
