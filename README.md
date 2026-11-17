@@ -5,7 +5,7 @@ changes review, a per-session preview and a small bridge back to the machine. Th
 every session is a conversation (history, tool cards, permission prompts) driven by a headless
 agent, so typing is instant even over a slow link.
 
-Agents: **Claude Code** (Claude Agent SDK), **Codex** (`codex exec --json`), **Antigravity** (official `agy acp` CLI), and Claude Code against
+Agents: **Claude Code** (Claude Agent SDK), **Codex** (`codex exec --json`), **Antigravity** (official `agy acp` CLI), **Grok Build** (xAI's official `grok agent stdio` CLI), and Claude Code against
 a **custom Anthropic-compatible endpoint** or **DeepSeek**, as profiles with their own key.
 
 Built for an Android phone (Termux > Ubuntu via proot-distro) and a phone browser, but it works

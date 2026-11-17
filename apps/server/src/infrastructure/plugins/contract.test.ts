@@ -27,6 +27,7 @@ describe('provider plugin contract', () => {
       'claude-deepseek',
       'codex',
       'antigravity',
+      'grok',
     ]);
     for (const info of plugins.list()) {
       const runtime = plugins.get(info.id);

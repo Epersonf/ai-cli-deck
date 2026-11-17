@@ -30,6 +30,7 @@ describe('TemplateService', () => {
       'claude-deepseek',
       'codex',
       'antigravity',
+      'grok',
     ]);
     expect(list.every((t) => t.builtin)).toBe(true);
   });
