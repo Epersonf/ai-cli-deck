@@ -1,7 +1,7 @@
 # Provider plugins
 
 Every bundled provider is a complete package under `apps/server/src/plugins/`: Claude Code,
-Claude with a custom endpoint, Claude with DeepSeek, Codex and Antigravity. Existing profile IDs,
+Claude with a custom endpoint, Claude with DeepSeek, Codex, Antigravity and Grok Build. Existing profile IDs,
 keys, configuration folders and saved conversations continue to work. Legacy JSON templates remain
 supported as configurations of an installed engine plugin.
 
@@ -77,3 +77,26 @@ The official installer is `https://antigravity.google/cli/install.sh` on macOS/L
 before a new shell has updated PATH. Antigravity uses the official machine keyring for Google accounts;
 API keys remain per profile. The Deck does not invent an unsupported config-folder override or export
 Google keyring credentials. ACP requires a compatible official CLI (1.5+).
+
+## Grok Build
+
+Create a Grok Build profile. The sign-in dialog offers `npm install -g @xai-official/grok` when the CLI is
+missing, then **Grok account** (`grok login --device-auth`: the Deck shows the link and the device code),
+an **xAI API key** (`XAI_API_KEY`, kept in the profile's private key file) or the machine's existing login.
+Each profile gets its own `GROK_HOME`. Chats run over ACP (`grok agent stdio`): streaming text and thinking,
+tool cards, permission prompts, session resume, images and the Deck MCP tools.
+
+- **Models** are never hardcoded. The Deck opens and closes a session (no prompt, no usage) and reads the
+  account's `models` (ids, names, descriptions, context windows); `grok models` is the fallback and works
+  before signing in. The free tier offers fewer models than a subscription.
+- **Effort** uses the session's own `reasoning_effort` option (`session/set_config_option`); an effort the
+  model does not offer is skipped.
+- **Permission modes**: Grok has no ACP permission modes (only the `/always-approve` command), so the Deck
+  applies them to the `session/request_permission` requests Grok sends: _default_ asks the person,
+  _acceptEdits_ approves file edits, _bypassPermissions_ approves everything. Grok itself decides when to
+  ask; some commands run without a request. There is no plan mode.
+- **Usage** is read from each answer's `_meta.usage` (tokens, cache, and `costUsdTicks`, 1e-10 USD): context
+  in use, turn tokens, cache and the run's cost. The plan's usage limit is not exposed to other programs
+  (`grok usage` says to use `/usage` inside Grok), so no limit gauge is shown.
+
+Native forks and compaction are not offered.

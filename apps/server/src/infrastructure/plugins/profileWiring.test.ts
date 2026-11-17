@@ -27,8 +27,15 @@ describe('profiles using complete plugins', () => {
         .list()
         .filter((template) => template.plugin)
         .map((template) => template.id),
-    ).toEqual(['claude', 'claude-endpoint', 'claude-deepseek', 'codex', 'antigravity']);
-    for (const base of ['claude', 'claude-endpoint', 'claude-deepseek', 'codex', 'antigravity']) {
+    ).toEqual(['claude', 'claude-endpoint', 'claude-deepseek', 'codex', 'antigravity', 'grok']);
+    for (const base of [
+      'claude',
+      'claude-endpoint',
+      'claude-deepseek',
+      'codex',
+      'antigravity',
+      'grok',
+    ]) {
       const profile = await service.profiles.create({
         base,
         label: `Test ${base}`,
@@ -42,6 +49,8 @@ describe('profiles using complete plugins', () => {
       expect(provider?.keyState?.()).toBe('set');
       if (base === 'antigravity')
         expect(provider?.buildAgent(providerCtx).env['GEMINI_API_KEY']).toBe('private-test-key');
+      if (base === 'grok')
+        expect(provider?.buildAgent(providerCtx).env['XAI_API_KEY']).toBe('private-test-key');
       if (base === 'codex') {
         expect(provider?.features?.cacheIdleRiskMs).toBe(3600000);
         expect(provider?.compactTools).toBe(true);

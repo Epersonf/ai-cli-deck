@@ -1,0 +1,54 @@
+{
+  "plugin": 1,
+  "version": "1.0.0",
+  "entry": "index.ts",
+  "template": {
+    "schema": 1,
+    "id": "grok",
+    "label": "Grok Build",
+    "description": "xAI’s official Grok Build CLI. Sign in with your Grok account, or paste an xAI API key.",
+    "agent": "grok",
+    "model": null,
+    "env": {},
+    "home": {
+      "env": "GROK_HOME"
+    },
+    "fields": [],
+    "apiKey": {
+      "env": "XAI_API_KEY",
+      "label": "xAI API key (empty = this profile’s Grok account login)",
+      "required": false
+    },
+    "install": "grok"
+  },
+  "authMethods": [
+    {
+      "id": "grok-account",
+      "label": "Grok account",
+      "flow": "device",
+      "description": "Open the sign-in page and enter the device code (SuperGrok or X Premium+)."
+    },
+    {
+      "id": "key",
+      "label": "xAI API key",
+      "flow": "key",
+      "description": "Paste your API key; it stays in this profile’s private key file."
+    },
+    {
+      "id": "machine",
+      "label": "Use this machine’s login",
+      "flow": "machine",
+      "description": "Uses credentials already on this machine."
+    }
+  ],
+  "order": 5,
+  "machine": false,
+  "tests": ["**/*.test.ts"],
+  "features": {
+    "modes": ["default", "acceptEdits", "bypassPermissions"],
+    "efforts": ["low", "medium", "high", "xhigh"],
+    "compaction": "none",
+    "autoCompactThreshold": false,
+    "cacheIdleRiskMs": null
+  }
+}

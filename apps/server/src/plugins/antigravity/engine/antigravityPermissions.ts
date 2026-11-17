@@ -1,7 +1,11 @@
 import type { AgentSink, PermissionAnswer } from '../../../domain/agent.js';
-import type { AntigravityRpc } from './antigravityRpc.js';
 import { jsonList } from './antigravityMap.js';
 import { obj, str, type Json } from '../../codex/engine/codexJson.js';
+
+/** The only part of an ACP connection permission answers need. */
+export interface AcpResponder {
+  respond(id: unknown, result: Json): void;
+}
 
 interface Permission {
   rpcId: unknown;
@@ -13,14 +17,15 @@ export class AntigravityPermissions {
   private readonly pending = new Map<string, Permission>();
   constructor(
     private readonly sink: AgentSink,
-    private readonly rpc: () => AntigravityRpc | null,
+    private readonly rpc: () => AcpResponder | null,
+    private readonly prefix = 'agy',
   ) {}
 
   request(message: Json): void {
     const params = obj(message['params']) ?? {};
     const call = obj(params['toolCall']) ?? {};
     const options = jsonList(params['options']);
-    const id = `agy:permission:${String(message['id'])}`;
+    const id = `${this.prefix}:permission:${String(message['id'])}`;
     this.pending.set(id, { rpcId: message['id'], options });
     this.sink.event({
       t: 'permission',
